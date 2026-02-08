@@ -1,0 +1,209 @@
+npm warn Unknown project config "electron_mirror". This will stop working in the next major version of npm.
+npm warn Unknown project config "electron_builder_binaries_mirror". This will stop working in the next major version of npm.
+
+> dfm-v2@1.0.0 build:win
+> npm run build && electron-builder --win
+
+npm warn Unknown env config "electron-builder-binaries-mirror". This will stop working in the next major version of npm.
+npm warn Unknown env config "electron-mirror". This will stop working in the next major version of npm.
+npm warn Unknown project config "electron_mirror". This will stop working in the next major version of npm.
+npm warn Unknown project config "electron_builder_binaries_mirror". This will stop working in the next major version of npm.
+
+> dfm-v2@1.0.0 build
+> npm run typecheck && electron-vite build
+
+npm warn Unknown env config "electron-builder-binaries-mirror". This will stop working in the next major version of npm.
+npm warn Unknown env config "electron-mirror". This will stop working in the next major version of npm.
+npm warn Unknown project config "electron_mirror". This will stop working in the next major version of npm.
+npm warn Unknown project config "electron_builder_binaries_mirror". This will stop working in the next major version of npm.
+
+> dfm-v2@1.0.0 typecheck
+> npm run typecheck:node && npm run typecheck:web
+
+npm warn Unknown env config "electron-builder-binaries-mirror". This will stop working in the next major version of npm.
+npm warn Unknown env config "electron-mirror". This will stop working in the next major version of npm.
+npm warn Unknown project config "electron_mirror". This will stop working in the next major version of npm.
+npm warn Unknown project config "electron_builder_binaries_mirror". This will stop working in the next major version of npm.
+
+> dfm-v2@1.0.0 typecheck:node
+> tsc --noEmit -p tsconfig.node.json --composite false
+
+npm warn Unknown env config "electron-builder-binaries-mirror". This will stop working in the next major version of npm.
+npm warn Unknown env config "electron-mirror". This will stop working in the next major version of npm.
+npm warn Unknown project config "electron_mirror". This will stop working in the next major version of npm.
+npm warn Unknown project config "electron_builder_binaries_mirror". This will stop working in the next major version of npm.
+
+> dfm-v2@1.0.0 typecheck:web
+> tsc --noEmit -p tsconfig.web.json --composite false
+
+[36mvite v7.3.1 [32mbuilding ssr environment for production...[36m[39m
+transforming...
+[32mΓ£ô[39m 25 modules transformed.
+[plugin vite:reporter] 
+(!) D:/DEV/┘à╪»┘è╪▒ ┘à╪╡╪º┘å╪╣ ╪º┘ä╪¬┘à┘ê╪▒/DFM-V2/src/main/db.ts is dynamically imported by D:/DEV/┘à╪»┘è╪▒ ┘à╪╡╪º┘å╪╣ ╪º┘ä╪¬┘à┘ê╪▒/DFM-V2/src/main/telegram/commands/middleware/auth.ts, D:/DEV/┘à╪»┘è╪▒ ┘à╪╡╪º┘å╪╣ ╪º┘ä╪¬┘à┘ê╪▒/DFM-V2/src/main/telegram/index.ts but also statically imported by D:/DEV/┘à╪»┘è╪▒ ┘à╪╡╪º┘å╪╣ ╪º┘ä╪¬┘à┘ê╪▒/DFM-V2/src/main/index.ts, D:/DEV/┘à╪»┘è╪▒ ┘à╪╡╪º┘å╪╣ ╪º┘ä╪¬┘à┘ê╪▒/DFM-V2/src/main/sync/conflict.ts, D:/DEV/┘à╪»┘è╪▒ ┘à╪╡╪º┘å╪╣ ╪º┘ä╪¬┘à┘ê╪▒/DFM-V2/src/main/sync/queue.ts, D:/DEV/┘à╪»┘è╪▒ ┘à╪╡╪º┘å╪╣ ╪º┘ä╪¬┘à┘ê╪▒/DFM-V2/src/main/telegram/commands/middleware/auth.ts, D:/DEV/┘à╪»┘è╪▒ ┘à╪╡╪º┘å╪╣ ╪º┘ä╪¬┘à┘ê╪▒/DFM-V2/src/main/telegram/commands/middleware/roleCheck.ts, D:/DEV/┘à╪»┘è╪▒ ┘à╪╡╪º┘å╪╣ ╪º┘ä╪¬┘à┘ê╪▒/DFM-V2/src/main/telegram/commands/register.ts, D:/DEV/┘à╪»┘è╪▒ ┘à╪╡╪º┘å╪╣ ╪º┘ä╪¬┘à┘ê╪▒/DFM-V2/src/main/telegram/commands/status.ts, D:/DEV/┘à╪»┘è╪▒ ┘à╪╡╪º┘å╪╣ ╪º┘ä╪¬┘à┘ê╪▒/DFM-V2/src/main/telegram/handlers/notifications.ts, D:/DEV/┘à╪»┘è╪▒ ┘à╪╡╪º┘å╪╣ ╪º┘ä╪¬┘à┘ê╪▒/DFM-V2/src/main/telegram/handlers/registration.ts, D:/DEV/┘à╪»┘è╪▒ ┘à╪╡╪º┘å╪╣ ╪º┘ä╪¬┘à┘ê╪▒/DFM-V2/src/main/telegram/index.ts, D:/DEV/┘à╪»┘è╪▒ ┘à╪╡╪º┘å╪╣ ╪º┘ä╪¬┘à┘ê╪▒/DFM-V2/src/main/web-auth.ts, dynamic import will not move module into another chunk.
+
+[plugin vite:reporter] 
+(!) D:/DEV/┘à╪»┘è╪▒ ┘à╪╡╪º┘å╪╣ ╪º┘ä╪¬┘à┘ê╪▒/DFM-V2/src/main/telegram/commands/register.ts is dynamically imported by D:/DEV/┘à╪»┘è╪▒ ┘à╪╡╪º┘å╪╣ ╪º┘ä╪¬┘à┘ê╪▒/DFM-V2/src/main/telegram/commands/index.ts but also statically imported by D:/DEV/┘à╪»┘è╪▒ ┘à╪╡╪º┘å╪╣ ╪º┘ä╪¬┘à┘ê╪▒/DFM-V2/src/main/telegram/commands/index.ts, dynamic import will not move module into another chunk.
+
+rendering chunks...
+[2mout/main/[22m[36mindex.js  [39m[1m[2m175.22 kB[22m[1m[22m
+[32mΓ£ô built in 469ms[39m
+[36mvite v7.3.1 [32mbuilding ssr environment for production...[36m[39m
+transforming...
+[32mΓ£ô[39m 1 modules transformed.
+rendering chunks...
+[2mout/preload/[22m[36mindex.js  [39m[1m[2m6.52 kB[22m[1m[22m
+[32mΓ£ô built in 13ms[39m
+[36mvite v7.3.1 [32mbuilding client environment for production...[36m[39m
+transforming...
+Found 4 warnings while optimizing generated CSS:
+
+Issue #1:
+Γöé   }
+Γöé   .no-print,
+
+Γöé   .print\\:hidden,
+Γöå            ^-- 'hidden' is not recognized as a valid pseudo-class. Did you mean '::hidden' (pseudo-element) or is this a typo?
+Γöå
+Γöé   button:not(.print-visible),
+
+Γöé   input:not(.print-visible),
+
+
+Issue #2:
+Γöé     display: none !important;
+Γöé   }
+Γöé   .print\\:block,
+Γöå            ^-- 'block' is not recognized as a valid pseudo-class. Did you mean '::block' (pseudo-element) or is this a typo?
+Γöå
+Γöé   .print\\:flex {
+Γöé     display: block !important;
+
+Issue #3:
+Γöé   }
+Γöé   .print\\:block,
+
+Γöé   .print\\:flex {
+Γöå            ^-- 'flex' is not recognized as a valid pseudo-class. Did you mean '::flex' (pseudo-element) or is this a typo?
+Γöå
+Γöé     display: block !important;
+Γöé     visibility: visible !important;
+
+Issue #4:
+Γöé     visibility: visible !important;
+Γöé   }
+Γöé   .print\\:flex {
+Γöå            ^-- 'flex' is not recognized as a valid pseudo-class. Did you mean '::flex' (pseudo-element) or is this a typo?
+Γöå
+Γöé     display: flex !important;
+Γöé   }
+
+[32mΓ£ô[39m 1946 modules transformed.
+rendering chunks...
+[2m../../out/renderer/[22m[32mindex.html                 [39m[1m[2m    0.56 kB[22m[1m[22m
+[2m../../out/renderer/[22m[35massets/index-CouulZU-.css  [39m[1m[2m   91.32 kB[22m[1m[22m
+[2m../../out/renderer/[22m[36massets/index-BeeWeYtN.js   [39m[1m[33m1,096.92 kB[39m[22m
+[32mΓ£ô built in 12.78s[39m
+  ΓÇó electron-builder  version=26.4.0 os=10.0.26200
+  ΓÇó loaded configuration  file=D:\DEV\┘à╪»┘è╪▒ ┘à╪╡╪º┘å╪╣ ╪º┘ä╪¬┘à┘ê╪▒\DFM-V2\electron-builder.yml
+  ΓÇó effective config  config=directories:
+  output: release
+  buildResources: build
+appId: com.dfm.dates-factory-manager
+productName: DFM V2
+files:
+  - from: out
+    to: out
+    filter:
+      - '**/*'
+  - from: resources
+    to: resources
+    filter:
+      - '**/*'
+  - filter:
+      - '!**/.vscode/*'
+      - '!src/*'
+      - '!electron.vite.config.{js,ts,mjs,cjs}'
+      - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
+      - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
+      - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+asar: true
+asarUnpack:
+  - resources/**
+compression: maximum
+win:
+  executableName: DFM V2
+  icon: build/icon.ico
+  target:
+    - target: nsis
+      arch:
+        - x64
+nsis:
+  artifactName: ${name}-${version}-setup.${ext}
+  shortcutName: ${productName}
+  uninstallDisplayName: ${productName}
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+mac:
+  icon: build/icon.icns
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+        - universal
+  entitlementsInherit: build/entitlements.mac.plist
+  extendInfo:
+    - NSCameraUsageDescription: Application requests access to the device's camera.
+    - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
+    - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
+    - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
+  notarize: false
+dmg:
+  artifactName: ${name}-${version}.${ext}
+linux:
+  icon: build/icon.png
+  target:
+    - AppImage
+    - deb
+  maintainer: example.com
+  category: Utility
+appImage:
+  artifactName: ${name}-${version}.${ext}
+npmRebuild: false
+publish:
+  provider: github
+  owner: Abu-ellil
+  repo: DFM-V2
+  releaseType: release
+
+  ΓÇó no event listeners found  event=beforePack
+  ΓÇó skipped dependencies rebuild  reason=npmRebuild is set to false
+  ΓÇó packaging       platform=win32 arch=x64 electron=39.3.0 appOutDir=release\win-unpacked
+  ΓÇó no custom electronDist provided, unpacking default Electron distribution
+  ΓÇó spawning        command=D:\DEV\┘à╪»┘è╪▒ ┘à╪╡╪º┘å╪╣ ╪º┘ä╪¬┘à┘ê╪▒\DFM-V2\node_modules\app-builder-bin\win\x64\app-builder.exe unpack-electron --configuration [{"platform":"win32","arch":"x64","version":"39.3.0"}] --output D:\DEV\┘à╪»┘è╪▒ ┘à╪╡╪º┘å╪╣ ╪º┘ä╪¬┘à┘ê╪▒\DFM-V2\release\win-unpacked --distMacOsAppName Electron.app
+  ΓÇó map async       taskCount=2
+  ΓÇó map async       taskCount=1
+  Γ¿» remove D:\DEV\┘à╪»┘è╪▒ ┘à╪╡╪º┘å╪╣ ╪º┘ä╪¬┘à┘ê╪▒\DFM-V2\release\win-unpacked\resources\app.asar: The process cannot access the file because it is being used by another process.
+github.com/develar/go-fs-util.EnsureEmptyDir
+	/Users/runner/go/pkg/mod/github.com/develar/go-fs-util@v0.0.0-20190620175131-69a2d4542206/fs.go:98
+github.com/develar/app-builder/pkg/electron.UnpackElectron.func1.1
+	/Users/runner/work/app-builder/app-builder/pkg/electron/electronUnpack.go:38
+github.com/develar/app-builder/pkg/util.MapAsyncConcurrency.func2
+	/Users/runner/work/app-builder/app-builder/pkg/util/async.go:68
+runtime.goexit
+	/Users/runner/hostedtoolcache/go/1.21.13/arm64/src/runtime/asm_amd64.s:1650  
+  ΓÇó exited          command=app-builder.exe code=1 pid=24428
+  Γ¿» D:\DEV\┘à╪»┘è╪▒ ┘à╪╡╪º┘å╪╣ ╪º┘ä╪¬┘à┘ê╪▒\DFM-V2\node_modules\app-builder-bin\win\x64\app-builder.exe process failed ERR_ELECTRON_BUILDER_CANNOT_EXECUTE
+Exit code:
+1  failedTask=build stackTrace=Error: D:\DEV\┘à╪»┘è╪▒ ┘à╪╡╪º┘å╪╣ ╪º┘ä╪¬┘à┘ê╪▒\DFM-V2\node_modules\app-builder-bin\win\x64\app-builder.exe process failed ERR_ELECTRON_BUILDER_CANNOT_EXECUTE
+Exit code:
+1
+    at ChildProcess.<anonymous> (D:\DEV\┘à╪»┘è╪▒ ┘à╪╡╪º┘å╪╣ ╪º┘ä╪¬┘à┘ê╪▒\DFM-V2\node_modules\builder-util\src\util.ts:272:14)
+    at Object.onceWrapper (node:events:623:26)
+    at ChildProcess.emit (node:events:508:28)
+    at ChildProcess.cp.emit (D:\DEV\┘à╪»┘è╪▒ ┘à╪╡╪º┘å╪╣ ╪º┘ä╪¬┘à┘ê╪▒\DFM-V2\node_modules\cross-spawn\lib\enoent.js:34:29)
+    at maybeClose (node:internal/child_process:1085:16)
+    at Process.ChildProcess._handle.onexit (node:internal/child_process:304:5)

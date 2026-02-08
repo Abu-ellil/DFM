@@ -1,0 +1,93 @@
+appId: com.dfm.dates-factory-manager
+productName: DFM
+directories:
+  output: release
+  buildResources: build
+files:
+  - out/**/**
+  - '!**/.vscode/*'
+  - '!src/*'
+  - '!electron.vite.config.{js,ts,mjs,cjs}'
+  - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
+  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
+  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+  - '!**/*.test.{ts,tsx,js,jsx}'
+  - '!**/*.spec.{ts,tsx,js,jsx}'
+  - '!**/__tests__/**'
+  - '!**/__mocks__/**'
+  - '!**/*.map'
+  - '!**/*.log'
+  - '!**/debug.log'
+  - '!**/coverage/**'
+  - '!**/.git/**'
+  # node_modules excluded (except sql.js which is handled by asarUnpack below)
+  - '!package-lock.json'
+  - '!yarn.lock'
+  - '!pnpm-lock.yaml'
+  - '!.github/**'
+# ASAR configuration for optimal compression
+asar: true
+asarUnpack:
+  - node_modules/sql.js/dist/sql-wasm.wasm
+  - node_modules/sql.js/dist/sql-wasm.js
+compression: maximum
+# Filter Electron locales to only English and Arabic after build
+afterPack: scripts/filter-locales.js
+win:
+  executableName: DFM
+  icon: build/icon.ico
+  forceCodeSigning: false
+  target:
+    - target: nsis
+      arch:
+        - x64
+  fileAssociations: []
+nsis:
+  artifactName: ${name}-${version}-setup.${ext}
+  shortcutName: ${productName}
+  uninstallDisplayName: ${productName}
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  # Optimize NSIS installer size
+  deleteAppDataOnUninstall: false
+  runAfterFinish: false
+mac:
+  icon: build/icon.icns
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+  entitlementsInherit: build/entitlements.mac.plist
+  extendInfo:
+    - NSCameraUsageDescription: Application requests access to the device's camera.
+    - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
+    - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
+    - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
+  notarize: false
+dmg:
+  artifactName: ${name}-${version}.${ext}
+linux:
+  icon: build/icon.png
+  target:
+    - AppImage
+    - deb
+  maintainer: example.com
+  category: Utility
+appImage:
+  artifactName: ${name}-${version}.${ext}
+npmRebuild: false
+publish:
+  provider: github
+  owner: Abu-ellil
+  repo: DatesFactoryManagerV2
+  releaseType: release
+# Disable automatic updates to reduce runtime checks
+# electronDownload:
+#   cache: D:\CACHE\electron  # Local development only - commented out for CI/CD
+# Optimize build by disabling unnecessary features
+detectUpdateChannel: false

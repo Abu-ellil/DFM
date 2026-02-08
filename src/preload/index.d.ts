@@ -1,0 +1,247 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { ElectronAPI } from '@electron-toolkit/preload'
+
+declare global {
+  interface Window {
+    electron: ElectronAPI
+    api: {
+      auth: {
+        login: (credentials: any) => Promise<any>
+        changePassword: (data: any) => Promise<{ success: boolean; message: string }>
+      }
+      customers: {
+        getAll: () => Promise<any[]>
+        create: (customer: any) => Promise<{ success: boolean; message?: string }>
+        update: (id: number, customer: any) => Promise<{ success: boolean; message?: string }>
+        delete: (id: number) => Promise<{ success: boolean; message?: string }>
+      }
+      dateTypes: {
+        getAll: () => Promise<any[]>
+        create: (name: string) => Promise<{ success: boolean; message?: string }>
+        delete: (id: number) => Promise<{ success: boolean; message?: string }>
+      }
+      crateTypes: {
+        getAll: () => Promise<any[]>
+        create: (data: {
+          name: string
+          weight: number
+        }) => Promise<{ success: boolean; message?: string }>
+        delete: (id: number) => Promise<{ success: boolean; message?: string }>
+      }
+      supervisors: {
+        getAll: () => Promise<any[]>
+        create: (name: string) => Promise<{ success: boolean; message?: string }>
+        delete: (id: number) => Promise<{ success: boolean; message?: string }>
+      }
+      weighbridge: {
+        getAll: () => Promise<any[]>
+        create: (data: any) => Promise<{ success: boolean; message?: string }>
+        validateCalculations: () => Promise<{
+          success: boolean
+          total: number
+          valid: number
+          errors: number
+          details: Array<{
+            id: number
+            customer_name: string
+            date: string
+            net_weight_error?: {
+              current: number
+              expected: number
+              diff: number
+            }
+            total_error?: {
+              current: number
+              expected: number
+              diff: number
+            }
+          }>
+        }>
+        recalculateAll: () => Promise<{
+          success: boolean
+          message?: string
+          backupPath?: string
+          updated: number
+        }>
+        recalculateSingle: (id: number) => Promise<{ success: boolean; message?: string }>
+      }
+      crates: {
+        getAll: () => Promise<any[]>
+        getSummary: () => Promise<any[]>
+        create: (data: any) => Promise<{ success: boolean; message?: string }>
+        update: (id: number, data: any) => Promise<{ success: boolean; message?: string }>
+        delete: (id: number) => Promise<{ success: boolean; message?: string }>
+      }
+      finance: {
+        getAll: () => Promise<any[]>
+        getSummary: () => Promise<any[]>
+        create: (data: any) => Promise<{ success: boolean; message?: string }>
+        update: (id: number, data: any) => Promise<{ success: boolean; message?: string }>
+        delete: (id: number) => Promise<{ success: boolean; message?: string }>
+      }
+      customerAccounts: {
+        getSummary: (customerId?: number) => Promise<any>
+        getRecentTransactions: (customerId: number, limit?: number) => Promise<any[]>
+      }
+      settings: {
+        getAll: () => Promise<Record<string, string>>
+        update: (key: string, value: string) => Promise<{ success: boolean }>
+        sync: () => Promise<{ success: boolean; message?: string }>
+        importDb: () => Promise<{ success: boolean; message?: string }>
+        importExcel: () => Promise<{ success: boolean; message?: string }>
+        deleteAllData: () => Promise<{ success: boolean; message: string }>
+      }
+      reports: {
+        exportExcel: (data: {
+          title: string
+          columns: any[]
+          data: any[]
+        }) => Promise<{ success: boolean; message?: string }>
+      }
+      telegram: {
+        send: (data: {
+          token: string
+          chatId: string
+          message: string
+        }) => Promise<{ success: boolean; message?: string }>
+        sendReport: () => Promise<{ success: boolean; message?: string }>
+        startBot: () => Promise<{ success: boolean; message?: string }>
+        stopBot: () => Promise<{ success: boolean; message?: string }>
+        restartBot: () => Promise<{ success: boolean; message?: string }>
+        testConnection: (
+          token?: string
+        ) => Promise<{ success: boolean; message?: string; botInfo?: any }>
+        getStats: () => Promise<any>
+        getUsers: (filters?: any) => Promise<{ success: boolean; data: any[]; message?: string }>
+        updateUser: (
+          telegramId: number,
+          data: any
+        ) => Promise<{ success: boolean; message?: string }>
+        deleteUser: (telegramId: number) => Promise<{ success: boolean; message?: string }>
+        getRegistrations: (
+          filters?: any
+        ) => Promise<{ success: boolean; data: any[]; message?: string }>
+        approveRegistration: (
+          registrationId: number,
+          role: string,
+          reviewerUserId: number
+        ) => Promise<{ success: boolean; message?: string }>
+        rejectRegistration: (
+          registrationId: number,
+          reason?: string,
+          reviewerUserId?: number
+        ) => Promise<{ success: boolean; message?: string }>
+      }
+      license: {
+        getInfo: () => Promise<any>
+        getMachineId: () => Promise<{ success: boolean; machineId: string; message?: string }>
+        activate: (data: {
+          licenseKey: string
+          factoryName?: string
+        }) => Promise<{ success: boolean; message: string }>
+        check: () => Promise<boolean>
+        openTrialRequest: () => Promise<{ success: boolean }>
+      }
+      duplicates: {
+        getAll: () => Promise<any>
+        delete: (data: {
+          table: string
+          id: number
+        }) => Promise<{ success: boolean; message?: string }>
+        autoClean: () => Promise<{ success: boolean; count?: number; message?: string }>
+      }
+      salesProducts: {
+        getAll: () => Promise<any[]>
+        create: (data: {
+          name: string
+          unit_type: string
+          weight_per_unit: number
+        }) => Promise<{ success: boolean; message?: string }>
+        update: (
+          id: number,
+          data: {
+            name: string
+            unit_type: string
+            weight_per_unit: number
+          }
+        ) => Promise<{ success: boolean; message?: string }>
+        delete: (id: number) => Promise<{ success: boolean; message?: string }>
+      }
+      salesInvoices: {
+        getAll: () => Promise<any[]>
+        getById: (id: number) => Promise<any>
+        getItems: (invoiceId: number) => Promise<any[]>
+        getSummary: () => Promise<{
+          total_incoming: number
+          total_outgoing: number
+          current_stock: number
+          total_sales: number
+          loss_percentage: number
+        }>
+        create: (data: any) => Promise<{ success: boolean; message?: string; id?: number }>
+        delete: (id: number) => Promise<{ success: boolean; message?: string }>
+      }
+      sync: {
+        getStatus: () => Promise<{
+          success: boolean
+          data: {
+            enabled: boolean
+            inProgress: boolean
+            pendingChanges: number
+            lastSync: number | null
+            lastError: string | null
+          }
+        }>
+        manualSync: () => Promise<{
+          success: boolean
+          data: {
+            success: boolean
+            pushed: number
+            pulled: number
+            failed: number
+            conflicts: number
+            duration: number
+            error?: string
+          }
+        }>
+        enable: () => Promise<{ success: boolean }>
+        disable: () => Promise<{ success: boolean }>
+        getConflicts: (limit?: number) => Promise<{ success: boolean; data: any[] }>
+        clearOldConflicts: (
+          olderThanDays?: number
+        ) => Promise<{ success: boolean; data: { cleared: number } }>
+      }
+      cloudAccount: {
+        register: (data: {
+          phone: string
+          password: string
+          factoryName?: string
+        }) => Promise<{ success: boolean; message?: string }>
+        login: (data: {
+          phone: string
+          password: string
+        }) => Promise<{ success: boolean; message?: string; user?: any }>
+        restore: (data: {
+          phone: string
+          password: string
+        }) => Promise<{ success: boolean; message?: string }>
+        getStatus: () => Promise<{
+          success: boolean
+          isRegistered: boolean
+          phone?: string
+          factoryName?: string
+        }>
+      }
+      autoUpdater: {
+        check: () => Promise<{ success: boolean; message?: string }>
+        download: () => Promise<{ success: boolean; message?: string }>
+        installAndRestart: () => Promise<{ success: boolean }>
+        getVersion: () => Promise<{ current: string; isDev: boolean }>
+      }
+      invoke: (channel: string, ...args: any[]) => Promise<any>
+      print: () => Promise<{ success: boolean; message?: string }>
+      on?: (channel: string, callback: (...args: any[]) => void) => void
+      removeListener?: (channel: string, callback: (...args: any[]) => void) => void
+    }
+  }
+}
