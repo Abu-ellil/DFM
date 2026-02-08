@@ -134,3 +134,15 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Build artifacts and releases
+release/
+dist/
+*.rar
+*.zip
+*.7z
+
+# Database files
+*.db
+*.db-shm
+*.db-wal
