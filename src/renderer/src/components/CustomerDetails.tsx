@@ -32,8 +32,7 @@ export default function CustomerDetails({ customerId, onBack }: CustomerDetailsP
   const { transactions: finance, fetchFinance } = useFinanceStore()
   const { transactions: crates, fetchCrates } = useCrateStore()
   const { settings, fetchSettings } = useSettingsStore()
-  const { fetchCustomerSummary, refreshSelectedCustomer } =
-    useCustomerAccountStore()
+  const { fetchCustomerSummary, refreshSelectedCustomer } = useCustomerAccountStore()
 
   const [activeTab, setActiveTab] = useState<'all' | 'weighbridge' | 'finance' | 'crates'>('all')
   const [isFinanceModalOpen, setIsFinanceModalOpen] = useState(false)
@@ -313,7 +312,7 @@ export default function CustomerDetails({ customerId, onBack }: CustomerDetailsP
                 <span>{settings.company_address}</span>
               </p>
               <p className="flex items-center gap-2 justify-end">
-                <span>{settings.company_phone}</span>
+                <span dir="ltr">{settings.company_phone}</span>
               </p>
             </div>
           </div>
@@ -407,10 +406,6 @@ export default function CustomerDetails({ customerId, onBack }: CustomerDetailsP
               </h3>
             </div>
 
-
-
-
-
             {/* إجمالي ما للعميل */}
             <div className="bg-cyan-500/20 rounded-xl p-4 border-2 border-cyan-400/30">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
@@ -454,13 +449,15 @@ export default function CustomerDetails({ customerId, onBack }: CustomerDetailsP
               </div>
             </div>
 
-
-
-              {/* معلومات إضافية */}
+            {/* معلومات إضافية */}
             <div className="pt-3 border-t border-slate-600 grid grid-cols-2 gap-3 text-xs">
               <div className="bg-slate-700/50 rounded-lg p-2 text-center">
                 <p className="text-slate-400">رصيد الصناديق</p>
-                <p className={`text-lg font-bold ${cratesBalance > 0 ? 'text-emerald-400' : 'text-red-400'}`}>{cratesBalance} صندوق</p>
+                <p
+                  className={`text-lg font-bold ${cratesBalance > 0 ? 'text-emerald-400' : 'text-red-400'}`}
+                >
+                  {cratesBalance} صندوق
+                </p>
               </div>
               <div className="bg-slate-700/50 rounded-lg p-2 text-center">
                 <p className="text-slate-400">إجمالي الوزن</p>
@@ -532,16 +529,26 @@ export default function CustomerDetails({ customerId, onBack }: CustomerDetailsP
               <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 px-6 py-3">
                   <div>
-                    <span className="text-xs text-slate-500 font-bold block">إجمالي عدد الصناديق</span>
-                    <span className="text-lg font-bold text-slate-900 dark:text-white">{totalWeighbridgeCrates}</span>
+                    <span className="text-xs text-slate-500 font-bold block">
+                      إجمالي عدد الصناديق
+                    </span>
+                    <span className="text-lg font-bold text-slate-900 dark:text-white">
+                      {totalWeighbridgeCrates}
+                    </span>
                   </div>
                   <div>
-                    <span className="text-xs text-slate-500 font-bold block">إجمالي الوزن الصافي</span>
-                    <span className="text-lg font-bold text-slate-900 dark:text-white">{formatNumber(totalNetWeight)} كجم</span>
+                    <span className="text-xs text-slate-500 font-bold block">
+                      إجمالي الوزن الصافي
+                    </span>
+                    <span className="text-lg font-bold text-slate-900 dark:text-white">
+                      {formatNumber(totalNetWeight)} كجم
+                    </span>
                   </div>
                   <div className="col-span-2">
                     <span className="text-xs text-slate-500 font-bold block">إجمالي المال</span>
-                    <span className="text-lg font-bold text-emerald-600">{formatCurrency(totalWeighbridgeDebt)}</span>
+                    <span className="text-lg font-bold text-emerald-600">
+                      {formatCurrency(totalWeighbridgeDebt)}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -571,16 +578,28 @@ export default function CustomerDetails({ customerId, onBack }: CustomerDetailsP
               <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
                 <div className="grid grid-cols-3 gap-4 px-6 py-3">
                   <div>
-                    <span className="text-xs text-slate-500 font-bold block">إجمالي له (إيراد من العميل)</span>
-                    <span className="text-lg font-bold text-emerald-600">{formatCurrency(totalCashPayments)}</span>
+                    <span className="text-xs text-slate-500 font-bold block">
+                      إجمالي له (إيراد من العميل)
+                    </span>
+                    <span className="text-lg font-bold text-emerald-600">
+                      {formatCurrency(totalCashPayments)}
+                    </span>
                   </div>
                   <div>
-                    <span className="text-xs text-slate-500 font-bold block">إجمالي عليه (مدفوع للعميل)</span>
-                    <span className="text-lg font-bold text-red-600">{formatCurrency(totalAdvances)}</span>
+                    <span className="text-xs text-slate-500 font-bold block">
+                      إجمالي عليه (مدفوع للعميل)
+                    </span>
+                    <span className="text-lg font-bold text-red-600">
+                      {formatCurrency(totalAdvances)}
+                    </span>
                   </div>
                   <div>
                     <span className="text-xs text-slate-500 font-bold block">الرصيد النهائي</span>
-                    <span className={`text-lg font-bold ${totalFinanceBalance >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{formatCurrency(Math.abs(totalFinanceBalance))}</span>
+                    <span
+                      className={`text-lg font-bold ${totalFinanceBalance >= 0 ? 'text-emerald-600' : 'text-red-600'}`}
+                    >
+                      {formatCurrency(Math.abs(totalFinanceBalance))}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -610,16 +629,26 @@ export default function CustomerDetails({ customerId, onBack }: CustomerDetailsP
               <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
                 <div className="grid grid-cols-3 gap-4 px-6 py-3">
                   <div>
-                    <span className="text-xs text-slate-500 font-bold block">إجمالي الصناديق خارج</span>
+                    <span className="text-xs text-slate-500 font-bold block">
+                      إجمالي الصناديق خارج
+                    </span>
                     <span className="text-lg font-bold text-red-600">{totalCratesOut}</span>
                   </div>
                   <div>
-                    <span className="text-xs text-slate-500 font-bold block">إجمالي الصناديق عائد</span>
-                    <span className="text-lg font-bold text-emerald-600">{totalCratesReturned}</span>
+                    <span className="text-xs text-slate-500 font-bold block">
+                      إجمالي الصناديق عائد
+                    </span>
+                    <span className="text-lg font-bold text-emerald-600">
+                      {totalCratesReturned}
+                    </span>
                   </div>
                   <div>
                     <span className="text-xs text-slate-500 font-bold block">رصيد الصناديق</span>
-                    <span className={`text-lg font-bold ${cratesBalance > 0 ? 'text-emerald-600' : 'text-red-600'}`}>{cratesBalance}</span>
+                    <span
+                      className={`text-lg font-bold ${cratesBalance > 0 ? 'text-emerald-600' : 'text-red-600'}`}
+                    >
+                      {cratesBalance}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -643,7 +672,7 @@ export default function CustomerDetails({ customerId, onBack }: CustomerDetailsP
               </h1>
               <div className="space-y-1 text-slate-700 text-xl font-bold">
                 <p>{settings.company_address}</p>
-                <p>{settings.company_phone}</p>
+                <p dir="ltr">{settings.company_phone}</p>
               </div>
             </div>
             {settings.company_logo && (

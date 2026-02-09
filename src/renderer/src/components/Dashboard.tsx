@@ -171,7 +171,10 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, i) => (
-          <Card key={i} className={`group hover:scale-[1.02] transition-transform duration-300 ${i === 2 ? 'lg:col-span-1' : ''}`}>
+          <Card
+            key={i}
+            className={`group hover:scale-[1.02] transition-transform duration-300 ${i === 2 ? 'lg:col-span-1' : ''}`}
+          >
             {i === 2 ? (
               <div className="space-y-4">
                 <div className="flex justify-between items-start mb-2 gap-2">
@@ -183,21 +186,40 @@ export default function Dashboard() {
                     {stat.trendUp ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
                   </div>
                 </div>
-                <h3 className="text-slate-500 dark:text-slate-400 font-bold mb-3 truncate" title={stat.title}>
+                <h3
+                  className="text-slate-500 dark:text-slate-400 font-bold mb-3 truncate"
+                  title={stat.title}
+                >
                   {stat.title}
                 </h3>
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-2">
                     <p className="text-xs text-red-600 dark:text-red-400 font-bold mb-1">خارج</p>
-                    <p className="text-md font-black text-red-700 dark:text-red-300">{formatNumber(totalCratesOut)}</p>
+                    <p className="text-md font-black text-red-700 dark:text-red-300">
+                      {formatNumber(totalCratesOut)}
+                    </p>
                   </div>
                   <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-2">
-                    <p className="text-xs text-emerald-600 dark:text-emerald-400 font-bold mb-1">عائد</p>
-                    <p className="text-md font-black text-emerald-700 dark:text-emerald-300">{formatNumber(totalCratesReturned)}</p>
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400 font-bold mb-1">
+                      عائد
+                    </p>
+                    <p className="text-md font-black text-emerald-700 dark:text-emerald-300">
+                      {formatNumber(totalCratesReturned)}
+                    </p>
                   </div>
-                  <div className={`${totalCrates > 0 ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-red-50 dark:bg-red-900/20'} rounded-lg p-2`}>
-                    <p className={`text-xs ${totalCrates > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'} font-bold mb-1`}>الرصيد</p>
-                    <p className={`text-md font-black ${totalCrates > 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-red-700 dark:text-red-300'}`}>{formatNumber(totalCrates)}</p>
+                  <div
+                    className={`${totalCrates > 0 ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-red-50 dark:bg-red-900/20'} rounded-lg p-2`}
+                  >
+                    <p
+                      className={`text-xs ${totalCrates > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'} font-bold mb-1`}
+                    >
+                      الرصيد
+                    </p>
+                    <p
+                      className={`text-md font-black ${totalCrates > 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-red-700 dark:text-red-300'}`}
+                    >
+                      {formatNumber(totalCrates)}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -214,7 +236,10 @@ export default function Dashboard() {
             )}
             {i !== 2 && (
               <>
-                <h3 className="text-slate-500 dark:text-slate-400 font-bold mb-1 truncate" title={stat.title}>
+                <h3
+                  className="text-slate-500 dark:text-slate-400 font-bold mb-1 truncate"
+                  title={stat.title}
+                >
                   {stat.title}
                 </h3>
                 <p className="text-xl md:text-2xl font-black text-slate-800 dark:text-white break-words">
