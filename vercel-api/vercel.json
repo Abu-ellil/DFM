@@ -1,7 +1,7 @@
 {
-  "buildCommand": "echo 'No build needed'",
-  "outputDirectory": "./",
-  "framework": null,
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "framework": "nextjs",
   "functions": {
     "api/**/*.ts": {
       "memory": 1024,
