@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowRight, BarChart3, Users, Database, Shield, Zap } from 'lucide-react'
+import { ArrowRight, BarChart3, Users, Database, Shield, Zap, Gift } from 'lucide-react'
 
 export default function Home() {
   return (
@@ -16,11 +16,11 @@ export default function Home() {
           </p>
           <div className="flex justify-center gap-4">
             <Link
-              href="/dashboard"
-              className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 md:text-lg"
+              href="/trial-code"
+              className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 md:text-lg"
             >
-              Go to Dashboard
-              <ArrowRight className="ml-2 w-5 h-5" />
+              <Gift className="mr-2 w-5 h-5" />
+              Get Free Trial
             </Link>
             <Link
               href="/login"

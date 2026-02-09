@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, LayoutDashboard, Users, Settings, BarChart3, LogOut } from 'lucide-react'
+import { Home, LayoutDashboard, Users, Settings, BarChart3, LogOut, Gift } from 'lucide-react'
 
 export default function Navigation() {
   const pathname = usePathname()
@@ -63,6 +63,17 @@ export default function Navigation() {
               >
                 <Users className="w-4 h-4 mr-2" />
                 Admin
+              </Link>
+              <Link
+                href="/trial-code"
+                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                  isActive('/trial-code')
+                    ? 'border-primary-500 text-gray-900'
+                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                }`}
+              >
+                <Gift className="w-4 h-4 mr-2" />
+                Free Trial
               </Link>
             </div>
           </div>
