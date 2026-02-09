@@ -177,10 +177,7 @@ export function isWebUserRegistered(): boolean {
  * Login web user with phone and password
  * Validates credentials against cloud API
  */
-export async function loginWebUser(params: {
-  phone: string
-  password: string
-}): Promise<{
+export async function loginWebUser(params: { phone: string; password: string }): Promise<{
   success: boolean
   error?: string
   user?: { phone: string; factory_name?: string; machine_id?: string }

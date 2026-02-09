@@ -390,17 +390,17 @@ const runSyncMigrations = (db: Database): void => {
   syncTables.forEach((table) => {
     try {
       db.run(`ALTER TABLE ${table} ADD COLUMN _client_id TEXT`)
-    } catch (e) {
+    } catch (_e) {
       // Column already exists, ignore error
     }
     try {
       db.run(`ALTER TABLE ${table} ADD COLUMN _synced_at INTEGER`)
-    } catch (e) {
+    } catch (_e) {
       // Column already exists, ignore error
     }
     try {
       db.run(`ALTER TABLE ${table} ADD COLUMN _version INTEGER DEFAULT 1`)
-    } catch (e) {
+    } catch (_e) {
       // Column already exists, ignore error
     }
   })
@@ -408,17 +408,17 @@ const runSyncMigrations = (db: Database): void => {
   // Add additional columns to sync_queue table
   try {
     db.run(`ALTER TABLE sync_queue ADD COLUMN client_timestamp INTEGER`)
-  } catch (e) {
+  } catch (_e) {
     // Column already exists, ignore error
   }
   try {
     db.run(`ALTER TABLE sync_queue ADD COLUMN sync_attempt_count INTEGER DEFAULT 0`)
-  } catch (e) {
+  } catch (_e) {
     // Column already exists, ignore error
   }
   try {
     db.run(`ALTER TABLE sync_queue ADD COLUMN last_sync_error TEXT`)
-  } catch (e) {
+  } catch (_e) {
     // Column already exists, ignore error
   }
 
@@ -453,26 +453,26 @@ const runWebAuthMigrations = (db: Database): void => {
   // Add machine_id and web_password columns to users table if they don't exist
   try {
     db.run(`ALTER TABLE users ADD COLUMN machine_id TEXT`)
-  } catch (e) {
+  } catch (_e) {
     // Column already exists, ignore error
   }
   try {
     db.run(`ALTER TABLE users ADD COLUMN web_password TEXT`)
-  } catch (e) {
+  } catch (_e) {
     // Column already exists, ignore error
   }
 
   // Create index for machine_id
   try {
     db.run('CREATE INDEX IF NOT EXISTS idx_users_machine_id ON users(machine_id)')
-  } catch (e) {
+  } catch (_e) {
     // Index already exists or error occurred
   }
 
   // Create index for phone
   try {
     db.run('CREATE INDEX IF NOT EXISTS idx_users_phone ON users(phone)')
-  } catch (e) {
+  } catch (_e) {
     // Index already exists or error occurred
   }
 }

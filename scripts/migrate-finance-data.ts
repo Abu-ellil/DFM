@@ -8,7 +8,7 @@ import path from 'path'
 const DB_PATH = path.join(__dirname, '..', 'date_factory_v2.db')
 const BACKUP_PATH = path.join(__dirname, '..', `date_factory_v2_backup_${Date.now()}.db`)
 
-async function migrate() {
+async function migrate(): Promise<void> {
   console.log('🔄 بدء ترحيل البيانات المالية...')
 
   // Create backup

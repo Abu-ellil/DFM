@@ -51,7 +51,8 @@ const api = {
     delete: (id) => ipcRenderer.invoke('finance:delete', id)
   },
   customerAccounts: {
-    getSummary: (customerId?: number) => ipcRenderer.invoke('customerAccounts:getSummary', customerId),
+    getSummary: (customerId?: number) =>
+      ipcRenderer.invoke('customerAccounts:getSummary', customerId),
     getRecentTransactions: (customerId: number, limit?: number) =>
       ipcRenderer.invoke('customerAccounts:getRecentTransactions', customerId, limit)
   },
