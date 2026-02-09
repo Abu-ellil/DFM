@@ -32,7 +32,7 @@ asarUnpack:
   - node_modules/sql.js/dist/sql-wasm.js
 compression: maximum
 # Filter Electron locales to only English and Arabic after build
-afterPack: scripts/filter-locales.mjs
+afterPack: scripts/filter-locales.js
 win:
   executableName: DFM
   icon: build/icon.ico
