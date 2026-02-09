@@ -10,6 +10,7 @@ A comprehensive desktop application for managing dates factory operations, featu
 ## Features
 
 ### Core Functionality
+
 - **Customer Management**: Track customer information and history
 - **Weighbridge Operations**: Record and manage weighbridge transactions
 - **Crates Tracking**: Monitor crate inventory and movements
@@ -17,6 +18,7 @@ A comprehensive desktop application for managing dates factory operations, featu
 - **Excel Export**: Export all data to Excel format (.xlsx)
 
 ### Advanced Features
+
 - **Cloud Sync**: Offline-first bidirectional synchronization with automatic background sync
 - **Web Dashboard**: Remote access via modern Next.js web application
 - **Telegram Integration**: Send notifications and updates via Telegram bot
@@ -24,6 +26,7 @@ A comprehensive desktop application for managing dates factory operations, featu
 - **Multi-Language**: Full Arabic (RTL) and English interface support
 
 ### Technical Highlights
+
 - Built with **Electron 39**, **React 19**, and **TypeScript 5.9**
 - **SQLite** database with **SQL.js** for embedded storage
 - **Zustand** for state management
@@ -34,10 +37,10 @@ A comprehensive desktop application for managing dates factory operations, featu
 ## Screenshots
 
 ![Desktop Application](docs/images/desktop-app.png)
-*Desktop Application - Arabic Interface*
+_Desktop Application - Arabic Interface_
 
 ![Web Dashboard](docs/images/web-dashboard.png)
-*Web Dashboard - Factory Overview*
+_Web Dashboard - Factory Overview_
 
 ## Installation
 
@@ -66,12 +69,14 @@ Download the appropriate installer for your platform from the [Releases](https:/
 ### Linux Installation
 
 **AppImage (Universal):**
+
 ```bash
 chmod +x "DFM V2-1.1.4.AppImage"
 ./"DFM V2-1.1.4.AppImage"
 ```
 
 **Debian/Ubuntu:**
+
 ```bash
 sudo dpkg -i "DFM V2-1.1.4.deb"
 sudo apt-get install -f  # Fix dependencies if needed
@@ -89,22 +94,26 @@ sudo apt-get install -f  # Fix dependencies if needed
 ### Setup
 
 1. **Clone the repository:**
+
 ```bash
 git clone https://github.com/Abu-ellil/DFM-V2.git
 cd DFM-V2
 ```
 
 2. **Install dependencies:**
+
 ```bash
 npm install
 ```
 
 3. **Run in development mode:**
+
 ```bash
 npm run dev
 ```
 
 4. **Build for production:**
+
 ```bash
 # Build for current platform
 npm run build
@@ -116,6 +125,7 @@ npm run build:linux  # Linux
 ```
 
 5. **Run tests:**
+
 ```bash
 npm test
 ```
@@ -152,21 +162,25 @@ The cloud sync feature enables automatic synchronization of data across devices 
 ### Backend Setup (vercel-api)
 
 1. **Navigate to the API directory:**
+
 ```bash
 cd vercel-api
 ```
 
 2. **Install dependencies:**
+
 ```bash
 npm install
 ```
 
 3. **Set environment variables:**
+
 ```bash
 cp .env.example .env
 ```
 
 Edit `.env` with your credentials:
+
 ```
 CENTRAL_AUTH_DB_URL=postgresql://user:password@host/database
 JWT_SECRET=your-secret-key-here
@@ -175,6 +189,7 @@ TELEGRAM_BOT_TOKEN=your-telegram-bot-token
 ```
 
 4. **Deploy to Vercel:**
+
 ```bash
 vercel link
 vercel env add CENTRAL_AUTH_DB_URL
@@ -187,26 +202,31 @@ vercel --prod
 ### Web App Setup (web-app)
 
 1. **Navigate to the web app directory:**
+
 ```bash
 cd web-app
 ```
 
 2. **Install dependencies:**
+
 ```bash
 npm install
 ```
 
 3. **Set environment variables:**
+
 ```bash
 cp .env.example .env
 ```
 
 Edit `.env` with your deployed API URL:
+
 ```
 NEXT_PUBLIC_API_URL=https://your-vercel-app.vercel.app
 ```
 
 4. **Deploy to Vercel:**
+
 ```bash
 vercel link
 vercel --prod
@@ -289,6 +309,7 @@ The project includes comprehensive tests covering all major functionality:
 - **API Endpoints**: All backend endpoints
 
 Run tests:
+
 ```bash
 npm test
 ```
@@ -298,24 +319,29 @@ npm test
 ### Build Issues
 
 **Windows:**
+
 - Ensure Windows Build Tools are installed
 - Run as Administrator if needed
 
 **macOS:**
+
 - Ensure Xcode command line tools are installed: `xcode-select --install`
 - Code signing may be required for distribution
 
 **Linux:**
+
 - Install build dependencies: `sudo apt-get install build-essential`
 - For AppImage, ensure `fuse` is installed
 
 ### Runtime Issues
 
 **Database Errors:**
+
 - Check file permissions for app data directory
 - Ensure sufficient disk space
 
 **Cloud Sync Issues:**
+
 - Verify internet connection
 - Check API URL in settings
 - Ensure license key is valid

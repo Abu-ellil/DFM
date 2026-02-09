@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.4] - 2025-01-28
 
 ### Added
+
 - **Complete Cloud Sync System**: Offline-first bidirectional synchronization with automatic background sync
 - **Web Dashboard**: Remote access via Next.js web application with JWT authentication
 - **Multi-Platform Support**: Native installers for Windows, macOS, and Linux
@@ -20,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **SQLite Database**: Embedded database with SQL.js for local data storage
 
 ### Changed
+
 - Built with React 19, TypeScript 5.9, and Electron 39 for modern performance
 - Zustand for efficient state management
 - Tailwind CSS + shadcn/ui for modern, responsive UI design
@@ -27,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Filtered Electron locales to only English and Arabic to reduce bundle size
 
 ### Technical Details
+
 - **Desktop App**: Electron-based desktop application with React renderer
 - **Web App**: Next.js 14 with TypeScript and Tailwind CSS
 - **Backend API**: Vercel serverless API with Neon PostgreSQL
@@ -36,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Testing**: 21/21 tests passed (100% success rate)
 
 ### Security
+
 - Passwords hashed with bcrypt (10 rounds)
 - JWT tokens signed with secret key
 - Route protection via middleware
@@ -43,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Token expiration (7 days)
 
 ### Documentation
+
 - Comprehensive README with setup instructions
 - API documentation for all endpoints
 - Web implementation guide included
@@ -51,6 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - Initial Release
 
 ### Added
+
 - Initial release of Dates Factory Manager V2
 - Basic CRUD operations for customers, weighbridge, crates, and finance
 - Local SQLite database storage

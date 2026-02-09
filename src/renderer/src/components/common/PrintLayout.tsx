@@ -27,7 +27,7 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({
                         </h1>
                         <div className="space-y-1 text-slate-700 font-bold text-lg">
                             {settings.company_address && <p>{settings.company_address}</p>}
-                            {settings.company_phone && <p>{settings.company_phone}</p>}
+                            {settings.company_phone && <p dir="ltr">{settings.company_phone}</p>}
                         </div>
                     </div>
                     {settings.company_logo && (
