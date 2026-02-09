@@ -15,7 +15,8 @@
       "Bash(npm run lint:*)",
       "Bash(npx prettier:*)",
       "Bash(git reset:*)",
-      "Bash(npm version:*)"
+      "Bash(npm version:*)",
+      "Bash(git fetch:*)"
     ]
   }
 }
