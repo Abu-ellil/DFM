@@ -33,7 +33,7 @@ export async function pushChanges(changes: SyncQueueItem[]): Promise<SyncRespons
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${license.licenseKey}`
+      Authorization: `Bearer ${license.licenseKey}`
     },
     body: JSON.stringify(requestBody)
   })
@@ -68,7 +68,7 @@ export async function pullChanges(lastCheckpoint: number): Promise<PullResponse>
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${license.licenseKey}`
+      Authorization: `Bearer ${license.licenseKey}`
     },
     body: JSON.stringify(requestBody)
   })
@@ -108,7 +108,7 @@ export async function fullSync(
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${license.licenseKey}`
+      Authorization: `Bearer ${license.licenseKey}`
     },
     body: JSON.stringify(requestBody)
   })
@@ -142,7 +142,7 @@ export async function getFactoryDatabaseInfo(): Promise<{
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${license.licenseKey}`
+      Authorization: `Bearer ${license.licenseKey}`
     },
     body: JSON.stringify({
       licenseKey: license.licenseKey

@@ -20,7 +20,7 @@ const RECENT_ITEMS_LIMIT = 5
 export default function Dashboard() {
   const { customers, fetchCustomers } = useCustomerStore()
   const { transactions: weighbridge, fetchTransactions: fetchWeighbridge } = useWeighbridgeStore()
-  const { summary: crates, transactions: crateTransactions, fetchCrates } = useCrateStore()
+  const { transactions: crateTransactions, fetchCrates } = useCrateStore()
   const { transactions: finance, fetchFinance } = useFinanceStore()
   const { navigateToCustomer } = useAppStore()
 

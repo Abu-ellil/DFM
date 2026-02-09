@@ -1,4 +1,11 @@
-import { getPendingChanges, markAsSynced, markAsFailed, getLastSyncCheckpoint, updateLastSyncCheckpoint, getPendingChangesCount } from './queue'
+import {
+  getPendingChanges,
+  markAsSynced,
+  markAsFailed,
+  getLastSyncCheckpoint,
+  updateLastSyncCheckpoint,
+  getPendingChangesCount
+} from './queue'
 import { pushChanges, pullChanges } from './api'
 import { applyRemoteChanges } from './conflict'
 import { registerWebUser, isWebUserRegistered } from '../web-auth'
@@ -83,7 +90,6 @@ export async function performSync(_options: SyncOptions = {}): Promise<SyncResul
         if (pushResult.new_checkpoint) {
           await updateLastSyncCheckpoint(pushResult.new_checkpoint)
         }
-
       } catch (pushError: any) {
         console.error('[SYNC] Push failed:', pushError)
         throw pushError
@@ -119,7 +125,6 @@ export async function performSync(_options: SyncOptions = {}): Promise<SyncResul
       conflicts,
       duration
     }
-
   } catch (error: any) {
     const duration = Date.now() - startTime
     lastError = error.message || 'Unknown error'
@@ -241,7 +246,12 @@ export async function manualSync(): Promise<SyncResult> {
  * Enable sync with default settings
  * Also registers web user if not already registered
  */
-export async function enableSync(webUserInfo?: { phone: string; password: string; full_name?: string; factory_name?: string }): Promise<void> {
+export async function enableSync(webUserInfo?: {
+  phone: string
+  password: string
+  full_name?: string
+  factory_name?: string
+}): Promise<void> {
   // Register web user if info provided and not already registered
   if (webUserInfo && !isWebUserRegistered()) {
     console.log('[SYNC] Registering web user...')

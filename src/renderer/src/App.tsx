@@ -19,6 +19,7 @@ import { SyncStatus } from './components/SyncStatus'
 import AutoUpdater from './components/AutoUpdater'
 import { ThemeToggle } from './components/ThemeToggle'
 import { FontSizeToggle } from './components/FontSizeToggle'
+import appIconUrl from './assets/icon.ico?url'
 import {
   LayoutDashboard,
   Users,
@@ -51,21 +52,7 @@ function App() {
   const [isLicensed, setIsLicensed] = useState<boolean | null>(null)
   const [windowWidth, setWindowWidth] = useState(window.innerWidth)
 
-  useEffect(() => {
-    console.log('App mounted, checking license...')
-    checkLicense()
-  }, [])
-
-  useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth)
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
-
-  const isSmallScreen = windowWidth < 1024
-  const isSidebarOpenResponsive = isSmallScreen ? false : isSidebarOpen
-
-  const checkLicense = async () => {
+  const checkLicense = async (): Promise<void> => {
     try {
       console.log('Checking license, window.api:', typeof window.api)
       if (!window.api || !window.api.license) {
@@ -81,6 +68,20 @@ function App() {
       setIsLicensed(true)
     }
   }
+
+  useEffect(() => {
+    console.log('App mounted, checking license...')
+    checkLicense()
+  }, [])
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  const isSmallScreen = windowWidth < 1024
+  const isSidebarOpenResponsive = isSmallScreen ? false : isSidebarOpen
 
   const handleActivationSuccess = () => {
     setIsLicensed(true)
@@ -149,17 +150,15 @@ function App() {
     >
       {/* Sidebar */}
       <aside
-        className={`${isSidebarOpenResponsive ? 'w-64' : 'w-20'
+        className={`${isSidebarOpenResponsive ? 'w-46' : 'w-16'
           } bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 transition-all duration-300 flex flex-col z-20 shadow-xl print:hidden`}
       >
         {/* Logo Area */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-slate-100 dark:border-slate-800">
           {isSidebarOpenResponsive && (
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white font-bold">
-                D
-              </div>
-              <span className="font-bold text-lg tracking-tight">DATES V2</span>
+              <img src={appIconUrl} alt="DFM" className="w-8 h-8 rounded" />
+              <span className="font-bold text-lg tracking-tight">DFM</span>
             </div>
           )}
           <button

@@ -1,16 +1,19 @@
-const fs = require('fs')
-const path = require('path')
-const https = require('https')
+import fs from 'fs'
+import path from 'path'
+import https from 'https'
+import { fileURLToPath } from 'url'
+import { dirname } from 'path'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 // Configuration
-const GITHUB_TOKEN =
-  process.env.GITHUB_TOKEN ||
-  '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'
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN || ''
 const OWNER = 'Abu-ellil'
 const REPO = 'DFM'
 
 // Get version from package.json
-const packageJson = require('./package.json')
+const packageJson = JSON.parse(fs.readFileSync('./package.json', 'utf8'))
 const TAG = `v${packageJson.version}`
 const VERSION = packageJson.version
 const RELEASE_DIR = path.join(__dirname, 'release')

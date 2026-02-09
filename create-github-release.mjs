@@ -1,10 +1,8 @@
-const https = require('https')
-const fs = require('fs')
+import https from 'https'
+import fs from 'fs'
 
 // Configuration
-const GITHUB_TOKEN =
-  process.env.GITHUB_TOKEN ||
-  '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'
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN || ''
 const OWNER = 'Abu-ellil'
 const REPO = 'DFM'
 const TAG = 'v1.1.9'

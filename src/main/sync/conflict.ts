@@ -34,10 +34,7 @@ export async function applyRemoteChanges(changes: RemoteChange[]): Promise<numbe
  * @param change - Remote change to apply
  * @returns true if conflict was detected
  */
-async function applyRemoteChange(
-  db: any,
-  change: RemoteChange
-): Promise<boolean> {
+async function applyRemoteChange(db: any, change: RemoteChange): Promise<boolean> {
   const { operation, table, data, server_timestamp } = change
 
   // Check if record exists locally

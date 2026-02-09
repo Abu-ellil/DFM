@@ -51,8 +51,7 @@ function getWeightSettings(db: any): WeightSettings {
       const key = row[0]
       if (typeof key !== 'string') return
       const raw = row[1]
-      const parsed =
-        typeof raw === 'number' ? raw : parseFloat(String(raw ?? 0))
+      const parsed = typeof raw === 'number' ? raw : parseFloat(String(raw ?? 0))
       settings[key] = Number.isFinite(parsed) ? parsed : 0
     })
   }
@@ -628,7 +627,21 @@ ipcMain.handle('weighbridge:validateCalculations', async () => {
       return obj
     })
 
-    const errors = []
+    const errors: Array<{
+      id: number
+      customer_name: string
+      date: string
+      net_weight_error: {
+        current: number
+        expected: number
+        diff: number
+      } | null
+      total_error: {
+        current: number
+        expected: number
+        diff: number
+      } | null
+    }> = []
 
     for (const t of transactions) {
       const expectedNetWeight = Math.max(0, t.gross_weight - t.crates_count * crateWeight)
@@ -1848,14 +1861,14 @@ ipcMain.handle('salesInvoices:getAll', async () => {
   }
 })
 
-ipcMain.handle('salesInvoices:getById', async (_event, id) => {
+ipcMain.handle('salesInvoices:getById', async (_event, id: number) => {
   try {
     const db = getDb()
-    const res = db.exec('SELECT * FROM sales_invoices WHERE id = ?')
+    const res = db.exec('SELECT * FROM sales_invoices WHERE id = ?', [id])
     if (res.length === 0) return null
     const columns = res[0].columns
     return res[0].values.map((row) => {
-      const obj = {}
+      const obj: Record<string, any> = {}
       columns.forEach((col, i) => (obj[col] = row[i]))
       return obj
     })[0]

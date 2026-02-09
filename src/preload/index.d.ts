@@ -15,6 +15,13 @@ declare global {
         update: (id: number, customer: any) => Promise<{ success: boolean; message?: string }>
         delete: (id: number) => Promise<{ success: boolean; message?: string }>
       }
+      seasons: {
+        getAll: () => Promise<any[]>
+        create: (data: any) => Promise<{ success: boolean; message?: string }>
+        update: (id: number, data: any) => Promise<{ success: boolean; message?: string }>
+        delete: (id: number) => Promise<{ success: boolean; message?: string }>
+        setActive: (id: number) => Promise<{ success: boolean; message?: string }>
+      }
       dateTypes: {
         getAll: () => Promise<any[]>
         create: (name: string) => Promise<{ success: boolean; message?: string }>
