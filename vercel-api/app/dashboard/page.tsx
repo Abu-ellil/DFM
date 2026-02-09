@@ -13,10 +13,6 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [lastSync, setLastSync] = useState<Date | null>(null)
 
-  useEffect(() => {
-    fetchDashboardData()
-  }, [])
-
   const fetchDashboardData = async () => {
     setLoading(true)
     try {
@@ -37,6 +33,10 @@ export default function DashboardPage() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    fetchDashboardData()
+  }, [])
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
