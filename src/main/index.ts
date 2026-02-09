@@ -37,6 +37,32 @@ let updateCheckTimer: NodeJS.Timeout | null = null
 
 let mainWindow: BrowserWindow | null = null
 
+type WeightSettings = { crateWeight: number; qantarWeight: number }
+
+function getWeightSettings(db: any): WeightSettings {
+  const settingsRes = db.exec(`
+      SELECT value FROM settings
+      WHERE key IN ('crate_weight', 'qantar_weight')
+    `)
+
+  const settings: Record<string, number> = {}
+  if (settingsRes.length > 0) {
+    settingsRes[0].values.forEach((row) => {
+      const key = row[0]
+      if (typeof key !== 'string') return
+      const raw = row[1]
+      const parsed =
+        typeof raw === 'number' ? raw : parseFloat(String(raw ?? 0))
+      settings[key] = Number.isFinite(parsed) ? parsed : 0
+    })
+  }
+
+  return {
+    crateWeight: settings.crate_weight || 2,
+    qantarWeight: settings.qantar_weight || 45
+  }
+}
+
 // Configure auto-updater
 function configureAutoUpdater(): void {
   // Only check for updates in production
@@ -567,20 +593,7 @@ ipcMain.handle('weighbridge:validateCalculations', async () => {
   try {
     const db = getDb()
 
-    const settingsRes = db.exec(`
-      SELECT value FROM settings
-      WHERE key IN ('crate_weight', 'qantar_weight')
-    `)
-
-    const settings = {}
-    if (settingsRes.length > 0) {
-      settingsRes[0].values.forEach((row) => {
-        settings[row[0]] = parseFloat(row[1]) || 0
-      })
-    }
-
-    const crateWeight = settings.crate_weight || 2
-    const qantarWeight = settings.qantar_weight || 45
+    const { crateWeight, qantarWeight } = getWeightSettings(db)
     const tolerance = 0.1
 
     const res = db.exec(`
@@ -610,7 +623,7 @@ ipcMain.handle('weighbridge:validateCalculations', async () => {
 
     const columns = res[0].columns
     const transactions = res[0].values.map((row) => {
-      const obj = {}
+      const obj: Record<string, any> = {}
       columns.forEach((col, i) => (obj[col] = row[i]))
       return obj
     })
@@ -670,20 +683,7 @@ ipcMain.handle('weighbridge:recalculateAll', async () => {
   try {
     const db = getDb()
 
-    const settingsRes = db.exec(`
-      SELECT value FROM settings
-      WHERE key IN ('crate_weight', 'qantar_weight')
-    `)
-
-    const settings = {}
-    if (settingsRes.length > 0) {
-      settingsRes[0].values.forEach((row) => {
-        settings[row[0]] = parseFloat(row[1]) || 0
-      })
-    }
-
-    const crateWeight = settings.crate_weight || 2
-    const qantarWeight = settings.qantar_weight || 45
+    const { crateWeight, qantarWeight } = getWeightSettings(db)
 
     const timestamp = new Date().toISOString().split('T')[0]
     const dbPath = getDbPath()
@@ -700,7 +700,7 @@ ipcMain.handle('weighbridge:recalculateAll', async () => {
 
     const columns = res[0].columns
     const transactions = res[0].values.map((row) => {
-      const obj = {}
+      const obj: Record<string, any> = {}
       columns.forEach((col, i) => (obj[col] = row[i]))
       return obj
     })
@@ -743,20 +743,7 @@ ipcMain.handle('weighbridge:recalculateSingle', async (_event, id: number) => {
   try {
     const db = getDb()
 
-    const settingsRes = db.exec(`
-      SELECT value FROM settings
-      WHERE key IN ('crate_weight', 'qantar_weight')
-    `)
-
-    const settings = {}
-    if (settingsRes.length > 0) {
-      settingsRes[0].values.forEach((row) => {
-        settings[row[0]] = parseFloat(row[1]) || 0
-      })
-    }
-
-    const crateWeight = settings.crate_weight || 2
-    const qantarWeight = settings.qantar_weight || 45
+    const { crateWeight, qantarWeight } = getWeightSettings(db)
 
     const res = db.exec('SELECT * FROM weighbridge WHERE id = ?', [id])
 
@@ -765,7 +752,7 @@ ipcMain.handle('weighbridge:recalculateSingle', async (_event, id: number) => {
     }
 
     const columns = res[0].columns
-    const transaction = {}
+    const transaction: Record<string, any> = {}
     columns.forEach((col, i) => (transaction[col] = res[0].values[0][i]))
 
     const newNetWeight = Math.max(
