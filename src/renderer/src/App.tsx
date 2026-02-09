@@ -36,7 +36,7 @@ import {
   ShoppingCart
 } from 'lucide-react'
 
-function App() {
+function App(): React.ReactElement {
   console.log('App component rendering...')
   const {
     version,
