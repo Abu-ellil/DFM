@@ -16,6 +16,16 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
+        include:
+          - os: windows-latest
+            os_name: Windows
+            artifact_pattern: release/*.exe
+          - os: macos-latest
+            os_name: macOS
+            artifact_pattern: release/*.dmg
+          - os: ubuntu-latest
+            os_name: Linux
+            artifact_pattern: release/*.{AppImage,deb}
 
     steps:
       - name: Checkout
@@ -42,9 +52,13 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: npm run build:linux
 
+      - name: List built files
+        run: ls -R release
+
       - name: Upload artifacts to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: release/**
+          files: ${{ matrix.artifact_pattern }}
+          fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
