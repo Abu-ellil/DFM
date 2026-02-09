@@ -84,7 +84,7 @@ npmRebuild: false
 publish:
   provider: github
   owner: Abu-ellil
-  repo: DatesFactoryManagerV2
+  repo: DFM
   releaseType: release
 # Disable automatic updates to reduce runtime checks
 # electronDownload:
