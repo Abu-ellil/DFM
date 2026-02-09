@@ -12,6 +12,81 @@ export interface FactoryInfo {
 }
 
 /**
+ * Initialize license_keys table if it doesn't exist
+ */
+async function initializeLicenseTable(): Promise<void> {
+  const { createNeonConnection } = await import('./neon.js')
+  const sql = createNeonConnection(process.env.NEON_DATABASE_URL!)
+
+  try {
+    await sql`
+      CREATE TABLE IF NOT EXISTS license_keys (
+        id SERIAL PRIMARY KEY,
+        license_key VARCHAR(20) UNIQUE NOT NULL,
+        machine_id VARCHAR(20) NOT NULL,
+        factory_name VARCHAR(100),
+        duration_code VARCHAR(5),
+        expiry_date TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `
+
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_license_keys_key ON license_keys(license_key)
+    `
+
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_license_keys_machine_id ON license_keys(machine_id)
+    `
+  } catch (error) {
+    console.error('Error initializing license_keys table:', error)
+    throw error
+  }
+}
+
+/**
+ * Register a license key with its machine ID
+ * This should be called when a license key is created in the admin panel
+ */
+export async function registerLicenseKey(params: {
+  licenseKey: string
+  machineId: string
+  factoryName?: string
+  durationCode?: string
+  expiryDate?: Date
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    await initializeLicenseTable()
+
+    const { createNeonConnection } = await import('./neon.js')
+    const sql = createNeonConnection(process.env.NEON_DATABASE_URL!)
+
+    await sql`
+      INSERT INTO license_keys (license_key, machine_id, factory_name, duration_code, expiry_date)
+      VALUES (
+        ${params.licenseKey.toUpperCase()},
+        ${params.machineId},
+        ${params.factoryName || null},
+        ${params.durationCode || null},
+        ${params.expiryDate || null}
+      )
+      ON CONFLICT (license_key) DO UPDATE SET
+        machine_id = EXCLUDED.machine_id,
+        factory_name = EXCLUDED.factory_name,
+        duration_code = EXCLUDED.duration_code,
+        expiry_date = EXCLUDED.expiry_date,
+        updated_at = CURRENT_TIMESTAMP
+    `
+
+    return { success: true }
+  } catch (error: any) {
+    console.error('Error registering license key:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+/**
  * Validate license and return factory information
  * This middleware extracts the license key from the Authorization header
  * and maps it to the factory's Neon database
@@ -38,7 +113,7 @@ export async function validateLicense(request: VercelRequest): Promise<FactoryIn
   // Extract machine ID from license key
   // The license key format is: XXXX-XXXX-XXXX-XXXX-DD
   // The first 4 parts contain the machine ID (encoded)
-  const machineId = extractMachineIdFromLicense(licenseKey)
+  const machineId = await extractMachineIdFromLicense(licenseKey)
 
   // Construct database name and URL
   const databaseName = `dfm-${machineId}`
@@ -50,41 +125,72 @@ export async function validateLicense(request: VercelRequest): Promise<FactoryIn
     databaseName,
     databaseUrl,
     // Factory name is extracted from license (optional)
-    factoryName: extractFactoryName(licenseKey)
+    factoryName: await extractFactoryName(licenseKey)
   }
 }
 
 /**
  * Extract machine ID from license key
- * This reverses the license generation process
+ * This queries the database to get the machine ID for the given license key
  */
-function extractMachineIdFromLicense(licenseKey: string): string {
-  const parts = licenseKey.split('-')
+async function extractMachineIdFromLicense(licenseKey: string): Promise<string> {
+  const { createNeonConnection } = await import('./neon.js')
+  const sql = createNeonConnection(process.env.NEON_DATABASE_URL!)
 
-  // The machine ID is encoded in the first 4 parts
-  // For now, we'll use a simple approach: combine parts and decode
-  // In production, this should match your license.js logic exactly
+  try {
+    const result = await sql`
+      SELECT machine_id, expiry_date
+      FROM license_keys
+      WHERE license_key = ${licenseKey.toUpperCase()}
+      LIMIT 1
+    `
 
-  // Simple hash approach (matches your current license system)
-  const encoded = parts.slice(0, 4).join('')
-  const machineId = Buffer.from(encoded, 'hex').toString('utf-8')
+    if (result.length === 0) {
+      throw new Error('License key not found in database')
+    }
 
-  // Validate machine ID format (should be alphanumeric, uppercase)
-  if (!/^[A-Z0-9]+$/.test(machineId)) {
-    throw new Error('Invalid machine ID in license key')
+    const license = result[0]
+
+    // Check if license has expired
+    if (license.expiry_date) {
+      const expiryDate = new Date(license.expiry_date)
+      const now = new Date()
+      if (now > expiryDate) {
+        throw new Error('License key has expired')
+      }
+    }
+
+    return license.machine_id
+  } catch (error: any) {
+    console.error('Error extracting machine ID from license key:', error)
+    throw error
   }
-
-  return machineId
 }
 
 /**
  * Extract factory name from license key (if present)
  */
-function extractFactoryName(licenseKey: string): string | undefined {
-  // Factory name might be encoded in the license
-  // For now, return undefined
-  // You can enhance this based on your license format
-  return undefined
+async function extractFactoryName(licenseKey: string): Promise<string | undefined> {
+  const { createNeonConnection } = await import('./neon.js')
+  const sql = createNeonConnection(process.env.NEON_DATABASE_URL!)
+
+  try {
+    const result = await sql`
+      SELECT factory_name
+      FROM license_keys
+      WHERE license_key = ${licenseKey.toUpperCase()}
+      LIMIT 1
+    `
+
+    if (result.length === 0) {
+      return undefined
+    }
+
+    return result[0].factory_name || undefined
+  } catch (error) {
+    console.error('Error extracting factory name from license key:', error)
+    return undefined
+  }
 }
 
 /**
@@ -151,22 +257,4 @@ export function withLicenseAuth(
 export function validateLicenseFormat(licenseKey: string): boolean {
   const parts = licenseKey.split('-')
   return parts.length === 5 && parts.every((part) => part.length === 4)
-}
-
-/**
- * Extract machine ID from license key format only
- */
-export function getMachineIdFromLicenseKey(licenseKey: string): string {
-  if (!validateLicenseFormat(licenseKey)) {
-    throw new Error('Invalid license key format')
-  }
-
-  const parts = licenseKey.split('-')
-  const encoded = parts.slice(0, 4).join('')
-
-  try {
-    return Buffer.from(encoded, 'hex').toString('utf-8')
-  } catch (error) {
-    throw new Error('Failed to decode machine ID from license key')
-  }
 }
