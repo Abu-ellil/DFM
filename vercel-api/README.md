@@ -66,6 +66,7 @@ CREATE DATABASE dfm_{machine_id};
 ```
 
 Example:
+
 ```sql
 CREATE DATABASE dfm_E809C7B617ABD1A4;
 CREATE DATABASE dfm_A123B456C789D012;
@@ -110,6 +111,7 @@ const API_BASE = 'https://your-project.vercel.app/api/sync'
 Push local changes to the cloud.
 
 **Request:**
+
 ```json
 {
   "changes": [
@@ -131,6 +133,7 @@ Push local changes to the cloud.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -146,6 +149,7 @@ Push local changes to the cloud.
 Pull remote changes from the cloud.
 
 **Request:**
+
 ```json
 {
   "last_sync_checkpoint": 1706204400000
@@ -153,6 +157,7 @@ Pull remote changes from the cloud.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -160,7 +165,9 @@ Pull remote changes from the cloud.
     {
       "operation": "UPDATE",
       "table": "customers",
-      "data": { /* full record */ },
+      "data": {
+        /* full record */
+      },
       "server_timestamp": 1706204450000
     }
   ],
@@ -173,20 +180,26 @@ Pull remote changes from the cloud.
 Perform bidirectional sync in one request.
 
 **Request:**
+
 ```json
 {
-  "changes": [ /* local changes */ ],
+  "changes": [
+    /* local changes */
+  ],
   "last_sync_checkpoint": 1706204400000
 }
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
   "processed": 10,
   "failed": 0,
-  "remote_changes": [ /* remote changes */ ],
+  "remote_changes": [
+    /* remote changes */
+  ],
   "new_checkpoint": 1706204500000
 }
 ```
@@ -196,11 +209,13 @@ Perform bidirectional sync in one request.
 Get factory database information.
 
 **Request:**
+
 ```json
 {}
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -216,6 +231,7 @@ Get factory database information.
 Health check endpoint.
 
 **Response:**
+
 ```json
 {
   "status": "ok",
@@ -258,6 +274,7 @@ Each factory database has the following tables:
 - `supervisors` - Supervisor records
 
 Each table includes sync columns:
+
 - `_client_id` - Which client made the change
 - `_synced_at` - Timestamp of last sync
 - `_version` - Record version for conflict resolution
@@ -275,6 +292,7 @@ Each table includes sync columns:
 **Error:** "Failed to connect to database"
 
 **Solution:** Check environment variables:
+
 - `NEON_PROJECT_ID` is set correctly
 - `NEON_DATABASE_URL` is valid
 - Database exists in Neon console
@@ -284,6 +302,7 @@ Each table includes sync columns:
 **Error:** Pull returns empty changes array
 
 **Solution:**
+
 - Check if `last_sync_checkpoint` is correct
 - Verify database has records with `_synced_at` > checkpoint
 - Check browser console for errors
@@ -293,6 +312,7 @@ Each table includes sync columns:
 **Error:** "Build failed"
 
 **Solution:** Ensure all dependencies are installed:
+
 ```bash
 cd vercel-api
 npm install
@@ -331,6 +351,7 @@ Go to Neon Console → Your Project → Metrics
 ### When to Upgrade
 
 Upgrade to paid tiers when:
+
 - More than 10 factories (need more databases)
 - High sync frequency (need more execution time)
 - Large data volume (need more storage)
@@ -368,6 +389,7 @@ npm run lint
 ## Support
 
 For issues or questions:
+
 - GitHub: https://github.com/your-repo/issues
 - Email: support@datesfactory.com
 - WhatsApp: +201221089249

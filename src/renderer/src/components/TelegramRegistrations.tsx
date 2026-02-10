@@ -117,7 +117,9 @@ export default function TelegramRegistrations() {
       worker: 'عامل'
     }
     return (
-      <span className={`px-2 py-1 rounded-full text-xs font-bold ${badges[role as keyof typeof badges] || badges.worker}`}>
+      <span
+        className={`px-2 py-1 rounded-full text-xs font-bold ${badges[role as keyof typeof badges] || badges.worker}`}
+      >
         {names[role] || role}
       </span>
     )
@@ -135,7 +137,9 @@ export default function TelegramRegistrations() {
       rejected: 'مرفوض'
     }
     return (
-      <span className={`px-2 py-1 rounded-full text-xs font-bold ${badges[status as keyof typeof badges]}`}>
+      <span
+        className={`px-2 py-1 rounded-full text-xs font-bold ${badges[status as keyof typeof badges]}`}
+      >
         {names[status] || status}
       </span>
     )
@@ -247,7 +251,9 @@ export default function TelegramRegistrations() {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <h3 className="font-bold text-lg text-slate-800 dark:text-white">{reg.full_name}</h3>
+                    <h3 className="font-bold text-lg text-slate-800 dark:text-white">
+                      {reg.full_name}
+                    </h3>
                     {getRoleBadge(reg.requested_role)}
                     {getStatusBadge(reg.status)}
                   </div>

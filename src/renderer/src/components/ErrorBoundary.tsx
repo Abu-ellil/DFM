@@ -29,9 +29,7 @@ export class ErrorBoundary extends Component<Props, State> {
         <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
           <div className="max-w-md w-full bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700">
             <h2 className="text-2xl font-bold text-red-600 mb-4">حدث خطأ</h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              حدث خطأ أثناء تشغيل التطبيق
-            </p>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">حدث خطأ أثناء تشغيل التطبيق</p>
             {this.state.error && (
               <details className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
                 <summary className="cursor-pointer text-sm font-medium">عرض التفاصيل</summary>

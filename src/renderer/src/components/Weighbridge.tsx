@@ -381,7 +381,9 @@ export default function Weighbridge() {
                   <Calculator size={24} className="shrink-0" />
                   <span className="font-bold text-lg">إجمالي المبلغ:</span>
                 </div>
-                <div className="text-2xl font-black break-all">{formatCurrency(newTransaction.total)}</div>
+                <div className="text-2xl font-black break-all">
+                  {formatCurrency(newTransaction.total)}
+                </div>
               </div>
 
               <div>

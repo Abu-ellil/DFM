@@ -23,16 +23,22 @@ export function SettingsSidebar({ activeSection, onSectionChange }: SettingsSide
               onClick={() => onSectionChange(section.id)}
               className={`
                 w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200
-                ${isActive
-                  ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 shadow-sm'
-                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                ${
+                  isActive
+                    ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
                 }
               `}
             >
-              <Icon size={18} className={isActive ? 'text-emerald-600 dark:text-emerald-400' : ''} />
+              <Icon
+                size={18}
+                className={isActive ? 'text-emerald-600 dark:text-emerald-400' : ''}
+              />
               <div className="flex-1 text-right">
                 <div className="text-sm font-bold">{section.label}</div>
-                <div className={`text-xs mt-0.5 ${isActive ? 'text-emerald-600/70 dark:text-emerald-400/70' : 'text-slate-400'}`}>
+                <div
+                  className={`text-xs mt-0.5 ${isActive ? 'text-emerald-600/70 dark:text-emerald-400/70' : 'text-slate-400'}`}
+                >
                   {section.description}
                 </div>
               </div>

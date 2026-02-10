@@ -55,6 +55,7 @@
 ### 1. Desktop App (Electron + React)
 
 #### Backend (Main Process)
+
 ```
 src/main/sync/
 ├── index.ts       ✅ Main sync orchestrator
@@ -83,6 +84,7 @@ src/main/sync/
 ```
 
 #### Frontend (Renderer Process)
+
 ```
 src/renderer/src/
 ├── components/
@@ -109,6 +111,7 @@ src/renderer/src/
 ```
 
 #### Integration Points
+
 ```
 ✅ src/main/db.ts
    └─ Added sync columns (_client_id, _synced_at, _version)
@@ -209,6 +212,7 @@ npm run dev
 ### 2. Verify Sync Status
 
 **In the header (top right):**
+
 - Look for the sync status indicator
 - Should show: "Synced" or "X pending" (X = number of unsynced changes)
 - Click on it to trigger manual sync
@@ -216,17 +220,20 @@ npm run dev
 ### 3. Test Enqueuing
 
 **Create a customer:**
+
 1. Go to "العملاء" (Customers)
 2. Click "إضافة عميل" (Add Customer)
 3. Fill in details and save
 
 **Check if queued:**
+
 - The change is automatically queued in `sync_queue` table
 - Pending count should increase in header
 
 ### 4. Test Sync UI
 
 **Go to Settings (الإعدادات):**
+
 1. Scroll down to "Cloud Sync Settings" card
 2. You should see:
    - Toggle switch for auto-sync
@@ -238,6 +245,7 @@ npm run dev
 ### 5. Test Manual Sync
 
 **Click "Sync Now":**
+
 - Button should show "Syncing..." spinner
 - After completion: "Synced" or error message
 - (Will fail without Neon DB, but shows the flow)
@@ -245,6 +253,7 @@ npm run dev
 ### 6. Check Database
 
 **If you want to verify the queue:**
+
 - Open SQLite browser for `date_factory_v2.db`
 - Query: `SELECT * FROM sync_queue WHERE synced = 0`
 - You should see enqueued changes
@@ -256,6 +265,7 @@ npm run dev
 ### Option A: Deploy Now (Recommended)
 
 #### 1. Set up Neon (5 minutes)
+
 ```bash
 1. Go to https://neon.com
 2. Sign up (free)
@@ -264,6 +274,7 @@ npm run dev
 ```
 
 #### 2. Deploy Vercel API (5 minutes)
+
 ```bash
 cd vercel-api
 npm install
@@ -272,6 +283,7 @@ vercel deploy --prod
 ```
 
 #### 3. Test Production Sync
+
 ```bash
 # Update API URL in desktop app (if needed)
 # Then test sync with real Neon database!
@@ -292,29 +304,34 @@ vercel deploy --prod
 ### Complete Feature Set
 
 **Offline-First Sync:**
+
 - ✅ Works without internet
 - ✅ Changes queue locally
 - ✅ Syncs when connection restored
 - ✅ Conflict resolution (last-write-wins)
 
 **Security:**
+
 - ✅ License-based authentication
 - ✅ Per-factory database isolation
 - ✅ SQL injection prevention
 - ✅ HTTPS only
 
 **Scalability:**
+
 - ✅ 1-10 factories: $0/month
 - ✅ Easy to scale to 50+
 - ✅ Serverless (auto-scales)
 
 **User Experience:**
+
 - ✅ Real-time status indicator
 - ✅ Manual sync button
 - ✅ Conflict log viewer
 - ✅ Auto-sync toggle
 
 **Developer Experience:**
+
 - ✅ Full TypeScript support
 - ✅ Comprehensive documentation
 - ✅ Easy to deploy
@@ -326,11 +343,11 @@ vercel deploy --prod
 
 ### Current Setup (1-10 Factories)
 
-| Component | Service | Tier | Cost |
-|-----------|---------|------|------|
-| Database | Neon | Free × 10 | $0 |
-| API | Vercel | Hobby | $0 |
-| **Total** | | | **$0/month** |
+| Component | Service | Tier      | Cost         |
+| --------- | ------- | --------- | ------------ |
+| Database  | Neon    | Free × 10 | $0           |
+| API       | Vercel  | Hobby     | $0           |
+| **Total** |         |           | **$0/month** |
 
 ### When to Scale
 
@@ -344,12 +361,14 @@ vercel deploy --prod
 ### Created: 40+ Files
 
 **Desktop App:**
+
 - 5 sync service files
 - 4 UI component files
 - 2 type definition files
 - 2 documentation files
 
 **Vercel API:**
+
 - 7 API endpoint files
 - 3 configuration files
 - 3 documentation files
@@ -369,6 +388,7 @@ vercel deploy --prod
 ## 🎓 Key Implementation Details
 
 ### Database Schema
+
 ```sql
 -- All tables now have:
 ALTER TABLE customers ADD COLUMN _client_id TEXT;
@@ -381,6 +401,7 @@ CREATE TABLE _sync_metadata (...);
 ```
 
 ### Sync Queue Table
+
 ```sql
 CREATE TABLE sync_queue (
   id INTEGER PRIMARY KEY,
@@ -396,6 +417,7 @@ CREATE TABLE sync_queue (
 ```
 
 ### License-Based Routing
+
 ```
 License Key: XXXX-XXXX-XXXX-XXXX-4D
     ↓

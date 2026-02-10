@@ -29,10 +29,6 @@ export default function Seasons() {
     is_active: false
   })
 
-  useEffect(() => {
-    fetchSeasons()
-  }, [])
-
   const fetchSeasons = async () => {
     try {
       const result = await window.api.seasons?.getAll()
@@ -44,6 +40,10 @@ export default function Seasons() {
       toast.error('فشل تحميل المواسم')
     }
   }
+
+  useEffect(() => {
+    fetchSeasons()
+  }, [])
 
   const handleCreate = async () => {
     try {

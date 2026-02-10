@@ -12,8 +12,15 @@ interface SalesProductsStore {
   products: SalesProduct[]
   isLoading: boolean
   fetchProducts: () => Promise<void>
-  addProduct: (data: { name: string; unit_type: string; weight_per_unit: number }) => Promise<{ success: boolean; message?: string }>
-  updateProduct: (id: number, data: { name: string; unit_type: string; weight_per_unit: number }) => Promise<{ success: boolean; message?: string }>
+  addProduct: (data: {
+    name: string
+    unit_type: string
+    weight_per_unit: number
+  }) => Promise<{ success: boolean; message?: string }>
+  updateProduct: (
+    id: number,
+    data: { name: string; unit_type: string; weight_per_unit: number }
+  ) => Promise<{ success: boolean; message?: string }>
   deleteProduct: (id: number) => Promise<{ success: boolean; message?: string }>
 }
 

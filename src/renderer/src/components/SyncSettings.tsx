@@ -135,8 +135,8 @@ export function SyncSettings() {
                 {inProgress || status === 'syncing'
                   ? 'Syncing...'
                   : status === 'error'
-                  ? 'Sync failed'
-                  : 'Up to date'}
+                    ? 'Sync failed'
+                    : 'Up to date'}
               </span>
             </div>
             <span
@@ -166,7 +166,9 @@ export function SyncSettings() {
               <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-red-800 dark:text-red-300">Sync Error</p>
-                <p className="text-xs text-red-600 dark:text-red-400 mt-0.5 break-words">{lastError}</p>
+                <p className="text-xs text-red-600 dark:text-red-400 mt-0.5 break-words">
+                  {lastError}
+                </p>
               </div>
             </div>
           )}

@@ -23,7 +23,11 @@ export function SyncStatus() {
     if (inProgress || status === 'syncing') return <Loader2 className="w-4 h-4 animate-spin" />
     if (status === 'error') return <XCircle className="w-4 h-4 text-red-500" />
     if (status === 'success') return <CheckCircle className="w-4 h-4 text-green-500" />
-    return <Cloud className={clsx('w-4 h-4', pendingChanges > 0 ? 'text-yellow-500' : 'text-gray-500')} />
+    return (
+      <Cloud
+        className={clsx('w-4 h-4', pendingChanges > 0 ? 'text-yellow-500' : 'text-gray-500')}
+      />
+    )
   }
 
   const getStatusText = () => {

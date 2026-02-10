@@ -48,10 +48,10 @@ export function MaintenanceSettings({
   const handleRecalculateAllInternal = async () => {
     const confirmed = window.confirm(
       '⚠️ تحذير: سيتم إعادة حساب جميع عمليات الميزان بناءً على الإعدادات الحالية.\n\n' +
-      `وزن الصندوق: ${settings.crate_weight} كجم\n` +
-      `وزن القنطار: ${settings.qantar_weight} كجم\n\n` +
-      'سيتم إنشاء نسخة احتياطية تلقائياً قبل البدء.\n\n' +
-      'هل تريد الاستمرار؟'
+        `وزن الصندوق: ${settings.crate_weight} كجم\n` +
+        `وزن القنطار: ${settings.qantar_weight} كجم\n\n` +
+        'سيتم إنشاء نسخة احتياطية تلقائياً قبل البدء.\n\n' +
+        'هل تريد الاستمرار؟'
     )
 
     if (!confirmed) return
@@ -135,8 +135,12 @@ export function MaintenanceSettings({
                   </div>
                   <div className="text-xs text-slate-500 font-bold">عمليات صحيحة</div>
                 </div>
-                <div className={`p-3 ${validationResults.errors > 0 ? 'bg-rose-50 dark:bg-rose-900/20' : 'bg-emerald-50 dark:bg-emerald-900/20'} rounded-lg text-center`}>
-                  <div className={`text-2xl font-black ${validationResults.errors > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                <div
+                  className={`p-3 ${validationResults.errors > 0 ? 'bg-rose-50 dark:bg-rose-900/20' : 'bg-emerald-50 dark:bg-emerald-900/20'} rounded-lg text-center`}
+                >
+                  <div
+                    className={`text-2xl font-black ${validationResults.errors > 0 ? 'text-rose-600' : 'text-emerald-600'}`}
+                  >
                     {validationResults.errors}
                   </div>
                   <div className="text-xs text-slate-500 font-bold">عمليات بها أخطاء</div>
@@ -194,7 +198,10 @@ export function MaintenanceSettings({
 
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {validationResults.details.map((error: any) => (
-                <div key={error.id} className="p-4 bg-rose-50 dark:bg-rose-900/20 rounded-lg border border-rose-200 dark:border-rose-800">
+                <div
+                  key={error.id}
+                  className="p-4 bg-rose-50 dark:bg-rose-900/20 rounded-lg border border-rose-200 dark:border-rose-800"
+                >
                   <div className="flex justify-between items-start mb-3">
                     <div>
                       <div className="font-bold text-slate-800 dark:text-white">
@@ -219,9 +226,11 @@ export function MaintenanceSettings({
                         <div>
                           <div className="font-bold text-slate-700">خطأ في الوزن الصافي:</div>
                           <div className="text-slate-500">
-                            الحالي: {error.net_weight_error.current} كجم |
-                            المتوقع: {error.net_weight_error.expected} كجم |
-                            الفرق: <span className="font-bold text-rose-600">{error.net_weight_error.diff} كجم</span>
+                            الحالي: {error.net_weight_error.current} كجم | المتوقع:{' '}
+                            {error.net_weight_error.expected} كجم | الفرق:{' '}
+                            <span className="font-bold text-rose-600">
+                              {error.net_weight_error.diff} كجم
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -233,9 +242,11 @@ export function MaintenanceSettings({
                         <div>
                           <div className="font-bold text-slate-700">خطأ في الإجمالي:</div>
                           <div className="text-slate-500">
-                            الحالي: {error.total_error.current} ريال |
-                            المتوقع: {error.total_error.expected} ريال |
-                            الفرق: <span className="font-bold text-rose-600">{error.total_error.diff} ريال</span>
+                            الحالي: {error.total_error.current} ريال | المتوقع:{' '}
+                            {error.total_error.expected} ريال | الفرق:{' '}
+                            <span className="font-bold text-rose-600">
+                              {error.total_error.diff} ريال
+                            </span>
                           </div>
                         </div>
                       </div>

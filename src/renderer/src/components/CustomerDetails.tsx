@@ -79,6 +79,15 @@ export default function CustomerDetails({ customerId, onBack }: CustomerDetailsP
 
   const customer = customers.find((c) => c.id === customerId)
 
+  const fetchAuxData = async () => {
+    const [dt, ct] = await Promise.all([
+      window.api.dateTypes.getAll(),
+      window.api.crateTypes.getAll()
+    ])
+    setDateTypes(dt)
+    setCrateTypes(ct)
+  }
+
   useEffect(() => {
     fetchWeighbridge()
     fetchFinance()
@@ -105,15 +114,6 @@ export default function CustomerDetails({ customerId, onBack }: CustomerDetailsP
       window.api?.removeListener?.('customerAccounts:updated', handleAccountUpdate)
     }
   }, [customerId])
-
-  const fetchAuxData = async () => {
-    const [dt, ct] = await Promise.all([
-      window.api.dateTypes.getAll(),
-      window.api.crateTypes.getAll()
-    ])
-    setDateTypes(dt)
-    setCrateTypes(ct)
-  }
 
   const handleAddFinance = async (e: React.FormEvent) => {
     e.preventDefault()

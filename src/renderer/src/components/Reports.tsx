@@ -142,7 +142,7 @@ export default function Reports() {
 
   const getStats = () => {
     switch (activeReport) {
-      case 'weighbridge':
+      case 'weighbridge': {
         const totalNetWeight = filteredWeighbridge.reduce((acc, curr) => acc + curr.net_weight, 0)
         return [
           {
@@ -158,7 +158,8 @@ export default function Reports() {
             color: 'text-blue-600'
           }
         ]
-      case 'finance':
+      }
+      case 'finance': {
         const totalReceived = filteredFinance.reduce((acc, curr) => acc + curr.amount_received, 0)
         const totalPaid = filteredFinance.reduce((acc, curr) => acc + curr.amount_paid, 0)
         return [
@@ -181,7 +182,8 @@ export default function Reports() {
             color: 'text-blue-600'
           }
         ]
-      case 'crates':
+      }
+      case 'crates': {
         const totalOut = filteredCrates.reduce((acc, curr) => acc + curr.crates_out, 0)
         const totalReturned = filteredCrates.reduce((acc, curr) => acc + curr.crates_returned, 0)
         return [
@@ -204,6 +206,7 @@ export default function Reports() {
             color: 'text-blue-600'
           }
         ]
+      }
     }
   }
 
@@ -364,7 +367,9 @@ export default function Reports() {
                   {stat.value}
                 </p>
               </div>
-              <div className={`p-3 rounded-xl bg-slate-50 dark:bg-slate-800 shrink-0 ${stat.color}`}>
+              <div
+                className={`p-3 rounded-xl bg-slate-50 dark:bg-slate-800 shrink-0 ${stat.color}`}
+              >
                 {stat.icon}
               </div>
             </div>

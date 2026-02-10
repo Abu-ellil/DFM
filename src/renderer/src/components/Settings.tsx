@@ -377,10 +377,10 @@ export default function Settings() {
   const handleRecalculateAll = async () => {
     const confirmed = window.confirm(
       '⚠️ تحذير: سيتم إعادة حساب جميع عمليات الميزان بناءً على الإعدادات الحالية.\n\n' +
-      `وزن الصندوق: ${settings.crate_weight} كجم\n` +
-      `وزن القنطار: ${settings.qantar_weight} كجم\n\n` +
-      'سيتم إنشاء نسخة احتياطية تلقائياً قبل البدء.\n\n' +
-      'هل تريد الاستمرار؟'
+        `وزن الصندوق: ${settings.crate_weight} كجم\n` +
+        `وزن القنطار: ${settings.qantar_weight} كجم\n\n` +
+        'سيتم إنشاء نسخة احتياطية تلقائياً قبل البدء.\n\n' +
+        'هل تريد الاستمرار؟'
     )
 
     if (!confirmed) return
@@ -523,9 +523,7 @@ export default function Settings() {
   return (
     <div className="flex gap-6 h-[calc(100vh-100px)]">
       <SettingsSidebar activeSection={activeSection} onSectionChange={setActiveSection} />
-      <div className="flex-1 overflow-y-auto px-2">
-        {renderSection()}
-      </div>
+      <div className="flex-1 overflow-y-auto px-2">{renderSection()}</div>
     </div>
   )
 }

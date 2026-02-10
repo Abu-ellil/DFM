@@ -394,7 +394,9 @@ export default function Finance() {
         <Card className="bg-blue-50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900/30">
           <div className="flex justify-between items-center gap-4">
             <div className="min-w-0">
-              <p className="text-blue-600 dark:text-blue-400 text-sm font-bold mb-1 truncate">صافي الرصيد</p>
+              <p className="text-blue-600 dark:text-blue-400 text-sm font-bold mb-1 truncate">
+                صافي الرصيد
+              </p>
               <h3 className="text-xl lg:text-2xl font-black text-blue-700 dark:text-blue-300 break-all">
                 {formatCurrency(summary.reduce((acc, curr) => acc + curr.net_balance, 0))}
               </h3>
@@ -530,7 +532,9 @@ export default function Finance() {
                       type="radio"
                       name="payment-method"
                       checked={newTransaction.payment_method === 'نقدا'}
-                      onChange={() => setNewTransaction({ ...newTransaction, payment_method: 'نقدا' })}
+                      onChange={() =>
+                        setNewTransaction({ ...newTransaction, payment_method: 'نقدا' })
+                      }
                     />
                     <span className="text-sm font-bold">نقدا</span>
                   </label>
@@ -539,7 +543,9 @@ export default function Finance() {
                       type="radio"
                       name="payment-method"
                       checked={newTransaction.payment_method === 'تحويل بنكي'}
-                      onChange={() => setNewTransaction({ ...newTransaction, payment_method: 'تحويل بنكي' })}
+                      onChange={() =>
+                        setNewTransaction({ ...newTransaction, payment_method: 'تحويل بنكي' })
+                      }
                     />
                     <span className="text-sm font-bold">تحويل بنكي</span>
                   </label>
@@ -767,7 +773,10 @@ export default function Finance() {
                       name="edit-payment-method"
                       checked={editingTransaction.payment_method === 'تحويل بنكي'}
                       onChange={() =>
-                        setEditingTransaction({ ...editingTransaction, payment_method: 'تحويل بنكي' })
+                        setEditingTransaction({
+                          ...editingTransaction,
+                          payment_method: 'تحويل بنكي'
+                        })
                       }
                     />
                     <span className="text-sm font-bold">تحويل بنكي</span>
@@ -817,8 +826,9 @@ export default function Finance() {
                   ) : (
                     <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-3">
                       <div className="flex items-center gap-3">
-                        {(editReceiptFile || editingTransaction.receipt_file)?.startsWith('data:image') ===
-                        true ? (
+                        {(editReceiptFile || editingTransaction.receipt_file)?.startsWith(
+                          'data:image'
+                        ) === true ? (
                           <img
                             src={editReceiptFile || editingTransaction.receipt_file}
                             alt="إيصال"
@@ -837,7 +847,9 @@ export default function Finance() {
                             type="text"
                             placeholder="رقم مرجعي (اختياري)"
                             className="mt-1 w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-sm"
-                            value={editReceiptReference || editingTransaction.receipt_reference || ''}
+                            value={
+                              editReceiptReference || editingTransaction.receipt_reference || ''
+                            }
                             onChange={(e) => setEditReceiptReference(e.target.value)}
                           />
                         </div>

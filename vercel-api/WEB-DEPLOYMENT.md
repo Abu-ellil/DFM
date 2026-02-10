@@ -283,7 +283,6 @@ Next.js automatically optimizes images. Use the `Image` component:
 
 ```tsx
 import Image from 'next/image'
-
 ;<Image src="/logo.png" alt="Logo" width={200} height={200} />
 ```
 

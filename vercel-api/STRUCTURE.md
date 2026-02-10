@@ -57,13 +57,16 @@ DFM-V2/
 ### Phase 1: Backend Infrastructure (Desktop App)
 
 #### 1. Database Schema (`src/main/db.ts`)
+
 - ✅ Added `_client_id`, `_synced_at`, `_version` columns to 15 tables
 - ✅ Created `_conflict_log` table for tracking conflicts
 - ✅ Created `_sync_metadata` table for sync state
 - ✅ Added indexes for sync performance
 
 #### 2. Sync Queue Manager (`src/main/sync/queue.ts`)
+
 **Functions:**
+
 - `enqueueChange()` - Track database changes
 - `getPendingChanges()` - Retrieve unsynced changes
 - `markAsSynced()` - Mark successful syncs
@@ -73,7 +76,9 @@ DFM-V2/
 - `updateLastSyncCheckpoint()` - Update checkpoint
 
 #### 3. Sync API Client (`src/main/sync/api.ts`)
+
 **Functions:**
+
 - `pushChanges()` - Upload changes to cloud
 - `pullChanges()` - Download changes from cloud
 - `fullSync()` - Bidirectional sync
@@ -81,14 +86,18 @@ DFM-V2/
 - `checkApiHealth()` - Health check
 
 #### 4. Conflict Resolution (`src/main/sync/conflict.ts`)
+
 **Functions:**
+
 - `applyRemoteChanges()` - Apply server changes locally
 - `getRecentConflicts()` - View conflict log
 - `clearOldConflicts()` - Cleanup old conflicts
 - Last-write-wins strategy with timestamps
 
 #### 5. Main Sync Orchestrator (`src/main/sync/index.ts`)
+
 **Functions:**
+
 - `performSync()` - Full sync workflow (push + pull)
 - `startAutoSync()` - Enable automatic sync (30s interval)
 - `stopAutoSync()` - Disable auto-sync
@@ -97,14 +106,18 @@ DFM-V2/
 - Offline detection and retry logic
 
 #### 6. CRUD Integration (`src/main/index.ts`)
+
 Modified all IPC handlers to enqueue changes:
+
 - ✅ Customers (create, update, delete)
 - ✅ Weighbridge (create)
 - ✅ Crates (create, update, delete)
 - ✅ Finance (create, update, delete)
 
 #### 7. Sync IPC Handlers (`src/main/index.ts`)
+
 Added sync-specific handlers:
+
 - `sync:getStatus` - Get sync status
 - `sync:manualSync` - Trigger manual sync
 - `sync:enable` - Enable auto-sync
@@ -115,7 +128,9 @@ Added sync-specific handlers:
 ### Phase 2: UI Components (Desktop App)
 
 #### 1. Zustand Store (`src/renderer/src/store/useSyncStore.ts`)
+
 **State:**
+
 - `enabled` - Auto-sync enabled
 - `inProgress` - Currently syncing
 - `pendingChanges` - Number of unsynced changes
@@ -124,13 +139,16 @@ Added sync-specific handlers:
 - `status` - Current sync status
 
 **Actions:**
+
 - `fetchStatus()` - Refresh status from backend
 - `manualSync()` - Trigger manual sync
 - `enableSync()` - Enable auto-sync
 - `disableSync()` - Disable auto-sync
 
 #### 2. Sync Status Indicator (`src/renderer/src/components/SyncStatus.tsx`)
+
 Compact header component showing:
+
 - 🔄 Syncing animation
 - ✅ Success state
 - ❌ Error state
@@ -140,7 +158,9 @@ Compact header component showing:
 - Auto-refresh every 10s
 
 #### 3. Sync Settings Panel (`src/renderer/src/components/SyncSettings.tsx`)
+
 Complete sync management:
+
 - Toggle switch for auto-sync
 - Real-time status display
 - Manual sync button
@@ -151,30 +171,37 @@ Complete sync management:
 - Info box explaining features
 
 #### 4. App Integration (`src/renderer/src/App.tsx`)
+
 - ✅ Added `SyncStatus` to header
 - ✅ Visible on all screens
 
 #### 5. Settings Integration (`src/renderer/src/components/Settings.tsx`)
+
 - ✅ Added `SyncSettings` card
 - ✅ Placed between Database Sync and License Management
 
 ### Phase 3: Vercel API (Cloud Backend)
 
 #### 1. License Validation (`vercel-api/api/sync/lib/auth.ts`)
+
 **Functions:**
+
 - `validateLicense()` - Validate license from Authorization header
 - `extractMachineIdFromLicense()` - Decode machine ID from license
 - `constructNeonUrl()` - Build database connection string
 - `withLicenseAuth()` - Middleware for protecting endpoints
 
 **Features:**
+
 - License format validation
 - Machine ID extraction
 - Factory-to-database mapping
 - Error handling
 
 #### 2. Neon Database Client (`vercel-api/api/sync/lib/neon.ts`)
+
 **Functions:**
+
 - `createNeonConnection()` - Create database connection
 - `validateTable()` - Whitelist validation
 - `applyChange()` - Apply INSERT/UPDATE/DELETE
@@ -182,6 +209,7 @@ Complete sync management:
 - `initializeFactorySchema()` - Create tables if needed
 
 **Features:**
+
 - Table whitelist (SQL injection prevention)
 - Sync column management
 - Version tracking
@@ -190,27 +218,32 @@ Complete sync management:
 #### 3. API Endpoints
 
 **POST /api/sync/push**
+
 - Receives changes from desktop app
 - Applies them to Neon database
 - Returns remote changes (if any)
 - Returns new checkpoint
 
 **POST /api/sync/pull**
+
 - Returns changes since checkpoint
 - Filters by table
 - Returns new checkpoint
 
 **POST /api/sync/full**
+
 - Combines push + pull
 - Atomic bidirectional sync
 - Returns sync results
 
 **POST /api/sync/database-info**
+
 - Returns factory database info
 - Shows connection status
 - Shows last sync timestamp
 
 **GET /api/sync/status**
+
 - Health check endpoint
 - Returns API version
 - No authentication required
@@ -218,6 +251,7 @@ Complete sync management:
 ## 🔧 Configuration Files
 
 ### Vercel Configuration (`vercel-api/vercel.json`)
+
 ```json
 {
   "buildCommand": "echo 'No build needed'",
@@ -228,6 +262,7 @@ Complete sync management:
 ```
 
 ### Package.json (`vercel-api/package.json`)
+
 ```json
 {
   "dependencies": {
@@ -240,6 +275,7 @@ Complete sync management:
 ```
 
 ### Environment Variables (`.env`)
+
 ```bash
 NEON_PROJECT_ID=your-project-id
 NEON_DATABASE_URL=your-connection-string
@@ -309,21 +345,25 @@ Vercel API
 ## 🔒 Security Features
 
 ### Authentication
+
 - ✅ Bearer token authentication (license key)
 - ✅ License validation on every request
 - ✅ Machine ID verification
 
 ### Data Isolation
+
 - ✅ Physical database separation per factory
 - ✅ Server-side factory ID scoping
 - ✅ Table whitelist (SQL injection prevention)
 
 ### Encryption
+
 - ✅ HTTPS/TLS 1.3 enforced
 - ✅ Neon encryption at rest
 - ✅ No sensitive data in logs
 
 ### Access Control
+
 - ✅ Factory A cannot access Factory B's data
 - ✅ License expiry checking
 - ✅ Input validation and sanitization
@@ -331,17 +371,20 @@ Vercel API
 ## 📈 Performance
 
 ### Optimization
+
 - Queue-based batching (100 changes per batch)
 - Incremental sync (only changes since checkpoint)
 - Offline support (changes queue locally)
 - Automatic retry on failure
 
 ### Scalability
+
 - **1-10 factories:** Free tiers ($0/month)
 - **11-50 factories:** ~$50/month
 - **50+ factories:** Scale as needed
 
 ### Monitoring
+
 - Function execution time
 - Database query performance
 - Error rate tracking
@@ -375,6 +418,7 @@ To complete the setup:
 ## 📞 Support
 
 For help:
+
 - 📧 Email: support@datesfactory.com
 - 📱 WhatsApp: +201221089249
 - 📖 Docs: See README.md and DEPLOYMENT.md

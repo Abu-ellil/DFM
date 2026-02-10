@@ -56,10 +56,13 @@ export default function Customers({ onViewCustomer }: CustomersProps) {
   }, [])
 
   // Create a map of customer_id -> account summary for quick lookup
-  const summaryMap = summaries.reduce((acc, summary) => {
-    acc[summary.customer_id] = summary
-    return acc
-  }, {} as Record<number, any>)
+  const summaryMap = summaries.reduce(
+    (acc, summary) => {
+      acc[summary.customer_id] = summary
+      return acc
+    },
+    {} as Record<number, any>
+  )
 
   const filteredCustomers = customers.filter(
     (c) => c.name.includes(searchTerm) || (c.phone && c.phone.includes(searchTerm))
@@ -163,7 +166,9 @@ export default function Customers({ onViewCustomer }: CustomersProps) {
         return (
           <div className="flex items-center gap-1">
             <Package size={14} />
-            <span className={`font-bold ${crateBalance > 0 ? 'text-orange-600' : 'text-slate-500'}`}>
+            <span
+              className={`font-bold ${crateBalance > 0 ? 'text-orange-600' : 'text-slate-500'}`}
+            >
               {crateBalance > 0 ? `${crateBalance} صندوق` : '-'}
             </span>
           </div>

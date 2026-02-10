@@ -99,7 +99,8 @@ export function Table<T>({
                 key={idx}
                 className={cn(
                   'px-6 py-3 text-sm font-bold text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700',
-                  col.sortable && 'cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors select-none',
+                  col.sortable &&
+                    'cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors select-none',
                   col.className
                 )}
                 onClick={() => sortable && col.sortable && handleSort(col)}

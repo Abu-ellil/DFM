@@ -67,10 +67,7 @@ export function DataTypesSettings({
                 className="inline-flex items-center gap-1 px-2 py-1 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-md text-xs font-bold border border-amber-100 dark:border-amber-800"
               >
                 {type.name}
-                <button
-                  onClick={() => onDeleteDateType(type.id)}
-                  className="hover:text-red-500"
-                >
+                <button onClick={() => onDeleteDateType(type.id)} className="hover:text-red-500">
                   <Trash2 size={12} />
                 </button>
               </span>
@@ -112,10 +109,7 @@ export function DataTypesSettings({
                 className="inline-flex items-center gap-1 px-2 py-1 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-md text-xs font-bold border border-slate-200 dark:border-slate-700"
               >
                 {type.name} ({type.weight}كجم)
-                <button
-                  onClick={() => onDeleteCrateType(type.id)}
-                  className="hover:text-red-500"
-                >
+                <button onClick={() => onDeleteCrateType(type.id)} className="hover:text-red-500">
                   <Trash2 size={12} />
                 </button>
               </span>
@@ -148,10 +142,7 @@ export function DataTypesSettings({
                 className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-md text-xs font-bold border border-emerald-100 dark:border-emerald-800"
               >
                 {sv.name}
-                <button
-                  onClick={() => onDeleteSupervisor(sv.id)}
-                  className="hover:text-red-500"
-                >
+                <button onClick={() => onDeleteSupervisor(sv.id)} className="hover:text-red-500">
                   <Trash2 size={12} />
                 </button>
               </span>

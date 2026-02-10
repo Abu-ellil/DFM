@@ -5,7 +5,7 @@ export class Validator {
   // Validate phone number (supports various formats)
   static validatePhone(phone: string): boolean {
     // Remove spaces, dashes, and parentheses
-    const cleaned = phone.replace(/[\s\-\(\)]/g, '')
+    const cleaned = phone.replace(/[\s\-()]/g, '')
 
     // Check if it matches common phone patterns
     // Supports: +966..., 05..., 5..., etc.

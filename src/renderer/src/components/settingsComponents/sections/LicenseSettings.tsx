@@ -55,9 +55,7 @@ export function LicenseSettings({
         {!licenseInfo?.activated && (
           <div className="space-y-3 pt-2">
             <div>
-              <label className="block text-xs font-bold text-slate-500 mb-1">
-                مفتاح الترخيص
-              </label>
+              <label className="block text-xs font-bold text-slate-500 mb-1">مفتاح الترخيص</label>
               <input
                 type="text"
                 placeholder="XXXX-XXXX-XXXX-XXXX"
@@ -78,8 +76,7 @@ export function LicenseSettings({
         <div className="flex items-start gap-2 text-xs text-slate-400 bg-blue-50 dark:bg-blue-900/20 p-2 rounded">
           <Info size={14} className="shrink-0 text-blue-500" />
           <p>
-            لتفعيل البرنامج، يرجى تزويد الدعم الفني بمعرف الجهاز الخاص بك للحصول على مفتاح
-            التفعيل.
+            لتفعيل البرنامج، يرجى تزويد الدعم الفني بمعرف الجهاز الخاص بك للحصول على مفتاح التفعيل.
           </p>
         </div>
       </div>
