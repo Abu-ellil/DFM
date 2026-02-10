@@ -1,51 +1,21 @@
 /**
- * Database Seed Script for Dates Factory Manager
+ * Database Seed Script for Dates Factory Manager (Postgres Version)
  *
  * This script populates the database with sample/demo data for testing purposes.
  * It includes realistic data for customers, transactions, and other entities.
  *
  * Usage:
- *   node seed-database.js
+ *   node seed-database-postgres.js
  *
  * Environment variables required:
  *   NEON_DATABASE_URL - Your Neon database connection string
  */
 
-import { neon } from '@neondatabase/serverless'
+import postgres from '@vercel/postgres'
 import dotenv from 'dotenv'
 
 // Load environment variables from .env file
 dotenv.config()
-
-// Create database connection
-const sql = neon(process.env.NEON_DATABASE_URL, {
-  fetchOptions: {
-    cache: 'no-store'
-  }
-})
-
-// Helper function to execute raw SQL
-// We'll use a different approach - direct SQL execution
-async function executeRawSQL(sqlString) {
-  // Split the SQL string into individual statements
-  const statements = sqlString
-    .split(';')
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0)
-
-  const results = []
-  for (const statement of statements) {
-    try {
-      // Use the sql template literal function
-      // We need to pass the SQL as a tagged template literal
-      const result = await sql`${statement}`
-      results.push(result)
-    } catch (error) {
-      throw error
-    }
-  }
-  return results
-}
 
 // Sample data for customers (Arabic names and companies)
 const sampleCustomers = [
@@ -127,10 +97,17 @@ async function seedDatabase() {
     process.exit(1)
   }
 
+  // Create database connection using @vercel/postgres
+  const sql = postgres(databaseUrl, {
+    fetchOptions: {
+      cache: 'no-store'
+    }
+  })
+
   try {
     // Initialize database schema
     console.log('📊 Initializing database schema...')
-    await initializeSchema()
+    await initializeSchema(sql)
     console.log('✅ Schema initialized successfully\n')
 
     // Seed data
@@ -198,7 +175,7 @@ async function seedDatabase() {
   }
 }
 
-async function initializeSchema() {
+async function initializeSchema(sql) {
   const tables = [
     // Customers table
     `CREATE TABLE IF NOT EXISTS customers (
@@ -330,12 +307,12 @@ async function initializeSchema() {
     )`
   ]
 
+  // Create tables using @vercel/postgres
   for (const createTableSQL of tables) {
     try {
-      // Use the sql template literal function directly
-      await sql`${createTableSQL}`
+      await sql.unsafe(createTableSQL)
     } catch (error) {
-      console.error('Failed to create table:', error)
+      console.error('Failed to create table:', error.message)
     }
   }
 
@@ -352,10 +329,9 @@ async function initializeSchema() {
 
   for (const createIndexSQL of indexes) {
     try {
-      // Use the sql template literal function directly
-      await sql`${createIndexSQL}`
+      await sql.unsafe(createIndexSQL)
     } catch (error) {
-      // Ignore index creation errors
+      // Ignore index creation errors (might already exist)
     }
   }
 }
@@ -369,7 +345,9 @@ async function seedCustomers(sql) {
         VALUES (${customer.name}, ${customer.type}, ${customer.phone}, 'SEED-001', ${Date.now()})
         RETURNING id
       `
-      ids.push(result[0].id)
+      if (result && result.length > 0) {
+        ids.push(result[0].id)
+      }
     } catch (error) {
       // Skip duplicate entries
     }
@@ -386,7 +364,9 @@ async function seedDateTypes(sql) {
         VALUES (${dateType.name}, 'SEED-001', ${Date.now()})
         RETURNING id
       `
-      ids.push(result[0].id)
+      if (result && result.length > 0) {
+        ids.push(result[0].id)
+      }
     } catch (error) {
       // Skip duplicate entries
     }
@@ -403,7 +383,9 @@ async function seedCrateTypes(sql) {
         VALUES (${crateType.name}, ${crateType.weight}, ${crateType.is_default}, 'SEED-001', ${Date.now()})
         RETURNING id
       `
-      ids.push(result[0].id)
+      if (result && result.length > 0) {
+        ids.push(result[0].id)
+      }
     } catch (error) {
       // Skip duplicate entries
     }
@@ -420,7 +402,9 @@ async function seedSupervisors(sql) {
         VALUES (${supervisor.name}, 'SEED-001', ${Date.now()})
         RETURNING id
       `
-      ids.push(result[0].id)
+      if (result && result.length > 0) {
+        ids.push(result[0].id)
+      }
     } catch (error) {
       // Skip duplicate entries
     }

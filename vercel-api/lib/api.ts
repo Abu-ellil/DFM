@@ -91,14 +91,62 @@ export const adminApi = {
    * Get all users
    */
   getUsers: async () => {
-    return apiRequest<{ users: any[] }>('/api/admin/users')
+    return apiRequest<{ users: User[] }>('/api/admin/users')
+  },
+
+  /**
+   * Create user
+   */
+  createUser: async (data: Partial<User>) => {
+    return apiRequest<User>('/api/admin/users', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  },
+
+  /**
+   * Update user
+   */
+  updateUser: async (id: number, data: Partial<User>) => {
+    return apiRequest<User>(`/api/admin/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    })
+  },
+
+  /**
+   * Delete user
+   */
+  deleteUser: async (id: number) => {
+    return apiRequest<{ success: boolean }>(`/api/admin/users/${id}`, {
+      method: 'DELETE'
+    })
   },
 
   /**
    * Get all licenses
    */
   getLicenses: async () => {
-    return apiRequest<{ licenses: any[] }>('/api/admin/licenses')
+    return apiRequest<{ licenses: License[] }>('/api/admin/licenses')
+  },
+
+  /**
+   * Generate license
+   */
+  generateLicense: async (data: Partial<License>) => {
+    return apiRequest<License>('/api/admin/licenses', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  },
+
+  /**
+   * Revoke license
+   */
+  revokeLicense: async (id: number) => {
+    return apiRequest<{ success: boolean }>(`/api/admin/licenses/${id}`, {
+      method: 'DELETE'
+    })
   }
 }
 
@@ -269,89 +317,23 @@ export const financeApi = {
 }
 
 /**
- * Admin API
- */
-export const adminApi = {
-  /**
-   * Get all users
-   */
-  getUsers: async () => {
-    return apiRequest<User[]>('/api/admin/users')
-  },
-
-  /**
-   * Create user
-   */
-  createUser: async (data: Partial<User>) => {
-    return apiRequest<User>('/api/admin/users', {
-      method: 'POST',
-      body: JSON.stringify(data)
-    })
-  },
-
-  /**
-   * Update user
-   */
-  updateUser: async (id: number, data: Partial<User>) => {
-    return apiRequest<User>(`/api/admin/users/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data)
-    })
-  },
-
-  /**
-   * Delete user
-   */
-  deleteUser: async (id: number) => {
-    return apiRequest<{ success: boolean }>(`/api/admin/users/${id}`, {
-      method: 'DELETE'
-    })
-  },
-
-  /**
-   * Get all licenses
-   */
-  getLicenses: async () => {
-    return apiRequest<License[]>('/api/admin/licenses')
-  },
-
-  /**
-   * Generate license
-   */
-  generateLicense: async (data: Partial<License>) => {
-    return apiRequest<License>('/api/admin/licenses', {
-      method: 'POST',
-      body: JSON.stringify(data)
-    })
-  },
-
-  /**
-   * Revoke license
-   */
-  revokeLicense: async (id: number) => {
-    return apiRequest<{ success: boolean }>(`/api/admin/licenses/${id}`, {
-      method: 'DELETE'
-    })
-  }
-}
-
-/**
  * Type definitions
  */
 export interface User {
-  id: number
-  username: string
-  email: string
-  role: 'admin' | 'manager' | 'user'
-  factoryName?: string
-  createdAt: string
+  phone: string
+  full_name?: string
+  factory_name?: string
+  machine_id?: string
+  role: 'admin' | 'manager' | 'user' | 'worker'
+  createdAt?: string
 }
 
 export interface RegisterData {
-  username: string
-  email: string
+  phone: string
   password: string
-  factoryName: string
+  machine_id: string
+  full_name?: string
+  factory_name?: string
 }
 
 export interface SyncStatus {

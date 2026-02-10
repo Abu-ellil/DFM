@@ -13,6 +13,8 @@ import {
   LogOut
 } from 'lucide-react'
 
+import { dashboardApi } from '../../lib/api'
+
 export default function DashboardPage() {
   const router = useRouter()
   const [stats, setStats] = useState({
@@ -52,20 +54,19 @@ export default function DashboardPage() {
   const fetchDashboardData = async () => {
     setLoading(true)
     try {
-      // In production, this would fetch from your API
-      // For now, using mock data as placeholders
-      setTimeout(() => {
-        setStats({
-          customers: 0,
-          weighbridge: 0,
-          crates: 0,
-          finance: 0
-        })
-        setLastSync(new Date())
-        setLoading(false)
-      }, 1000)
+      const res = await dashboardApi.getStats()
+      if (res.stats) {
+        setStats(res.stats)
+      }
+      setLastSync(new Date())
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error)
+      if (error instanceof Error && error.message.includes('Unauthorized')) {
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        router.push('/login')
+      }
+    } finally {
       setLoading(false)
     }
   }

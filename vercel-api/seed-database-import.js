@@ -1,51 +1,22 @@
 /**
- * Database Seed Script for Dates Factory Manager
+ * Database Seed Script for Dates Factory Manager (Import Version)
  *
  * This script populates the database with sample/demo data for testing purposes.
- * It includes realistic data for customers, transactions, and other entities.
+ * It imports the initializeFactorySchema function from src/lib/neon.ts
  *
  * Usage:
- *   node seed-database.js
+ *   node seed-database-import.js
  *
  * Environment variables required:
  *   NEON_DATABASE_URL - Your Neon database connection string
  */
 
 import { neon } from '@neondatabase/serverless'
+import { initializeFactorySchema } from './src/lib/neon.ts'
 import dotenv from 'dotenv'
 
 // Load environment variables from .env file
 dotenv.config()
-
-// Create database connection
-const sql = neon(process.env.NEON_DATABASE_URL, {
-  fetchOptions: {
-    cache: 'no-store'
-  }
-})
-
-// Helper function to execute raw SQL
-// We'll use a different approach - direct SQL execution
-async function executeRawSQL(sqlString) {
-  // Split the SQL string into individual statements
-  const statements = sqlString
-    .split(';')
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0)
-
-  const results = []
-  for (const statement of statements) {
-    try {
-      // Use the sql template literal function
-      // We need to pass the SQL as a tagged template literal
-      const result = await sql`${statement}`
-      results.push(result)
-    } catch (error) {
-      throw error
-    }
-  }
-  return results
-}
 
 // Sample data for customers (Arabic names and companies)
 const sampleCustomers = [
@@ -127,10 +98,17 @@ async function seedDatabase() {
     process.exit(1)
   }
 
+  // Create database connection
+  const sql = neon(databaseUrl, {
+    fetchOptions: {
+      cache: 'no-store'
+    }
+  })
+
   try {
-    // Initialize database schema
+    // Initialize database schema using imported function
     console.log('📊 Initializing database schema...')
-    await initializeSchema()
+    await initializeFactorySchema(sql)
     console.log('✅ Schema initialized successfully\n')
 
     // Seed data
@@ -198,168 +176,6 @@ async function seedDatabase() {
   }
 }
 
-async function initializeSchema() {
-  const tables = [
-    // Customers table
-    `CREATE TABLE IF NOT EXISTS customers (
-      id SERIAL PRIMARY KEY,
-      name TEXT NOT NULL UNIQUE,
-      type TEXT NOT NULL,
-      phone TEXT,
-      _client_id TEXT,
-      _synced_at INTEGER,
-      _version INTEGER DEFAULT 1,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )`,
-
-    // Date Types table
-    `CREATE TABLE IF NOT EXISTS date_types (
-      id SERIAL PRIMARY KEY,
-      name TEXT NOT NULL UNIQUE,
-      _client_id TEXT,
-      _synced_at INTEGER,
-      _version INTEGER DEFAULT 1,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )`,
-
-    // Crate Types table
-    `CREATE TABLE IF NOT EXISTS crate_types (
-      id SERIAL PRIMARY KEY,
-      name TEXT NOT NULL UNIQUE,
-      weight REAL NOT NULL,
-      is_default INTEGER DEFAULT 0,
-      _client_id TEXT,
-      _synced_at INTEGER,
-      _version INTEGER DEFAULT 1,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )`,
-
-    // Daily prices table
-    `CREATE TABLE IF NOT EXISTS daily_prices (
-      id SERIAL PRIMARY KEY,
-      date DATE NOT NULL UNIQUE,
-      price_per_qantar REAL NOT NULL,
-      qantar_weight REAL DEFAULT 100.0,
-      _client_id TEXT,
-      _synced_at INTEGER,
-      _version INTEGER DEFAULT 1,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )`,
-
-    // Weighbridge table
-    `CREATE TABLE IF NOT EXISTS weighbridge (
-      id SERIAL PRIMARY KEY,
-      date DATE NOT NULL,
-      customer_id INTEGER NOT NULL REFERENCES customers(id),
-      date_type_id INTEGER REFERENCES date_types(id),
-      gross_weight REAL DEFAULT 0,
-      net_weight REAL NOT NULL,
-      price_per_qantar REAL NOT NULL,
-      total REAL NOT NULL,
-      crates_count INTEGER DEFAULT 0,
-      commission REAL DEFAULT 0,
-      notes TEXT,
-      _client_id TEXT,
-      _synced_at INTEGER,
-      _version INTEGER DEFAULT 1,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )`,
-
-    // Crates table
-    `CREATE TABLE IF NOT EXISTS crates (
-      id SERIAL PRIMARY KEY,
-      date DATE NOT NULL,
-      customer_id INTEGER NOT NULL REFERENCES customers(id),
-      crate_type_id INTEGER REFERENCES crate_types(id),
-      crates_out INTEGER DEFAULT 0,
-      crates_returned INTEGER DEFAULT 0,
-      handler TEXT,
-      notes TEXT,
-      _client_id TEXT,
-      _synced_at INTEGER,
-      _version INTEGER DEFAULT 1,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )`,
-
-    // Finance table
-    `CREATE TABLE IF NOT EXISTS finance (
-      id SERIAL PRIMARY KEY,
-      date DATE NOT NULL,
-      customer_id INTEGER NOT NULL REFERENCES customers(id),
-      transaction_type TEXT NOT NULL,
-      amount_paid REAL DEFAULT 0,
-      amount_received REAL DEFAULT 0,
-      notes TEXT,
-      _client_id TEXT,
-      _synced_at INTEGER,
-      _version INTEGER DEFAULT 1,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )`,
-
-    // Supervisors table
-    `CREATE TABLE IF NOT EXISTS supervisors (
-      id SERIAL PRIMARY KEY,
-      name TEXT NOT NULL UNIQUE,
-      _client_id TEXT,
-      _synced_at INTEGER,
-      _version INTEGER DEFAULT 1,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )`,
-
-    // Auth users table
-    `CREATE TABLE IF NOT EXISTS auth_users (
-      id SERIAL PRIMARY KEY,
-      phone VARCHAR(20) UNIQUE NOT NULL,
-      password VARCHAR(255) NOT NULL,
-      machine_id VARCHAR(50) NOT NULL,
-      full_name VARCHAR(100),
-      factory_name VARCHAR(100),
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )`,
-
-    // License keys table
-    `CREATE TABLE IF NOT EXISTS license_keys (
-      id SERIAL PRIMARY KEY,
-      license_key VARCHAR(20) UNIQUE NOT NULL,
-      machine_id VARCHAR(20) NOT NULL,
-      factory_name VARCHAR(100),
-      duration_code VARCHAR(5),
-      expiry_date TIMESTAMP,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )`
-  ]
-
-  for (const createTableSQL of tables) {
-    try {
-      // Use the sql template literal function directly
-      await sql`${createTableSQL}`
-    } catch (error) {
-      console.error('Failed to create table:', error)
-    }
-  }
-
-  // Create indexes
-  const indexes = [
-    'CREATE INDEX IF NOT EXISTS idx_weighbridge_customer_date ON weighbridge(customer_id, date)',
-    'CREATE INDEX IF NOT EXISTS idx_finance_customer_date ON finance(customer_id, date)',
-    'CREATE INDEX IF NOT EXISTS idx_crates_customer_date ON crates(customer_id, date)',
-    'CREATE INDEX IF NOT EXISTS idx_customers_name ON customers(name)',
-    'CREATE INDEX IF NOT EXISTS idx_auth_users_phone ON auth_users(phone)',
-    'CREATE INDEX IF NOT EXISTS idx_license_keys_key ON license_keys(license_key)',
-    'CREATE INDEX IF NOT EXISTS idx_license_keys_machine_id ON license_keys(machine_id)'
-  ]
-
-  for (const createIndexSQL of indexes) {
-    try {
-      // Use the sql template literal function directly
-      await sql`${createIndexSQL}`
-    } catch (error) {
-      // Ignore index creation errors
-    }
-  }
-}
-
 async function seedCustomers(sql) {
   const ids = []
   for (const customer of sampleCustomers) {
@@ -369,7 +185,9 @@ async function seedCustomers(sql) {
         VALUES (${customer.name}, ${customer.type}, ${customer.phone}, 'SEED-001', ${Date.now()})
         RETURNING id
       `
-      ids.push(result[0].id)
+      if (result && result.length > 0) {
+        ids.push(result[0].id)
+      }
     } catch (error) {
       // Skip duplicate entries
     }
@@ -386,7 +204,9 @@ async function seedDateTypes(sql) {
         VALUES (${dateType.name}, 'SEED-001', ${Date.now()})
         RETURNING id
       `
-      ids.push(result[0].id)
+      if (result && result.length > 0) {
+        ids.push(result[0].id)
+      }
     } catch (error) {
       // Skip duplicate entries
     }
@@ -403,7 +223,9 @@ async function seedCrateTypes(sql) {
         VALUES (${crateType.name}, ${crateType.weight}, ${crateType.is_default}, 'SEED-001', ${Date.now()})
         RETURNING id
       `
-      ids.push(result[0].id)
+      if (result && result.length > 0) {
+        ids.push(result[0].id)
+      }
     } catch (error) {
       // Skip duplicate entries
     }
@@ -420,7 +242,9 @@ async function seedSupervisors(sql) {
         VALUES (${supervisor.name}, 'SEED-001', ${Date.now()})
         RETURNING id
       `
-      ids.push(result[0].id)
+      if (result && result.length > 0) {
+        ids.push(result[0].id)
+      }
     } catch (error) {
       // Skip duplicate entries
     }
