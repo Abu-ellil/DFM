@@ -29,7 +29,7 @@ export default function Dashboard() {
     fetchWeighbridge()
     fetchCrates()
     fetchFinance()
-  }, [])
+  }, [fetchCustomers, fetchWeighbridge, fetchCrates, fetchFinance])
 
   // Helper to calculate trend percentage
   const calculateTrend = (current: number, previous: number) => {

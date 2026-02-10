@@ -284,7 +284,7 @@ export async function getRecentConflicts(limit: number = 50) {
         if (typeof value === 'string') {
           try {
             value = JSON.parse(value)
-          } catch (e) {
+          } catch {
             // Keep as string if not valid JSON
           }
         }
