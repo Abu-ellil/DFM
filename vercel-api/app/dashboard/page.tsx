@@ -1,9 +1,20 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Users, Truck, Package, DollarSign, TrendingUp, Calendar, RefreshCw } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import {
+  Users,
+  Truck,
+  Package,
+  DollarSign,
+  TrendingUp,
+  Calendar,
+  RefreshCw,
+  LogOut
+} from 'lucide-react'
 
 export default function DashboardPage() {
+  const router = useRouter()
   const [stats, setStats] = useState({
     customers: 0,
     weighbridge: 0,
@@ -12,18 +23,43 @@ export default function DashboardPage() {
   })
   const [loading, setLoading] = useState(true)
   const [lastSync, setLastSync] = useState<Date | null>(null)
+  const [authorized, setAuthorized] = useState(false)
+  const [user, setUser] = useState<any>(null)
+
+  useEffect(() => {
+    checkAuth()
+  }, [])
+
+  const checkAuth = () => {
+    const token = localStorage.getItem('token')
+    const userJson = localStorage.getItem('user')
+
+    if (!token || !userJson) {
+      router.push('/login')
+      return
+    }
+
+    try {
+      const userData = JSON.parse(userJson)
+      setUser(userData)
+      setAuthorized(true)
+      fetchDashboardData()
+    } catch (e) {
+      router.push('/login')
+    }
+  }
 
   const fetchDashboardData = async () => {
     setLoading(true)
     try {
       // In production, this would fetch from your API
-      // For now, using mock data
+      // For now, using mock data as placeholders
       setTimeout(() => {
         setStats({
-          customers: 156,
-          weighbridge: 1243,
-          crates: 8923,
-          finance: 45678
+          customers: 0,
+          weighbridge: 0,
+          crates: 0,
+          finance: 0
         })
         setLastSync(new Date())
         setLoading(false)
@@ -34,25 +70,47 @@ export default function DashboardPage() {
     }
   }
 
-  useEffect(() => {
-    fetchDashboardData()
-  }, [])
+  if (!authorized) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center">
+          <RefreshCw className="w-8 h-8 animate-spin mx-auto text-orange-600 mb-4" />
+          <p className="text-gray-600">جاري التحقق من الصلاحيات...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" dir="rtl">
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">لوحة التحكم</h1>
-          <p className="text-gray-600 mt-1">نظرة عامة على عمليات المصنع</p>
+          <p className="text-gray-600 mt-1">
+            أهلاً بك، {user?.full_name} ({user?.factory_name || 'بدون مصنع'})
+          </p>
         </div>
-        <button
-          onClick={fetchDashboardData}
-          disabled={loading}
-          className="flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-        >
-          <RefreshCw className={`w-4 h-4 ml-2 ${loading ? 'animate-spin' : ''}`} />
-          تحديث
-        </button>
+        <div className="flex items-center space-x-4 space-x-reverse">
+          <button
+            onClick={fetchDashboardData}
+            disabled={loading}
+            className="flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 ml-2 ${loading ? 'animate-spin' : ''}`} />
+            تحديث
+          </button>
+          <button
+            onClick={() => {
+              localStorage.removeItem('token')
+              localStorage.removeItem('user')
+              router.push('/login')
+            }}
+            className="flex items-center px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700"
+          >
+            <LogOut className="w-4 h-4 ml-2" />
+            تسجيل الخروج
+          </button>
+        </div>
       </div>
 
       {/* Stats Grid */}
@@ -102,62 +160,18 @@ export default function DashboardPage() {
           href="/dashboard/weighbridge"
         />
         <QuickActionCard
-          title="نظرة عامة مالية"
-          description="عرض المعاملات المالية"
-          icon={<DollarSign className="w-8 h-8" />}
-          href="/dashboard/finance"
+          title="إدارة الصناديق"
+          description="تتبع الصناديق والأنواع"
+          icon={<Package className="w-8 h-8" />}
+          href="/dashboard/crates"
         />
       </div>
 
-      {/* Recent Activity */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-          <TrendingUp className="w-5 h-5 ml-2" />
-          النشاط الأخير
-        </h2>
-        <div className="space-y-4">
-          {loading ? (
-            <div className="text-center py-8 text-gray-500">جاري تحميل النشاط الأخير...</div>
-          ) : (
-            <>
-              <ActivityItem
-                type="customer"
-                message="تم إضافة عميل جديد: شركة ABC للتجارة"
-                time="منذ ساعتين"
-              />
-              <ActivityItem
-                type="weighbridge"
-                message="تم إنشاء سجل ميزان رقم 1243"
-                time="منذ 3 ساعات"
-              />
-              <ActivityItem type="finance" message="تم استلام دفعة: 5,000 ريال" time="منذ 5 ساعات" />
-              <ActivityItem type="crate" message="تم تسليم صناديق: 250 وحدة" time="منذ 6 ساعات" />
-            </>
-          )}
+      {lastSync && (
+        <div className="text-left text-sm text-gray-500">
+          آخر تحديث: {lastSync.toLocaleTimeString()}
         </div>
-      </div>
-
-      {/* Sync Status */}
-      <div className="mt-8 bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-          <Calendar className="w-5 h-5 ml-2" />
-          حالة المزامنة
-        </h2>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <div className="w-3 h-3 bg-green-500 rounded-full ml-3"></div>
-            <div>
-              <p className="text-sm font-medium text-gray-900">آخر مزامنة</p>
-              <p className="text-sm text-gray-600">
-                {lastSync ? lastSync.toLocaleString('ar-EG') : 'أبداً'}
-              </p>
-            </div>
-          </div>
-          <button className="px-4 py-2 bg-primary-600 text-white rounded-md text-sm font-medium hover:bg-primary-700">
-            زامن الآن
-          </button>
-        </div>
-      </div>
+      )}
     </div>
   )
 }
@@ -171,11 +185,11 @@ function StatCard({
 }: {
   icon: React.ReactNode
   title: string
-  value: number
+  value: string | number
   color: string
   loading: boolean
 }) {
-  const colorClasses = {
+  const colors: Record<string, string> = {
     blue: 'bg-blue-50 text-blue-600',
     green: 'bg-green-50 text-green-600',
     orange: 'bg-orange-50 text-orange-600',
@@ -183,16 +197,16 @@ function StatCard({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <p className="text-3xl font-bold text-gray-900 mt-2">
-            {loading ? '...' : value.toLocaleString()}
-          </p>
-        </div>
-        <div className={`p-3 rounded-full ${colorClasses[color as keyof typeof colorClasses]}`}>
-          {icon}
+    <div className="bg-white p-6 rounded-lg shadow-md">
+      <div className="flex items-center">
+        <div className={`p-3 rounded-md ${colors[color] || colors.blue}`}>{icon}</div>
+        <div className="mr-4">
+          <p className="text-sm font-medium text-gray-500 uppercase">{title}</p>
+          {loading ? (
+            <div className="h-8 w-16 bg-gray-200 animate-pulse rounded mt-1"></div>
+          ) : (
+            <p className="text-2xl font-bold text-gray-900">{value}</p>
+          )}
         </div>
       </div>
     </div>
@@ -213,34 +227,11 @@ function QuickActionCard({
   return (
     <a
       href={href}
-      className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer block"
+      className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow border border-gray-100 group"
     >
-      <div className="flex items-start">
-        <div className="text-primary-600 mr-4">{icon}</div>
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">{title}</h3>
-          <p className="text-sm text-gray-600">{description}</p>
-        </div>
-      </div>
+      <div className="text-orange-600 mb-4 group-hover:scale-110 transition-transform">{icon}</div>
+      <h3 className="text-xl font-bold text-gray-900 mb-2">{title}</h3>
+      <p className="text-gray-600">{description}</p>
     </a>
-  )
-}
-
-function ActivityItem({ type, message, time }: { type: string; message: string; time: string }) {
-  const typeIcons = {
-    customer: <Users className="w-4 h-4 text-blue-600" />,
-    weighbridge: <Truck className="w-4 h-4 text-green-600" />,
-    finance: <DollarSign className="w-4 h-4 text-purple-600" />,
-    crate: <Package className="w-4 h-4 text-orange-600" />
-  }
-
-  return (
-    <div className="flex items-start py-3 border-b border-gray-100 last:border-0">
-      <div className="mr-3 mt-0.5">{typeIcons[type as keyof typeof typeIcons]}</div>
-      <div className="flex-1">
-        <p className="text-sm text-gray-900">{message}</p>
-        <p className="text-xs text-gray-500 mt-1">{time}</p>
-      </div>
-    </div>
   )
 }

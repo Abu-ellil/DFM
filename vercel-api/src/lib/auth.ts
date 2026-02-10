@@ -1,4 +1,75 @@
 import type { VercelRequest } from '@vercel/node'
+import * as jose from 'jose'
+
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev-only'
+const secret = new TextEncoder().encode(JWT_SECRET)
+
+/**
+ * User roles
+ */
+export type UserRole = 'admin' | 'user' | 'manager' | 'worker'
+
+/**
+ * JWT Payload
+ */
+export interface JWTPayload {
+  phone: string
+  role: UserRole
+  full_name?: string
+}
+
+/**
+ * Sign a JWT token
+ */
+export async function signJWT(payload: JWTPayload): Promise<string> {
+  return await new jose.SignJWT({ ...payload })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('24h')
+    .sign(secret)
+}
+
+/**
+ * Verify a JWT token
+ */
+export async function verifyJWT(token: string): Promise<JWTPayload | null> {
+  try {
+    const { payload } = await jose.jwtVerify(token, secret)
+    return payload as unknown as JWTPayload
+  } catch (error) {
+    return null
+  }
+}
+
+/**
+ * Authenticate request and return user payload
+ */
+export async function authenticateRequest(request: VercelRequest): Promise<JWTPayload> {
+  const authHeader = request.headers['authorization']
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    throw new Error('Unauthorized: Missing or invalid token')
+  }
+
+  const token = authHeader.split(' ')[1]
+  const payload = await verifyJWT(token)
+
+  if (!payload) {
+    throw new Error('Unauthorized: Invalid or expired token')
+  }
+
+  return payload
+}
+
+/**
+ * Authenticate admin request
+ */
+export async function authenticateAdmin(request: VercelRequest): Promise<JWTPayload> {
+  const payload = await authenticateRequest(request)
+  if (payload.role !== 'admin') {
+    throw new Error('Forbidden: Admin access required')
+  }
+  return payload
+}
 
 /**
  * License validation result

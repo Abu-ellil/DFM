@@ -50,7 +50,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
 
     try {
       const users = await sql`
-        SELECT phone, password, machine_id, full_name, factory_name
+        SELECT phone, password, machine_id, full_name, factory_name, role
         FROM auth_users
         WHERE phone = ${body.phone}
       `
@@ -73,14 +73,23 @@ export default async function handler(request: VercelRequest, response: VercelRe
         })
       }
 
+      const { signJWT } = await import('../../src/lib/auth.js')
+      const token = await signJWT({
+        phone: user.phone,
+        role: user.role || 'user',
+        full_name: user.full_name
+      })
+
       return response.status(200).json({
         success: true,
         message: 'Login successful',
+        token,
         user: {
           phone: user.phone,
           full_name: user.full_name,
           factory_name: user.factory_name,
-          machine_id: user.machine_id
+          machine_id: user.machine_id,
+          role: user.role || 'user'
         }
       })
     } catch (dbError: any) {

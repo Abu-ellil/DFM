@@ -50,10 +50,10 @@ export const authApi = {
   /**
    * Login user
    */
-  login: async (username: string, password: string) => {
+  login: async (phone: string, password: string) => {
     return apiRequest<{ token: string; user: User }>('/api/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ username, password })
+      body: JSON.stringify({ phone, password })
     })
   },
 
@@ -73,6 +73,32 @@ export const authApi = {
   logout: async () => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
+  }
+}
+
+/**
+ * Admin API
+ */
+export const adminApi = {
+  /**
+   * Get system stats
+   */
+  getStats: async () => {
+    return apiRequest<{ stats: any }>('/api/admin/stats')
+  },
+
+  /**
+   * Get all users
+   */
+  getUsers: async () => {
+    return apiRequest<{ users: any[] }>('/api/admin/users')
+  },
+
+  /**
+   * Get all licenses
+   */
+  getLicenses: async () => {
+    return apiRequest<{ licenses: any[] }>('/api/admin/licenses')
   }
 }
 

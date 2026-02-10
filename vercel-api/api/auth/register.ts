@@ -86,19 +86,34 @@ export default async function handler(request: VercelRequest, response: VercelRe
         })
       }
 
+      // Check if this is the first user to make them admin
+      const userCount = await sql`
+        SELECT count(*) as count FROM auth_users
+      `
+      const role = parseInt(userCount[0].count) === 0 ? 'admin' : 'user'
+
       await sql`
-          INSERT INTO auth_users (phone, password, machine_id, full_name, factory_name)
-          VALUES (${phone}, ${hashedPassword}, ${machine_id}, ${body.full_name || null}, ${body.factory_name || null})
+          INSERT INTO auth_users (phone, password, machine_id, full_name, factory_name, role)
+          VALUES (${phone}, ${hashedPassword}, ${machine_id}, ${body.full_name || null}, ${body.factory_name || null}, ${role})
         `
+
+      const { signJWT } = await import('../../src/lib/auth.js')
+      const token = await signJWT({
+        phone: phone,
+        role: role as any,
+        full_name: body.full_name
+      })
 
       return response.status(201).json({
         success: true,
         message: 'Account created successfully',
+        token,
         user: {
           phone: phone,
           full_name: body.full_name,
           factory_name: body.factory_name,
-          machine_id: machine_id
+          machine_id: machine_id,
+          role: role
         }
       })
     } catch (dbError: any) {
@@ -111,6 +126,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
             machine_id VARCHAR(50) NOT NULL,
             full_name VARCHAR(100),
             factory_name VARCHAR(100),
+            role VARCHAR(20) DEFAULT 'user',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
         `
@@ -123,19 +139,31 @@ export default async function handler(request: VercelRequest, response: VercelRe
           CREATE INDEX IF NOT EXISTS idx_auth_users_machine_id ON auth_users(machine_id)
         `
 
+        // First user ever registered in the new table is admin
+        const role = 'admin'
+
         await sql`
-          INSERT INTO auth_users (phone, password, machine_id, full_name, factory_name)
-          VALUES (${body.phone}, ${hashedPassword}, ${body.machine_id}, ${body.full_name || null}, ${body.factory_name || null})
+          INSERT INTO auth_users (phone, password, machine_id, full_name, factory_name, role)
+          VALUES (${body.phone}, ${hashedPassword}, ${body.machine_id}, ${body.full_name || null}, ${body.factory_name || null}, ${role})
         `
+
+        const { signJWT } = await import('../../src/lib/auth.js')
+        const token = await signJWT({
+          phone: body.phone,
+          role: role as any,
+          full_name: body.full_name
+        })
 
         return response.status(201).json({
           success: true,
           message: 'Account created successfully',
+          token,
           user: {
             phone: body.phone,
             full_name: body.full_name,
             factory_name: body.factory_name,
-            machine_id: body.machine_id
+            machine_id: body.machine_id,
+            role: role
           }
         })
       }

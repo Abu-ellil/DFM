@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   Users,
   Key,
@@ -10,10 +11,13 @@ import {
   RefreshCw,
   Plus,
   Edit,
-  Trash2
+  Trash2,
+  LogOut
 } from 'lucide-react'
+import { adminApi } from '../../lib/api'
 
 export default function AdminPage() {
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState('overview')
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -21,29 +25,77 @@ export default function AdminPage() {
     totalFactories: 0,
     systemHealth: 'good'
   })
+  const [users, setUsers] = useState<any[]>([])
+  const [licenses, setLicenses] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [authorized, setAuthorized] = useState(false)
 
   useEffect(() => {
-    fetchAdminData()
+    checkAuth()
   }, [])
+
+  const checkAuth = () => {
+    const token = localStorage.getItem('token')
+    const userJson = localStorage.getItem('user')
+    
+    if (!token || !userJson) {
+      router.push('/login')
+      return
+    }
+
+    try {
+      const user = JSON.parse(userJson)
+      if (user.role !== 'admin') {
+        router.push('/dashboard')
+        return
+      }
+      setAuthorized(true)
+      fetchAdminData()
+    } catch (e) {
+      router.push('/login')
+    }
+  }
 
   const fetchAdminData = async () => {
     setLoading(true)
     try {
-      // Mock data - in production, fetch from API
-      setTimeout(() => {
-        setStats({
-          totalUsers: 45,
-          activeLicenses: 38,
-          totalFactories: 12,
-          systemHealth: 'good'
-        })
-        setLoading(false)
-      }, 1000)
+      const statsRes = await adminApi.getStats()
+      setStats(statsRes.stats)
+
+      if (activeTab === 'users') {
+        const usersRes = await adminApi.getUsers()
+        setUsers(usersRes.users)
+      } else if (activeTab === 'licenses') {
+        const licensesRes = await adminApi.getLicenses()
+        setLicenses(licensesRes.licenses)
+      }
     } catch (error) {
       console.error('Failed to fetch admin data:', error)
+      if (error instanceof Error && error.message.includes('Unauthorized')) {
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        router.push('/login')
+      }
+    } finally {
       setLoading(false)
     }
+  }
+
+  useEffect(() => {
+    if (authorized) {
+      fetchAdminData()
+    }
+  }, [activeTab, authorized])
+
+  if (!authorized) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center">
+          <RefreshCw className="w-8 h-8 animate-spin mx-auto text-orange-600 mb-4" />
+          <p className="text-gray-600">Verifying authorization...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -53,14 +105,27 @@ export default function AdminPage() {
           <h1 className="text-3xl font-bold text-gray-900">Admin Panel</h1>
           <p className="text-gray-600 mt-1">System management and configuration</p>
         </div>
-        <button
-          onClick={fetchAdminData}
-          disabled={loading}
-          className="flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-        >
-          <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
-        </button>
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={fetchAdminData}
+            disabled={loading}
+            className="flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
+          <button
+            onClick={() => {
+              localStorage.removeItem('token')
+              localStorage.removeItem('user')
+              router.push('/login')
+            }}
+            className="flex items-center px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Logout
+          </button>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -101,8 +166,8 @@ export default function AdminPage() {
 
       {/* Tab Content */}
       {activeTab === 'overview' && <OverviewTab stats={stats} loading={loading} />}
-      {activeTab === 'users' && <UsersTab />}
-      {activeTab === 'licenses' && <LicensesTab />}
+      {activeTab === 'users' && <UsersTab users={users} loading={loading} />}
+      {activeTab === 'licenses' && <LicensesTab licenses={licenses} loading={loading} />}
       {activeTab === 'factories' && <FactoriesTab />}
       {activeTab === 'settings' && <SettingsTab />}
     </div>
@@ -125,7 +190,7 @@ function TabButton({
       onClick={onClick}
       className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm ${
         active
-          ? 'border-primary-500 text-primary-600'
+          ? 'border-orange-500 text-orange-600'
           : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
       }`}
     >
@@ -182,12 +247,12 @@ function OverviewTab({ stats, loading }: { stats: any; loading: boolean }) {
   )
 }
 
-function UsersTab() {
+function UsersTab({ users, loading }: { users: any[]; loading: boolean }) {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold text-gray-900">User Management</h2>
-        <button className="flex items-center px-4 py-2 bg-primary-600 text-white rounded-md text-sm font-medium hover:bg-primary-700">
+        <button className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-md text-sm font-medium hover:bg-orange-700">
           <Plus className="w-4 h-4 mr-2" />
           Add User
         </button>
@@ -212,9 +277,29 @@ function UsersTab() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            <TableRow name="John Doe" email="john@example.com" role="Admin" status="active" />
-            <TableRow name="Jane Smith" email="jane@example.com" role="Manager" status="active" />
-            <TableRow name="Bob Johnson" email="bob@example.com" role="User" status="active" />
+            {loading ? (
+              <tr>
+                <td colSpan={4} className="px-6 py-4 text-center text-gray-500 italic">
+                  Loading users...
+                </td>
+              </tr>
+            ) : users.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="px-6 py-4 text-center text-gray-500 italic">
+                  No users found
+                </td>
+              </tr>
+            ) : (
+              users.map((user) => (
+                <TableRow
+                  key={user.id}
+                  name={user.full_name || 'No Name'}
+                  email={user.phone}
+                  role={user.role}
+                  status={user.status}
+                />
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -222,12 +307,12 @@ function UsersTab() {
   )
 }
 
-function LicensesTab() {
+function LicensesTab({ licenses, loading }: { licenses: any[]; loading: boolean }) {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold text-gray-900">License Management</h2>
-        <button className="flex items-center px-4 py-2 bg-primary-600 text-white rounded-md text-sm font-medium hover:bg-primary-700">
+        <button className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-md text-sm font-medium hover:bg-orange-700">
           <Plus className="w-4 h-4 mr-2" />
           Generate License
         </button>
@@ -255,18 +340,29 @@ function LicensesTab() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            <LicenseRow
-              key="ABCD-1234-EFGH-5678-4D"
-              factory="Factory A"
-              status="active"
-              expiry="2024-12-31"
-            />
-            <LicenseRow
-              key="XYZW-9876-IJKL-5432-1Y"
-              factory="Factory B"
-              status="active"
-              expiry="2025-06-30"
-            />
+            {loading ? (
+              <tr>
+                <td colSpan={5} className="px-6 py-4 text-center text-gray-500 italic">
+                  Loading licenses...
+                </td>
+              </tr>
+            ) : licenses.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="px-6 py-4 text-center text-gray-500 italic">
+                  No licenses found
+                </td>
+              </tr>
+            ) : (
+              licenses.map((license) => (
+                <LicenseRow
+                  key={license.license_key}
+                  licenseKey={license.license_key}
+                  factory={license.factory_name || 'N/A'}
+                  status={license.status}
+                  expiry={license.expiry_date ? new Date(license.expiry_date).toLocaleDateString() : 'Never'}
+                />
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -279,7 +375,7 @@ function FactoriesTab() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold text-gray-900">Factory Management</h2>
-        <button className="flex items-center px-4 py-2 bg-primary-600 text-white rounded-md text-sm font-medium hover:bg-primary-700">
+        <button className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-md text-sm font-medium hover:bg-orange-700">
           <Plus className="w-4 h-4 mr-2" />
           Add Factory
         </button>
@@ -392,14 +488,18 @@ function TableRow({
           <div className="text-sm text-gray-500">{email}</div>
         </div>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{role}</td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}`}>
+          {role}
+        </span>
+      </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
           {status}
         </span>
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-        <button className="text-primary-600 hover:text-primary-900 mr-3">
+        <button className="text-orange-600 hover:text-orange-900 mr-3">
           <Edit className="w-4 h-4 inline" />
         </button>
         <button className="text-red-600 hover:text-red-900">
@@ -411,28 +511,28 @@ function TableRow({
 }
 
 function LicenseRow({
-  key,
+  licenseKey,
   factory,
   status,
   expiry
 }: {
-  key: string
+  licenseKey: string
   factory: string
   status: string
   expiry: string
 }) {
   return (
     <tr>
-      <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{key}</td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{licenseKey}</td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{factory}</td>
       <td className="px-6 py-4 whitespace-nowrap">
-        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
           {status}
         </span>
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{expiry}</td>
       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-        <button className="text-primary-600 hover:text-primary-900 mr-3">
+        <button className="text-orange-600 hover:text-orange-900 mr-3">
           <Edit className="w-4 h-4 inline" />
         </button>
         <button className="text-red-600 hover:text-red-900">
