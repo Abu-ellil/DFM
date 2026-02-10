@@ -36,6 +36,36 @@ const UPDATE_CHECK_INTERVAL = 4 * 60 * 60 * 1000 // Check every 4 hours
 let updateCheckTimer: NodeJS.Timeout | null = null
 
 let mainWindow: BrowserWindow | null = null
+let windowShowTimeout: NodeJS.Timeout | null = null
+
+// Logging utility for production debugging
+function logToConsole(message: string, data?: any): void {
+  const timestamp = new Date().toISOString()
+  const logMessage = `[${timestamp}] ${message}`
+  console.log(logMessage)
+  if (data) {
+    if (data instanceof Error) {
+      console.log(`${data.name}: ${data.message}\n${data.stack}`)
+    } else {
+      try {
+        console.log(JSON.stringify(data, null, 2))
+      } catch {
+        console.log(data)
+      }
+    }
+  }
+}
+
+// Global error handling
+process.on('uncaughtException', (error) => {
+  logToConsole('UNCAUGHT EXCEPTION:', error)
+  dialog.showErrorBox('حدث خطأ غير متوقع', error.message || 'خطأ غير معروف في العملية الرئيسية')
+})
+
+process.on('unhandledRejection', (reason, promise) => {
+  logToConsole('UNHANDLED REJECTION:', reason)
+  logToConsole('PROMISE:', promise)
+})
 
 type WeightSettings = { crateWeight: number; qantarWeight: number }
 
@@ -205,63 +235,105 @@ function stopPeriodicUpdateChecks(): void {
 }
 
 async function createWindow(): Promise<void> {
+  logToConsole('Creating window...')
   // Configure auto-updater
-  configureAutoUpdater()
+  try {
+    configureAutoUpdater()
+  } catch (error) {
+    logToConsole('Auto-updater configuration failed:', error)
+  }
 
   // Initialize Database
   try {
     await initializeDatabase()
-    console.log('Database initialized successfully')
-  } catch (error) {
-    console.error('Failed to initialize database:', error)
+    logToConsole('Database initialized successfully')
+  } catch (error: any) {
+    logToConsole('Failed to initialize database:', error)
     dialog.showErrorBox(
       'خطأ في قاعدة البيانات',
-      'فشل في تهيئة قاعدة البيانات. يرجى إعادة تشغيل التطبيق.'
+      `فشل في تهيئة قاعدة البيانات: ${error.message || 'خطأ غير معروف'}`
     )
-    throw error
+    // We continue anyway to at least show the window if possible
   }
 
   // Start Telegram bot if configured
   try {
     const botResult = await startTelegramBot()
     if (botResult.success) {
-      console.log('Telegram bot started:', botResult.message)
+      logToConsole('Telegram bot started:', botResult.message)
     } else {
-      console.log('Telegram bot not started:', botResult.message)
+      logToConsole('Telegram bot not started:', botResult.message)
     }
   } catch (error) {
-    console.error('Failed to start Telegram bot:', error)
+    logToConsole('Failed to start Telegram bot:', error)
   }
 
-  // Create the browser window.
-  mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
-    show: false,
-    autoHideMenuBar: true,
-    icon: icon,
-    webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
-      sandbox: false,
-      plugins: true
+  try {
+    // Create the browser window.
+    mainWindow = new BrowserWindow({
+      width: 1200,
+      height: 800,
+      show: false,
+      autoHideMenuBar: true,
+      icon: icon,
+      webPreferences: {
+        preload: join(__dirname, '../preload/index.js'),
+        sandbox: false,
+        plugins: true
+      }
+    })
+
+    // Set up timeout to show window even if ready-to-show doesn't fire
+    windowShowTimeout = setTimeout(() => {
+      logToConsole('Window show timeout triggered, showing window anyway')
+      if (mainWindow && !mainWindow.isVisible()) {
+        mainWindow.show()
+      }
+    }, 10000) // 10 second timeout
+
+    mainWindow.on('ready-to-show', () => {
+      logToConsole('Window ready-to-show event fired')
+      if (windowShowTimeout) {
+        clearTimeout(windowShowTimeout)
+        windowShowTimeout = null
+      }
+      if (mainWindow) {
+        mainWindow.show()
+      }
+    })
+
+    mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+      logToConsole('Renderer failed to load:', { errorCode, errorDescription })
+      // Don't show error box for every failure (some are benign), but log it
+    })
+
+    mainWindow.webContents.setWindowOpenHandler((details) => {
+      shell.openExternal(details.url)
+      return { action: 'deny' }
+    })
+
+    // HMR for renderer base on electron-vite cli.
+    // Load the remote URL for development or the local html file for production.
+    if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+      logToConsole('Loading dev URL:', process.env['ELECTRON_RENDERER_URL'])
+      mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
+    } else {
+      const indexPath = join(__dirname, '../renderer/index.html')
+      logToConsole('Loading production file:', indexPath)
+      mainWindow.loadFile(indexPath).catch((err) => {
+        logToConsole('Failed to load file:', err)
+        dialog.showErrorBox(
+          'خطأ في تحميل التطبيق',
+          `فشل في تحميل ملفات واجهة المستخدم: ${err.message}`
+        )
+      })
     }
-  })
-
-  mainWindow.on('ready-to-show', () => {
-    if (mainWindow) mainWindow.show()
-  })
-
-  mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url)
-    return { action: 'deny' }
-  })
-
-  // HMR for renderer base on electron-vite cli.
-  // Load the remote URL for development or the local html file for production.
-  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
-  } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+  } catch (error: any) {
+    logToConsole('Error during window creation:', error)
+    dialog.showErrorBox(
+      'خطأ في إنشاء النافذة',
+      error.message || 'حدث خطأ غير متوقع أثناء تشغيل التطبيق'
+    )
   }
 }
 
@@ -2852,37 +2924,70 @@ ipcMain.handle('autoUpdater:getVersion', () => {
 })
 
 // This method will be called when Electron has finished
-app.whenReady().then(() => {
-  // Set app user model id for windows
-  electronApp.setAppUserModelId('com.electron')
+// initialization and is ready to create browser windows.
+// Some APIs can only be used after this event occurs.
+app
+  .whenReady()
+  .then(async () => {
+    logToConsole('App is ready')
+    try {
+      // Set app user model id for windows
+      electronApp.setAppUserModelId('com.electron')
 
-  // Default open or close DevTools by F12 in development
-  app.on('browser-window-created', (_, window) => {
-    optimizer.watchWindowShortcuts(window)
+      // Default open or close DevTools by F12 in development
+      // and ignore CommandOrControl + R in production.
+      // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
+      app.on('browser-window-created', (_, window) => {
+        optimizer.watchWindowShortcuts(window)
+      })
+
+      await createWindow()
+
+      // Start periodic update checks
+      try {
+        startPeriodicUpdateChecks()
+      } catch (updateError) {
+        logToConsole('Failed to start periodic update checks:', updateError)
+      }
+
+      app.on('activate', function () {
+        // On macOS it's common to re-create a window in the app when the
+        // dock icon is clicked and there are no other windows open.
+        if (BrowserWindow.getAllWindows().length === 0) createWindow()
+      })
+    } catch (error: any) {
+      logToConsole('Error during app initialization:', error)
+      dialog.showErrorBox(
+        'خطأ في بدء التطبيق',
+        error.message || 'حدث خطأ غير متوقع أثناء بدء التطبيق'
+      )
+    }
   })
-
-  createWindow()
-
-  // Start periodic update checks
-  startPeriodicUpdateChecks()
-
-  app.on('activate', function () {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+  .catch((error) => {
+    logToConsole('Failed to initialize app:', error)
+    dialog.showErrorBox('خطأ في تهيئة التطبيق', error.message || 'فشل في بدء التطبيق')
   })
-})
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
+  logToConsole('All windows closed')
   if (process.platform !== 'darwin') {
     app.quit()
   }
 })
 
 app.on('before-quit', () => {
+  logToConsole('App is quitting...')
   // Stop periodic update checks before quitting
   stopPeriodicUpdateChecks()
+
+  // Clear window show timeout
+  if (windowShowTimeout) {
+    clearTimeout(windowShowTimeout)
+    windowShowTimeout = null
+  }
 })
 
 // In this file you can include the rest of your app's specific main process
