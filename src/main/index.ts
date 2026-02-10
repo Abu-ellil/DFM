@@ -302,7 +302,7 @@ async function createWindow(): Promise<void> {
       }
     })
 
-    mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+    mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription) => {
       logToConsole('Renderer failed to load:', { errorCode, errorDescription })
       // Don't show error box for every failure (some are benign), but log it
     })
