@@ -35,6 +35,7 @@ export default function Customers({ onViewCustomer }: CustomersProps) {
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null)
   const [newCustomer, setNewCustomer] = useState({ name: '', type: 'مورد', phone: '' })
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchCustomers()
     fetchAllSummaries()
@@ -53,7 +54,7 @@ export default function Customers({ onViewCustomer }: CustomersProps) {
       window.api?.removeListener?.('customerAccounts:updated', handleAccountUpdate)
       window.api?.removeListener?.('customerAccounts:bulkUpdate', handleAccountUpdate)
     }
-  }, [])
+  }, [fetchAllSummaries])
 
   // Create a map of customer_id -> account summary for quick lookup
   const summaryMap = summaries.reduce(

@@ -210,7 +210,7 @@ async function checkInternetConnection(): Promise<boolean> {
 
     clearTimeout(timeoutId)
     return true
-  } catch (error) {
+  } catch {
     return false
   }
 }

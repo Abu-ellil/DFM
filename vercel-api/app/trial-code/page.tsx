@@ -9,38 +9,49 @@ export default function TrialCodePage() {
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState('')
   const [expiryDate, setExpiryDate] = useState<Date | null>(null)
+  const [machineId, setMachineId] = useState('')
+  const [factoryName, setFactoryName] = useState('')
 
   const generateTrialCode = async () => {
+    // Validate machine ID
+    if (!machineId || machineId.length !== 16) {
+      setError('Please enter a valid 16-character Machine ID')
+      return
+    }
+
     setLoading(true)
     setError('')
     setTrialCode('')
     setExpiryDate(null)
 
     try {
-      // In production, this would call your API
-      // For now, generating a trial code locally
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dfm-mu.vercel.app'
 
-      // Generate a trial code (4 days)
-      const code = generateLicenseCode()
-      setTrialCode(code)
-      setExpiryDate(new Date(Date.now() + 4 * 24 * 60 * 60 * 1000)) // 4 days from now
-    } catch (err) {
-      setError('Failed to generate trial code. Please try again.')
+      const response = await fetch(`${API_BASE_URL}/api/license/generate-trial`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          machineId: machineId.trim().toUpperCase(),
+          factoryName: factoryName.trim() || undefined,
+          durationCode: '4D'
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate trial code')
+      }
+
+      setTrialCode(data.licenseKey)
+      setExpiryDate(new Date(data.expiryDate))
+    } catch (err: any) {
+      setError(err.message || 'Failed to generate trial code. Please try again.')
     } finally {
       setLoading(false)
     }
-  }
-
-  const generateLicenseCode = () => {
-    // Generate a random 16-character code
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-    let code = ''
-    for (let i = 0; i < 16; i++) {
-      if (i > 0 && i % 4 === 0) code += '-'
-      code += chars.charAt(Math.floor(Math.random() * chars.length))
-    }
-    return code + '-4D' // 4D = 4 days trial
   }
 
   const copyToClipboard = async () => {
@@ -85,6 +96,43 @@ export default function TrialCodePage() {
             />
           </div>
 
+          {/* Machine ID Input Form */}
+          {!trialCode && (
+            <div className="mb-8 space-y-4">
+              <div>
+                <label htmlFor="machineId" className="block text-sm font-medium text-gray-700 mb-2">
+                  Machine ID *
+                </label>
+                <input
+                  type="text"
+                  id="machineId"
+                  value={machineId}
+                  onChange={(e) => setMachineId(e.target.value.toUpperCase())}
+                  placeholder="Enter 16-character Machine ID"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-center font-mono text-lg tracking-wider uppercase"
+                  maxLength={16}
+                />
+                <p className="mt-2 text-xs text-gray-500">
+                  Your Machine ID is displayed in the activation screen of the desktop app
+                </p>
+              </div>
+
+              <div>
+                <label htmlFor="factoryName" className="block text-sm font-medium text-gray-700 mb-2">
+                  Factory Name (optional)
+                </label>
+                <input
+                  type="text"
+                  id="factoryName"
+                  value={factoryName}
+                  onChange={(e) => setFactoryName(e.target.value)}
+                  placeholder="Enter your factory name"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                />
+              </div>
+            </div>
+          )}
+
           {/* Error Message */}
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md flex items-start">
@@ -115,13 +163,23 @@ export default function TrialCodePage() {
                       )}
                     </button>
                   </div>
-                  {expiryDate && (
-                    <p className="text-sm text-orange-700 mt-3 flex items-center justify-center">
-                      <Clock className="w-4 h-4 mr-2" />
-                      Expires: {expiryDate.toLocaleDateString()} at{' '}
-                      {expiryDate.toLocaleTimeString()}
+                  <div className="mt-4 pt-4 border-t border-orange-200">
+                    <p className="text-xs text-orange-700">
+                      <strong>Machine ID:</strong> {machineId}
                     </p>
-                  )}
+                    {factoryName && (
+                      <p className="text-xs text-orange-700 mt-1">
+                        <strong>Factory:</strong> {factoryName}
+                      </p>
+                    )}
+                    {expiryDate && (
+                      <p className="text-xs text-orange-700 mt-1 flex items-center justify-center">
+                        <Clock className="w-3 h-3 mr-1" />
+                        Expires: {expiryDate.toLocaleDateString()} at{' '}
+                        {expiryDate.toLocaleTimeString()}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -139,12 +197,15 @@ export default function TrialCodePage() {
 
               {/* Generate New Button */}
               <button
-                onClick={generateTrialCode}
-                disabled={loading}
-                className="mt-6 w-full flex justify-center items-center px-4 py-3 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                onClick={() => {
+                  setTrialCode('')
+                  setExpiryDate(null)
+                  setCopied(false)
+                }}
+                className="mt-6 w-full flex justify-center items-center px-4 py-3 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
-                <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                Generate New Code
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Generate Another Code
               </button>
             </div>
           ) : (

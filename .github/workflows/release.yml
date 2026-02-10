@@ -9,20 +9,9 @@ permissions:
   contents: write
 
 jobs:
-  build:
-    name: Build (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
-        include:
-          - os: windows-latest
-            platform: win
-          - os: macos-latest
-            platform: mac
-          - os: ubuntu-latest
-            platform: linux
+  build-windows:
+    name: Build (Windows)
+    runs-on: windows-latest
 
     steps:
       - name: Checkout
@@ -40,6 +29,182 @@ jobs:
       - name: Build and Publish
         run: |
           npm run build
-          npx electron-builder --${{ matrix.platform }} --publish always
+          npx electron-builder --win --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-linux:
+    name: Build (Linux)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build and Publish
+        run: |
+          npm run build
+          npx electron-builder --linux --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Build macOS x64 on Intel runner
+  build-mac-x64:
+    name: Build (macOS x64)
+    runs-on: macos-13
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build x64
+        run: |
+          npm run build
+          npx electron-builder --mac --x64 --config.mac.compression=store
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload x64 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-x64
+          path: release/*.dmg
+          retention-days: 1
+
+  # Build macOS arm64 on Apple Silicon runner
+  build-mac-arm64:
+    name: Build (macOS arm64)
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build arm64
+        run: |
+          npm run build
+          npx electron-builder --mac --arm64 --config.mac.compression=store
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload arm64 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-arm64
+          path: release/*.dmg
+          retention-days: 1
+
+  # Merge x64 and arm64 into universal binary
+  create-universal:
+    name: Create Universal macOS
+    needs: [build-mac-x64, build-mac-arm64]
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download x64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: mac-x64
+          path: release/x64
+
+      - name: Download arm64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: mac-arm64
+          path: release/arm64
+
+      - name: Mount x64 DMG and extract app
+        run: |
+          hdiutil attach release/x64/*.dmg -mountpoint /tmp/x64-dmg -readonly -nobrowse
+          cp -R /tmp/x64-dmg/DFM.app release/DFM-x64.app
+          hdiutil detach /tmp/x64-dmg
+
+      - name: Mount arm64 DMG and extract app
+        run: |
+          hdiutil attach release/arm64/*.dmg -mountpoint /tmp/arm64-dmg -readonly -nobrowse
+          cp -R /tmp/arm64-dmg/DFM.app release/DFM-arm64.app
+          hdiutil detach /tmp/arm64-dmg
+
+      - name: Create universal app
+        run: |
+          node -e "
+          const { makeUniversalApp } = require('@electron/universal');
+          const path = require('path');
+          const fs = require('fs');
+
+          async function createUniversal() {
+            const x64AppPath = 'release/DFM-x64.app';
+            const arm64AppPath = 'release/DFM-arm64.app';
+            const outputPath = 'release/DFM.app';
+
+            console.log('Creating universal app...');
+            console.log('x64:', x64AppPath);
+            console.log('arm64:', arm64AppPath);
+            console.log('Output:', outputPath);
+
+            await makeUniversalApp({
+              x64AppPath: x64AppPath,
+              arm64AppPath: arm64AppPath,
+              outAppPath: outputPath,
+              force: true
+            });
+
+            console.log('✓ Universal app created successfully!');
+          }
+
+          createUniversal().catch(err => {
+            console.error('Error:', err);
+            process.exit(1);
+          });
+          "
+
+      - name: Create universal DMG
+        run: |
+          npx electron-builder --mac --universal --config.mac.compression=maximum --publish never
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish universal DMG to GitHub
+        run: |
+          npx electron-builder --mac --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

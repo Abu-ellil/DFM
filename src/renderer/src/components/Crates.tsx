@@ -46,7 +46,7 @@ export default function Crates() {
     fetchCrates()
     fetchCustomers()
     window.api.crateTypes.getAll().then(setCrateTypes)
-  }, [])
+  }, [fetchCrates, fetchCustomers])
 
   const handleAddTransaction = async (e: React.FormEvent) => {
     e.preventDefault()

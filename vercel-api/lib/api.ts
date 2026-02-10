@@ -97,8 +97,8 @@ export const adminApi = {
   /**
    * Create user
    */
-  createUser: async (data: Partial<User>) => {
-    return apiRequest<User>('/api/admin/users', {
+  createUser: async (data: Partial<User> & { password: string }) => {
+    return apiRequest<{ success: boolean; message: string }>('/api/admin/users', {
       method: 'POST',
       body: JSON.stringify(data)
     })
@@ -108,7 +108,7 @@ export const adminApi = {
    * Update user
    */
   updateUser: async (id: number, data: Partial<User>) => {
-    return apiRequest<User>(`/api/admin/users/${id}`, {
+    return apiRequest<{ success: boolean; message: string }>(`/api/admin/users/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data)
     })
@@ -118,8 +118,35 @@ export const adminApi = {
    * Delete user
    */
   deleteUser: async (id: number) => {
-    return apiRequest<{ success: boolean }>(`/api/admin/users/${id}`, {
+    return apiRequest<{ success: boolean; message: string }>(`/api/admin/users/${id}`, {
       method: 'DELETE'
+    })
+  },
+
+  /**
+   * Activate user
+   */
+  activateUser: async (id: number) => {
+    return apiRequest<{ success: boolean; message: string }>(`/api/admin/users/${id}/activate`, {
+      method: 'POST'
+    })
+  },
+
+  /**
+   * Deactivate user
+   */
+  deactivateUser: async (id: number) => {
+    return apiRequest<{ success: boolean; message: string }>(`/api/admin/users/${id}/deactivate`, {
+      method: 'POST'
+    })
+  },
+
+  /**
+   * Ban user
+   */
+  banUser: async (id: number) => {
+    return apiRequest<{ success: boolean; message: string }>(`/api/admin/users/${id}/ban`, {
+      method: 'POST'
     })
   },
 
@@ -134,18 +161,48 @@ export const adminApi = {
    * Generate license
    */
   generateLicense: async (data: Partial<License>) => {
-    return apiRequest<License>('/api/admin/licenses', {
+    return apiRequest<{ success: boolean; message: string }>('/api/admin/licenses', {
       method: 'POST',
       body: JSON.stringify(data)
     })
   },
 
   /**
-   * Revoke license
+   * Delete license
    */
-  revokeLicense: async (id: number) => {
-    return apiRequest<{ success: boolean }>(`/api/admin/licenses/${id}`, {
+  deleteLicense: async (id: number) => {
+    return apiRequest<{ success: boolean; message: string }>(`/api/admin/licenses/${id}`, {
       method: 'DELETE'
+    })
+  },
+
+  /**
+   * Activate license
+   */
+  activateLicense: async (id: number) => {
+    return apiRequest<{ success: boolean; message: string }>(`/api/admin/licenses/${id}/activate`, {
+      method: 'POST'
+    })
+  },
+
+  /**
+   * Deactivate license
+   */
+  deactivateLicense: async (id: number) => {
+    return apiRequest<{ success: boolean; message: string }>(
+      `/api/admin/licenses/${id}/deactivate`,
+      {
+        method: 'POST'
+      }
+    )
+  },
+
+  /**
+   * Ban license
+   */
+  banLicense: async (id: number) => {
+    return apiRequest<{ success: boolean; message: string }>(`/api/admin/licenses/${id}/ban`, {
+      method: 'POST'
     })
   }
 }

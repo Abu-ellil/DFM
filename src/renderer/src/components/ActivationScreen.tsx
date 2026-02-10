@@ -66,7 +66,7 @@ export const ActivationScreen: React.FC<ActivationScreenProps> = ({ onActivation
       } else {
         toast.error(result.message || 'فشل في تفعيل الترخيص')
       }
-    } catch (error) {
+    } catch {
       toast.error('حدث خطأ أثناء تفعيل الترخيص')
     } finally {
       setIsLoading(false)

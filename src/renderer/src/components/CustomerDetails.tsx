@@ -88,6 +88,7 @@ export default function CustomerDetails({ customerId, onBack }: CustomerDetailsP
     setCrateTypes(ct)
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchWeighbridge()
     fetchFinance()
@@ -98,6 +99,7 @@ export default function CustomerDetails({ customerId, onBack }: CustomerDetailsP
   }, [customerId])
 
   // Listen for real-time updates
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const handleAccountUpdate = ({ customerId: updatedId }: { customerId: number }) => {
       if (updatedId === customerId) {
