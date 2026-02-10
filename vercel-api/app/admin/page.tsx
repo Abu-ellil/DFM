@@ -12,7 +12,10 @@ import {
   Plus,
   Edit,
   Trash2,
-  LogOut
+  LogOut,
+  Power,
+  Ban,
+  CheckCircle
 } from 'lucide-react'
 import { adminApi } from '../../lib/api'
 
@@ -37,7 +40,7 @@ export default function AdminPage() {
   const checkAuth = () => {
     const token = localStorage.getItem('token')
     const userJson = localStorage.getItem('user')
-    
+
     if (!token || !userJson) {
       router.push('/login')
       return
@@ -248,6 +251,44 @@ function OverviewTab({ stats, loading }: { stats: any; loading: boolean }) {
 }
 
 function UsersTab({ users, loading }: { users: any[]; loading: boolean }) {
+  const [actionLoading, setActionLoading] = useState<{ [key: number]: boolean }>({})
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
+  const handleUserAction = async (userId: number, action: string, actionName: string) => {
+    setActionLoading({ ...actionLoading, [userId]: true })
+    setMessage(null)
+
+    try {
+      let result: { success: boolean; message?: string } | undefined
+      switch (action) {
+        case 'activate':
+          result = await adminApi.activateUser(userId)
+          break
+        case 'deactivate':
+          result = await adminApi.deactivateUser(userId)
+          break
+        case 'ban':
+          result = await adminApi.banUser(userId)
+          break
+        case 'delete':
+          result = await adminApi.deleteUser(userId)
+          break
+      }
+
+      if (result?.success) {
+        setMessage({ type: 'success', text: result.message || `${actionName} successful` })
+        // Refresh the users list
+        setTimeout(() => window.location.reload(), 1000)
+      } else {
+        setMessage({ type: 'error', text: result?.message || `${actionName} failed` })
+      }
+    } catch (error: any) {
+      setMessage({ type: 'error', text: error.message || `${actionName} failed` })
+    } finally {
+      setActionLoading({ ...actionLoading, [userId]: false })
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -257,6 +298,14 @@ function UsersTab({ users, loading }: { users: any[]; loading: boolean }) {
           Add User
         </button>
       </div>
+
+      {message && (
+        <div
+          className={`p-4 rounded-md ${message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}
+        >
+          {message.text}
+        </div>
+      )}
 
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
@@ -291,12 +340,11 @@ function UsersTab({ users, loading }: { users: any[]; loading: boolean }) {
               </tr>
             ) : (
               users.map((user) => (
-                <TableRow
+                <UserRow
                   key={user.id}
-                  name={user.full_name || 'No Name'}
-                  email={user.phone}
-                  role={user.role}
-                  status={user.status}
+                  user={user}
+                  onAction={handleUserAction}
+                  actionLoading={actionLoading[user.id] || false}
                 />
               ))
             )}
@@ -308,6 +356,44 @@ function UsersTab({ users, loading }: { users: any[]; loading: boolean }) {
 }
 
 function LicensesTab({ licenses, loading }: { licenses: any[]; loading: boolean }) {
+  const [actionLoading, setActionLoading] = useState<{ [key: number]: boolean }>({})
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
+  const handleLicenseAction = async (licenseId: number, action: string, actionName: string) => {
+    setActionLoading({ ...actionLoading, [licenseId]: true })
+    setMessage(null)
+
+    try {
+      let result: { success: boolean; message?: string } | undefined
+      switch (action) {
+        case 'activate':
+          result = await adminApi.activateLicense(licenseId)
+          break
+        case 'deactivate':
+          result = await adminApi.deactivateLicense(licenseId)
+          break
+        case 'ban':
+          result = await adminApi.banLicense(licenseId)
+          break
+        case 'delete':
+          result = await adminApi.deleteLicense(licenseId)
+          break
+      }
+
+      if (result?.success) {
+        setMessage({ type: 'success', text: result.message || `${actionName} successful` })
+        // Refresh licenses list
+        setTimeout(() => window.location.reload(), 1000)
+      } else {
+        setMessage({ type: 'error', text: result?.message || `${actionName} failed` })
+      }
+    } catch (error: any) {
+      setMessage({ type: 'error', text: error.message || `${actionName} failed` })
+    } finally {
+      setActionLoading({ ...actionLoading, [licenseId]: false })
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -317,6 +403,14 @@ function LicensesTab({ licenses, loading }: { licenses: any[]; loading: boolean 
           Generate License
         </button>
       </div>
+
+      {message && (
+        <div
+          className={`p-4 rounded-md ${message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}
+        >
+          {message.text}
+        </div>
+      )}
 
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
@@ -355,11 +449,10 @@ function LicensesTab({ licenses, loading }: { licenses: any[]; loading: boolean 
             ) : (
               licenses.map((license) => (
                 <LicenseRow
-                  key={license.license_key}
-                  licenseKey={license.license_key}
-                  factory={license.factory_name || 'N/A'}
-                  status={license.status}
-                  expiry={license.expiry_date ? new Date(license.expiry_date).toLocaleDateString() : 'Never'}
+                  key={license.id}
+                  license={license}
+                  onAction={handleLicenseAction}
+                  actionLoading={actionLoading[license.id] || false}
                 />
               ))
             )}
@@ -469,40 +562,80 @@ function StatusItem({ label, status }: { label: string; status: string }) {
   )
 }
 
-function TableRow({
-  name,
-  email,
-  role,
-  status
+function UserRow({
+  user,
+  onAction,
+  actionLoading
 }: {
-  name: string
-  email: string
-  role: string
-  status: string
+  user: any
+  onAction: (userId: number, action: string, actionName: string) => void
+  actionLoading: boolean
 }) {
+  const statusColors: { [key: string]: string } = {
+    active: 'bg-green-100 text-green-800',
+    inactive: 'bg-yellow-100 text-yellow-800',
+    banned: 'bg-red-100 text-red-800'
+  }
+
   return (
     <tr>
       <td className="px-6 py-4 whitespace-nowrap">
         <div>
-          <div className="text-sm font-medium text-gray-900">{name}</div>
-          <div className="text-sm text-gray-500">{email}</div>
+          <div className="text-sm font-medium text-gray-900">{user.full_name || 'No Name'}</div>
+          <div className="text-sm text-gray-500">{user.phone}</div>
         </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}`}>
-          {role}
+        <span
+          className={`px-2 py-1 rounded-full text-xs font-medium ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}`}
+        >
+          {user.role}
         </span>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
-        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-          {status}
+        <span
+          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColors[user.status] || 'bg-gray-100 text-gray-800'}`}
+        >
+          {user.status || 'active'}
         </span>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-        <button className="text-orange-600 hover:text-orange-900 mr-3">
-          <Edit className="w-4 h-4 inline" />
-        </button>
-        <button className="text-red-600 hover:text-red-900">
+      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+        {user.status !== 'active' && (
+          <button
+            onClick={() => onAction(user.id, 'activate', 'Activate')}
+            disabled={actionLoading}
+            className="text-green-600 hover:text-green-900 disabled:opacity-50"
+            title="Activate"
+          >
+            <CheckCircle className="w-4 h-4 inline" />
+          </button>
+        )}
+        {user.status !== 'inactive' && (
+          <button
+            onClick={() => onAction(user.id, 'deactivate', 'Deactivate')}
+            disabled={actionLoading}
+            className="text-yellow-600 hover:text-yellow-900 disabled:opacity-50"
+            title="Deactivate"
+          >
+            <Power className="w-4 h-4 inline" />
+          </button>
+        )}
+        {user.status !== 'banned' && (
+          <button
+            onClick={() => onAction(user.id, 'ban', 'Ban')}
+            disabled={actionLoading}
+            className="text-orange-600 hover:text-orange-900 disabled:opacity-50"
+            title="Ban"
+          >
+            <Ban className="w-4 h-4 inline" />
+          </button>
+        )}
+        <button
+          onClick={() => onAction(user.id, 'delete', 'Delete')}
+          disabled={actionLoading}
+          className="text-red-600 hover:text-red-900 disabled:opacity-50"
+          title="Delete"
+        >
           <Trash2 className="w-4 h-4 inline" />
         </button>
       </td>
@@ -511,31 +644,76 @@ function TableRow({
 }
 
 function LicenseRow({
-  licenseKey,
-  factory,
-  status,
-  expiry
+  license,
+  onAction,
+  actionLoading
 }: {
-  licenseKey: string
-  factory: string
-  status: string
-  expiry: string
+  license: any
+  onAction: (licenseId: number, action: string, actionName: string) => void
+  actionLoading: boolean
 }) {
+  const statusColors: { [key: string]: string } = {
+    active: 'bg-green-100 text-green-800',
+    inactive: 'bg-yellow-100 text-yellow-800',
+    banned: 'bg-red-100 text-red-800',
+    expired: 'bg-red-100 text-red-800'
+  }
+
   return (
     <tr>
-      <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{licenseKey}</td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{factory}</td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
+        {license.license_key}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {license.factory_name || 'N/A'}
+      </td>
       <td className="px-6 py-4 whitespace-nowrap">
-        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-          {status}
+        <span
+          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColors[license.status] || 'bg-gray-100 text-gray-800'}`}
+        >
+          {license.status || 'active'}
         </span>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{expiry}</td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-        <button className="text-orange-600 hover:text-orange-900 mr-3">
-          <Edit className="w-4 h-4 inline" />
-        </button>
-        <button className="text-red-600 hover:text-red-900">
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {license.expiry_date ? new Date(license.expiry_date).toLocaleDateString() : 'Never'}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+        {license.status !== 'active' && license.status !== 'expired' && (
+          <button
+            onClick={() => onAction(license.id, 'activate', 'Activate')}
+            disabled={actionLoading}
+            className="text-green-600 hover:text-green-900 disabled:opacity-50"
+            title="Activate"
+          >
+            <CheckCircle className="w-4 h-4 inline" />
+          </button>
+        )}
+        {license.status !== 'inactive' && license.status !== 'expired' && (
+          <button
+            onClick={() => onAction(license.id, 'deactivate', 'Deactivate')}
+            disabled={actionLoading}
+            className="text-yellow-600 hover:text-yellow-900 disabled:opacity-50"
+            title="Deactivate"
+          >
+            <Power className="w-4 h-4 inline" />
+          </button>
+        )}
+        {license.status !== 'banned' && license.status !== 'expired' && (
+          <button
+            onClick={() => onAction(license.id, 'ban', 'Ban')}
+            disabled={actionLoading}
+            className="text-orange-600 hover:text-orange-900 disabled:opacity-50"
+            title="Ban"
+          >
+            <Ban className="w-4 h-4 inline" />
+          </button>
+        )}
+        <button
+          onClick={() => onAction(license.id, 'delete', 'Delete')}
+          disabled={actionLoading}
+          className="text-red-600 hover:text-red-900 disabled:opacity-50"
+          title="Delete"
+        >
           <Trash2 className="w-4 h-4 inline" />
         </button>
       </td>
