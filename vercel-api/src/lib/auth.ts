@@ -93,7 +93,7 @@ async function initializeLicenseTable(): Promise<void> {
     await sql`
       CREATE TABLE IF NOT EXISTS license_keys (
         id SERIAL PRIMARY KEY,
-        license_key VARCHAR(20) UNIQUE NOT NULL,
+        license_key VARCHAR(30) UNIQUE NOT NULL,
         machine_id VARCHAR(20) NOT NULL,
         factory_name VARCHAR(100),
         duration_code VARCHAR(5),
@@ -109,6 +109,10 @@ async function initializeLicenseTable(): Promise<void> {
 
     await sql`
       CREATE INDEX IF NOT EXISTS idx_license_keys_machine_id ON license_keys(machine_id)
+    `
+
+    await sql`
+      ALTER TABLE license_keys ALTER COLUMN license_key TYPE VARCHAR(30)
     `
   } catch (error) {
     console.error('Error initializing license_keys table:', error)
@@ -133,22 +137,32 @@ export async function registerLicenseKey(params: {
     const { createNeonConnection } = await import('./neon.js')
     const sql = createNeonConnection(process.env.NEON_DATABASE_URL!)
 
-    await sql`
-      INSERT INTO license_keys (license_key, machine_id, factory_name, duration_code, expiry_date)
-      VALUES (
-        ${params.licenseKey.toUpperCase()},
-        ${params.machineId},
-        ${params.factoryName || null},
-        ${params.durationCode || null},
-        ${params.expiryDate || null}
-      )
-      ON CONFLICT (license_key) DO UPDATE SET
-        machine_id = EXCLUDED.machine_id,
-        factory_name = EXCLUDED.factory_name,
-        duration_code = EXCLUDED.duration_code,
-        expiry_date = EXCLUDED.expiry_date,
-        updated_at = CURRENT_TIMESTAMP
+    const result = await sql`
+      SELECT license_key FROM license_keys WHERE license_key = ${params.licenseKey.toUpperCase()}
     `
+
+    if (result.length === 0) {
+      await sql`
+        INSERT INTO license_keys (license_key, machine_id, factory_name, duration_code, expiry_date)
+        VALUES (
+          ${params.licenseKey.toUpperCase()},
+          ${params.machineId},
+          ${params.factoryName || null},
+          ${params.durationCode || null},
+          ${params.expiryDate || null}
+        )
+      `
+    } else {
+      await sql`
+        UPDATE license_keys SET
+          machine_id = ${params.machineId},
+          factory_name = ${params.factoryName || null},
+          duration_code = ${params.durationCode || null},
+          expiry_date = ${params.expiryDate || null},
+          updated_at = CURRENT_TIMESTAMP
+        WHERE license_key = ${params.licenseKey.toUpperCase()}
+      `
+    }
 
     return { success: true }
   } catch (error: any) {

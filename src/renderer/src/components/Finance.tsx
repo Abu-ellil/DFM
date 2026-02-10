@@ -164,7 +164,7 @@ export default function Finance() {
       setNewTransaction({
         date: new Date().toISOString().split('T')[0],
         customer_id: '',
-        transaction_type: 'مقبوض',
+        transaction_type: 'مدفوع',
         amount_paid: 0,
         amount_received: 0,
         payment_method: 'نقدا' as PaymentMethod,

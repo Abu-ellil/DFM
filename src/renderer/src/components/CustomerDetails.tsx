@@ -49,7 +49,7 @@ export default function CustomerDetails({ customerId, onBack }: CustomerDetailsP
   const [newFinance, setNewFinance] = useState({
     date: new Date().toISOString().split('T')[0],
     customer_id: customerId,
-    transaction_type: 'مقبوض',
+    transaction_type: 'مدفوع',
     amount_paid: 0,
     amount_received: 0,
     notes: ''

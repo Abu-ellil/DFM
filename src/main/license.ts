@@ -120,19 +120,6 @@ export function validateLicense(licenseKey: string): boolean {
       return false
     }
 
-    // Check if license has expired
-    const licenseFile = existsSync(LICENSE_FILE)
-      ? JSON.parse(readFileSync(LICENSE_FILE, 'utf-8'))
-      : null
-    if (licenseFile && licenseFile.expiryDate) {
-      const expiryDate = new Date(licenseFile.expiryDate)
-      const now = new Date()
-      if (now > expiryDate) {
-        console.log('License validation failed: License expired on', expiryDate)
-        return false
-      }
-    }
-
     console.log('License validation successful')
     return true
   } catch (error) {

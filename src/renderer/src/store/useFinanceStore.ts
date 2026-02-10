@@ -58,18 +58,32 @@ export const useFinanceStore = create<FinanceStore>((set) => ({
     try {
       const result = await window.api.finance.create(data)
       if (result.success) {
-        const [transactions, summary] = await Promise.all([
-          window.api.finance.getAll(),
-          window.api.finance.getSummary()
-        ])
-        set({ transactions, summary })
+        try {
+          const [transactions, summary] = await Promise.all([
+            window.api.finance.getAll(),
+            window.api.finance.getSummary()
+          ])
+          set({ transactions, summary })
+        } catch (fetchError) {
+          console.error('Error fetching updated data:', fetchError)
+        }
 
-        // Trigger customer account refresh
-        const { useCustomerAccountStore } = require('./useCustomerAccountStore')
-        useCustomerAccountStore.getState().fetchAllSummaries()
+        // Trigger customer account refresh (separate try-catch to ensure it runs)
+        try {
+          const { useCustomerAccountStore } = require('./useCustomerAccountStore')
+          useCustomerAccountStore
+            .getState()
+            .fetchAllSummaries()
+            .catch((err) => {
+              console.error('Error refreshing customer accounts:', err)
+            })
+        } catch (accountError) {
+          console.error('Error accessing customer account store:', accountError)
+        }
       }
       return result
-    } catch {
+    } catch (error) {
+      console.error('Add transaction error:', error)
       return { success: false, message: 'خطأ في الاتصال بالقاعدة' }
     }
   },
@@ -77,18 +91,28 @@ export const useFinanceStore = create<FinanceStore>((set) => ({
     try {
       const result = await window.api.finance.update(id, data)
       if (result.success) {
-        const [transactions, summary] = await Promise.all([
-          window.api.finance.getAll(),
-          window.api.finance.getSummary()
-        ])
-        set({ transactions, summary })
+        try {
+          const [transactions, summary] = await Promise.all([
+            window.api.finance.getAll(),
+            window.api.finance.getSummary()
+          ])
+          set({ transactions, summary })
+        } catch (fetchError) {
+          console.error('Error fetching updated data:', fetchError)
+        }
 
-        // Trigger customer account refresh
-        const { useCustomerAccountStore } = require('./useCustomerAccountStore')
-        useCustomerAccountStore.getState().fetchAllSummaries()
+        try {
+          const { useCustomerAccountStore } = require('./useCustomerAccountStore')
+          useCustomerAccountStore.getState().fetchAllSummaries().catch((err) => {
+            console.error('Error refreshing customer accounts:', err)
+          })
+        } catch (accountError) {
+          console.error('Error accessing customer account store:', accountError)
+        }
       }
       return result
-    } catch {
+    } catch (error) {
+      console.error('Update transaction error:', error)
       return { success: false, message: 'خطأ في الاتصال بالقاعدة' }
     }
   },
@@ -96,18 +120,31 @@ export const useFinanceStore = create<FinanceStore>((set) => ({
     try {
       const result = await window.api.finance.delete(id)
       if (result.success) {
-        const [transactions, summary] = await Promise.all([
-          window.api.finance.getAll(),
-          window.api.finance.getSummary()
-        ])
-        set({ transactions, summary })
+        try {
+          const [transactions, summary] = await Promise.all([
+            window.api.finance.getAll(),
+            window.api.finance.getSummary()
+          ])
+          set({ transactions, summary })
+        } catch (fetchError) {
+          console.error('Error fetching updated data:', fetchError)
+        }
 
-        // Trigger customer account refresh
-        const { useCustomerAccountStore } = require('./useCustomerAccountStore')
-        useCustomerAccountStore.getState().fetchAllSummaries()
+        try {
+          const { useCustomerAccountStore } = require('./useCustomerAccountStore')
+          useCustomerAccountStore
+            .getState()
+            .fetchAllSummaries()
+            .catch((err) => {
+              console.error('Error refreshing customer accounts:', err)
+            })
+        } catch (accountError) {
+          console.error('Error accessing customer account store:', accountError)
+        }
       }
       return result
-    } catch {
+    } catch (error) {
+      console.error('Delete transaction error:', error)
       return { success: false, message: 'خطأ في الاتصال بالقاعدة' }
     }
   }
