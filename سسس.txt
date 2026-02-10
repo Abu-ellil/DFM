@@ -29,3 +29,9 @@
 ❯ build and test
 ───────────────────────────────────────────────────────────────────────────────────────────
   ⏵⏵ accept edits on (shift+Tab to cycle)
+
+
+
+
+@/vercel-api/ 
+Act as a Senior Full-Stack Developer and UX Designer to complete the implementation of a professional web application admin panel. Develop the necessary components to provide a comprehensive dashboard with data visualization and key performance indicators, a robust user management system featuring table views, search, filtering, and full CRUD operations, a content management interface, and a settings configuration page. Ensure the final code is modular, responsive, secure against common vulnerabilities, and follows modern best practices for state management, navigation, and UI design.
