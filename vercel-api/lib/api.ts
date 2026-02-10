@@ -210,7 +210,7 @@ export const dashboardApi = {
    * Get dashboard statistics
    */
   getStats: async () => {
-    return apiRequest<DashboardStats>('/api/dashboard/stats')
+    return apiRequest<{ success: boolean; stats: DashboardStats }>('/api/dashboard/stats')
   },
 
   /**
