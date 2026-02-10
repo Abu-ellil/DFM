@@ -42,16 +42,16 @@ export default function DashboardPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-1">Overview of your factory operations</p>
+          <h1 className="text-3xl font-bold text-gray-900">لوحة التحكم</h1>
+          <p className="text-gray-600 mt-1">نظرة عامة على عمليات المصنع</p>
         </div>
         <button
           onClick={fetchDashboardData}
           disabled={loading}
           className="flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
         >
-          <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
+          <RefreshCw className={`w-4 h-4 ml-2 ${loading ? 'animate-spin' : ''}`} />
+          تحديث
         </button>
       </div>
 
@@ -59,28 +59,28 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard
           icon={<Users className="w-6 h-6" />}
-          title="Total Customers"
+          title="إجمالي العملاء"
           value={stats.customers}
           color="blue"
           loading={loading}
         />
         <StatCard
           icon={<Truck className="w-6 h-6" />}
-          title="Weighbridge Records"
+          title="سجلات الميزان"
           value={stats.weighbridge}
           color="green"
           loading={loading}
         />
         <StatCard
           icon={<Package className="w-6 h-6" />}
-          title="Crates Tracked"
+          title="الصناديق المتتبعة"
           value={stats.crates}
           color="orange"
           loading={loading}
         />
         <StatCard
           icon={<DollarSign className="w-6 h-6" />}
-          title="Financial Records"
+          title="السجلات المالية"
           value={stats.finance}
           color="purple"
           loading={loading}
@@ -90,20 +90,20 @@ export default function DashboardPage() {
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <QuickActionCard
-          title="View Customers"
-          description="Manage your customer database"
+          title="عرض العملاء"
+          description="إدارة قاعدة بيانات العملاء"
           icon={<Users className="w-8 h-8" />}
           href="/dashboard/customers"
         />
         <QuickActionCard
-          title="Weighbridge Data"
-          description="Track weight transactions"
+          title="بيانات الميزان"
+          description="تتبع معاملات الوزن"
           icon={<Truck className="w-8 h-8" />}
           href="/dashboard/weighbridge"
         />
         <QuickActionCard
-          title="Finance Overview"
-          description="View financial transactions"
+          title="نظرة عامة مالية"
+          description="عرض المعاملات المالية"
           icon={<DollarSign className="w-8 h-8" />}
           href="/dashboard/finance"
         />
@@ -112,26 +112,26 @@ export default function DashboardPage() {
       {/* Recent Activity */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-          <TrendingUp className="w-5 h-5 mr-2" />
-          Recent Activity
+          <TrendingUp className="w-5 h-5 ml-2" />
+          النشاط الأخير
         </h2>
         <div className="space-y-4">
           {loading ? (
-            <div className="text-center py-8 text-gray-500">Loading recent activity...</div>
+            <div className="text-center py-8 text-gray-500">جاري تحميل النشاط الأخير...</div>
           ) : (
             <>
               <ActivityItem
                 type="customer"
-                message="New customer added: ABC Trading Co."
-                time="2 hours ago"
+                message="تم إضافة عميل جديد: شركة ABC للتجارة"
+                time="منذ ساعتين"
               />
               <ActivityItem
                 type="weighbridge"
-                message="Weighbridge record #1243 created"
-                time="3 hours ago"
+                message="تم إنشاء سجل ميزان رقم 1243"
+                time="منذ 3 ساعات"
               />
-              <ActivityItem type="finance" message="Payment received: $5,000" time="5 hours ago" />
-              <ActivityItem type="crate" message="Crates delivered: 250 units" time="6 hours ago" />
+              <ActivityItem type="finance" message="تم استلام دفعة: 5,000 ريال" time="منذ 5 ساعات" />
+              <ActivityItem type="crate" message="تم تسليم صناديق: 250 وحدة" time="منذ 6 ساعات" />
             </>
           )}
         </div>
@@ -140,21 +140,21 @@ export default function DashboardPage() {
       {/* Sync Status */}
       <div className="mt-8 bg-white rounded-lg shadow-md p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-          <Calendar className="w-5 h-5 mr-2" />
-          Sync Status
+          <Calendar className="w-5 h-5 ml-2" />
+          حالة المزامنة
         </h2>
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <div className="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+            <div className="w-3 h-3 bg-green-500 rounded-full ml-3"></div>
             <div>
-              <p className="text-sm font-medium text-gray-900">Last synced</p>
+              <p className="text-sm font-medium text-gray-900">آخر مزامنة</p>
               <p className="text-sm text-gray-600">
-                {lastSync ? lastSync.toLocaleString() : 'Never'}
+                {lastSync ? lastSync.toLocaleString('ar-EG') : 'أبداً'}
               </p>
             </div>
           </div>
           <button className="px-4 py-2 bg-primary-600 text-white rounded-md text-sm font-medium hover:bg-primary-700">
-            Sync Now
+            زامن الآن
           </button>
         </div>
       </div>

@@ -19,7 +19,7 @@ export default function Navigation() {
                 🏭 DFM
               </Link>
             </div>
-            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+            <div className="hidden sm:mr-6 sm:flex sm:space-x-8 sm:space-x-reverse">
               <Link
                 href="/"
                 className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
@@ -28,8 +28,8 @@ export default function Navigation() {
                     : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                 }`}
               >
-                <Home className="w-4 h-4 mr-2" />
-                Home
+                <Home className="w-4 h-4 ml-2" />
+                الرئيسية
               </Link>
               <Link
                 href="/dashboard"
@@ -39,8 +39,8 @@ export default function Navigation() {
                     : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                 }`}
               >
-                <LayoutDashboard className="w-4 h-4 mr-2" />
-                Dashboard
+                <LayoutDashboard className="w-4 h-4 ml-2" />
+                لوحة التحكم
               </Link>
               <Link
                 href="/reports"
@@ -50,8 +50,8 @@ export default function Navigation() {
                     : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                 }`}
               >
-                <BarChart3 className="w-4 h-4 mr-2" />
-                Reports
+                <BarChart3 className="w-4 h-4 ml-2" />
+                التقارير
               </Link>
               <Link
                 href="/admin"
@@ -61,8 +61,8 @@ export default function Navigation() {
                     : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                 }`}
               >
-                <Users className="w-4 h-4 mr-2" />
-                Admin
+                <Users className="w-4 h-4 ml-2" />
+                الإدارة
               </Link>
               <Link
                 href="/trial-code"
@@ -72,12 +72,12 @@ export default function Navigation() {
                     : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                 }`}
               >
-                <Gift className="w-4 h-4 mr-2" />
-                Free Trial
+                <Gift className="w-4 h-4 ml-2" />
+                نسخة تجريبية
               </Link>
             </div>
           </div>
-          <div className="hidden sm:ml-6 sm:flex sm:items-center">
+          <div className="hidden sm:mr-6 sm:flex sm:items-center">
             <Link
               href="/settings"
               className={`inline-flex items-center px-3 py-2 rounded-md text-sm font-medium ${
@@ -86,12 +86,12 @@ export default function Navigation() {
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
             >
-              <Settings className="w-4 h-4 mr-2" />
-              Settings
+              <Settings className="w-4 h-4 ml-2" />
+              الإعدادات
             </Link>
-            <button className="ml-3 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-red-600 hover:bg-red-50">
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
+            <button className="mr-3 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-red-600 hover:bg-red-50">
+              <LogOut className="w-4 h-4 ml-2" />
+              خروج
             </button>
           </div>
         </div>

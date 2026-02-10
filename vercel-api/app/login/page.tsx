@@ -8,7 +8,7 @@ import { LogIn, AlertCircle } from 'lucide-react'
 export default function LoginPage() {
   const router = useRouter()
   const [formData, setFormData] = useState({
-    username: '',
+    phone: '',
     password: ''
   })
   const [error, setError] = useState('')
@@ -56,36 +56,36 @@ export default function LoginPage() {
       <div className="max-w-md w-full">
         <div className="bg-white rounded-lg shadow-xl p-8">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-            <p className="text-gray-600">Sign in to your account</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">مرحباً بعودتك</h1>
+            <p className="text-gray-600">قم بتسجيل الدخول إلى حسابك</p>
           </div>
 
           {error && (
             <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md flex items-start">
-              <AlertCircle className="w-5 h-5 text-red-600 mr-2 mt-0.5 flex-shrink-0" />
+              <AlertCircle className="w-5 h-5 text-red-600 ml-2 mt-0.5 flex-shrink-0" />
               <p className="text-sm text-red-800">{error}</p>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
-                Username
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                رقم الهاتف
               </label>
               <input
-                id="username"
-                type="text"
+                id="phone"
+                type="tel"
                 required
-                value={formData.username}
-                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                placeholder="Enter your username"
+                placeholder="أدخل رقم الهاتف"
               />
             </div>
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Password
+                كلمة المرور
               </label>
               <input
                 id="password"
@@ -94,7 +94,7 @@ export default function LoginPage() {
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                placeholder="Enter your password"
+                placeholder="أدخل كلمة المرور"
               />
             </div>
 
@@ -106,7 +106,7 @@ export default function LoginPage() {
               {loading ? (
                 <span className="flex items-center">
                   <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                    className="animate-spin -mr-1 ml-3 h-5 w-5 text-white"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -125,12 +125,12 @@ export default function LoginPage() {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  Signing in...
+                  جاري تسجيل الدخول...
                 </span>
               ) : (
                 <span className="flex items-center">
-                  <LogIn className="w-5 h-5 mr-2" />
-                  Sign In
+                  <LogIn className="w-5 h-5 ml-2" />
+                  تسجيل الدخول
                 </span>
               )}
             </button>
@@ -138,12 +138,12 @@ export default function LoginPage() {
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
-              Don't have an account?{' '}
+              ليس لديك حساب؟{' '}
               <Link
                 href="/register"
                 className="font-medium text-primary-600 hover:text-primary-500"
               >
-                Sign up
+                أنشئ حساباً
               </Link>
             </p>
           </div>

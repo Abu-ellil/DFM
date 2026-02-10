@@ -43,7 +43,18 @@ export default async function handler(request: VercelRequest, response: VercelRe
   try {
     const body = request.body as RegisterRequest
 
-    if (!body.phone || !body.password || !body.machine_id) {
+    // Support both phone (new) and email/username (old) if needed,
+    // but the API now requires phone.
+    const phone = body.phone
+    const password = body.password
+    let machine_id = body.machine_id
+
+    // If machine_id is missing (e.g. from web), generate a placeholder
+    if (!machine_id && phone && password) {
+      machine_id = `WEB-${phone}-${Math.random().toString(36).substring(2, 10)}`
+    }
+
+    if (!phone || !password || !machine_id) {
       return response.status(400).json({
         success: false,
         error: 'Missing required fields: phone, password, machine_id'
@@ -65,7 +76,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
 
     try {
       const existing = await sql`
-        SELECT phone FROM auth_users WHERE phone = ${body.phone}
+        SELECT phone FROM auth_users WHERE phone = ${phone}
       `
 
       if (existing.length > 0) {
@@ -77,17 +88,17 @@ export default async function handler(request: VercelRequest, response: VercelRe
 
       await sql`
           INSERT INTO auth_users (phone, password, machine_id, full_name, factory_name)
-          VALUES (${body.phone}, ${hashedPassword}, ${body.machine_id}, ${body.full_name || null}, ${body.factory_name || null})
+          VALUES (${phone}, ${hashedPassword}, ${machine_id}, ${body.full_name || null}, ${body.factory_name || null})
         `
 
       return response.status(201).json({
         success: true,
         message: 'Account created successfully',
         user: {
-          phone: body.phone,
+          phone: phone,
           full_name: body.full_name,
           factory_name: body.factory_name,
-          machine_id: body.machine_id
+          machine_id: machine_id
         }
       })
     } catch (dbError: any) {

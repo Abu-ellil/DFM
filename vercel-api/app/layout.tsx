@@ -6,13 +6,13 @@ import Navigation from '@/components/Navigation'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Dates Factory Manager',
-  description: 'Manage your dates factory operations'
+  title: 'مدير مصنع التمور',
+  description: 'إدارة عمليات مصنع التمور الخاص بك'
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="ar" dir="rtl">
       <body className={inter.className}>
         <Navigation />
         <main className="min-h-screen">{children}</main>

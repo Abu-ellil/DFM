@@ -8,8 +8,7 @@ import { UserPlus, AlertCircle, CheckCircle } from 'lucide-react'
 export default function RegisterPage() {
   const router = useRouter()
   const [formData, setFormData] = useState({
-    username: '',
-    email: '',
+    phone: '',
     password: '',
     confirmPassword: '',
     factoryName: ''
@@ -25,12 +24,12 @@ export default function RegisterPage() {
 
     // Validation
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match')
+      setError('كلمات المرور غير متطابقة')
       return
     }
 
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters')
+      setError('يجب أن تكون كلمة المرور 6 أحرف على الأقل')
       return
     }
 
@@ -43,10 +42,9 @@ export default function RegisterPage() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          username: formData.username,
-          email: formData.email,
+          phone: formData.phone,
           password: formData.password,
-          factoryName: formData.factoryName
+          factory_name: formData.factoryName
         })
       })
 
@@ -58,10 +56,10 @@ export default function RegisterPage() {
           router.push('/login')
         }, 2000)
       } else {
-        setError(data.error || 'Registration failed')
+        setError(data.error || 'فشل إنشاء الحساب')
       }
     } catch (err) {
-      setError('An error occurred. Please try again.')
+      setError('حدث خطأ. يرجى المحاولة مرة أخرى.')
     } finally {
       setLoading(false)
     }
@@ -72,60 +70,45 @@ export default function RegisterPage() {
       <div className="max-w-md w-full">
         <div className="bg-white rounded-lg shadow-xl p-8">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h1>
-            <p className="text-gray-600">Start managing your factory today</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">إنشاء حساب جديد</h1>
+            <p className="text-gray-600">ابدأ بإدارة مصنعك اليوم</p>
           </div>
 
           {error && (
             <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md flex items-start">
-              <AlertCircle className="w-5 h-5 text-red-600 mr-2 mt-0.5 flex-shrink-0" />
+              <AlertCircle className="w-5 h-5 text-red-600 ml-2 mt-0.5 flex-shrink-0" />
               <p className="text-sm text-red-800">{error}</p>
             </div>
           )}
 
           {success && (
             <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-md flex items-start">
-              <CheckCircle className="w-5 h-5 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
+              <CheckCircle className="w-5 h-5 text-green-600 ml-2 mt-0.5 flex-shrink-0" />
               <p className="text-sm text-green-800">
-                Registration successful! Redirecting to login...
+                تم إنشاء الحساب بنجاح! جارٍ التحويل لصفحة تسجيل الدخول...
               </p>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
-                Username
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                رقم الهاتف
               </label>
               <input
-                id="username"
-                type="text"
+                id="phone"
+                type="tel"
                 required
-                value={formData.username}
-                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                placeholder="Choose a username"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                placeholder="your@email.com"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                placeholder="أدخل رقم الهاتف"
               />
             </div>
 
             <div>
               <label htmlFor="factoryName" className="block text-sm font-medium text-gray-700 mb-2">
-                Factory Name
+                اسم المصنع
               </label>
               <input
                 id="factoryName"
@@ -134,13 +117,13 @@ export default function RegisterPage() {
                 value={formData.factoryName}
                 onChange={(e) => setFormData({ ...formData, factoryName: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                placeholder="Your factory name"
+                placeholder="اسم مصنعك"
               />
             </div>
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Password
+                كلمة المرور
               </label>
               <input
                 id="password"
@@ -149,7 +132,7 @@ export default function RegisterPage() {
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                placeholder="Create a password"
+                placeholder="أنشئ كلمة مرور"
               />
             </div>
 
@@ -158,7 +141,7 @@ export default function RegisterPage() {
                 htmlFor="confirmPassword"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Confirm Password
+                تأكيد كلمة المرور
               </label>
               <input
                 id="confirmPassword"
@@ -167,7 +150,7 @@ export default function RegisterPage() {
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                placeholder="Confirm your password"
+                placeholder="أعد كتابة كلمة المرور"
               />
             </div>
 
@@ -179,7 +162,7 @@ export default function RegisterPage() {
               {loading ? (
                 <span className="flex items-center">
                   <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                    className="animate-spin -ml-1 ml-3 h-5 w-5 text-white"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -198,12 +181,12 @@ export default function RegisterPage() {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  Creating account...
+                  جارٍ إنشاء الحساب...
                 </span>
               ) : (
                 <span className="flex items-center">
-                  <UserPlus className="w-5 h-5 mr-2" />
-                  Create Account
+                  <UserPlus className="w-5 h-5 ml-2" />
+                  إنشاء حساب
                 </span>
               )}
             </button>
@@ -211,9 +194,9 @@ export default function RegisterPage() {
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
-              Already have an account?{' '}
+              لديك حساب بالفعل؟{' '}
               <Link href="/login" className="font-medium text-primary-600 hover:text-primary-500">
-                Sign in
+                تسجيل الدخول
               </Link>
             </p>
           </div>
