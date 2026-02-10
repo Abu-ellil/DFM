@@ -2,6 +2,13 @@
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
   "framework": "nextjs",
+  "rewrites": [
+    { "source": "/api/sync/:path*", "destination": "/api/sync" },
+    { "source": "/api/admin/:path*", "destination": "/api/admin" },
+    { "source": "/api/auth/:path*", "destination": "/api/auth" },
+    { "source": "/api/dashboard/:path*", "destination": "/api/dashboard" },
+    { "source": "/api/license/:path*", "destination": "/api/license" }
+  ],
   "functions": {
     "api/**/*.ts": {
       "memory": 1024,

@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "next lint",
     "deploy": "vercel deploy --prod",
-    "seed": "node seed-database.js"
+    "seed": "node seed-database.js",
+    "seed:simple": "node seed-database-simple.js"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.9.0",

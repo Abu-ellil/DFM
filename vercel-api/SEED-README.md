@@ -1,10 +1,10 @@
-# Database Seed Script
+# Database Seed Scripts
 
-This directory contains a seed script that populates the database with sample/demo data for testing purposes.
+This directory contains seed scripts that populate the database with sample/demo data for testing purposes.
 
 ## Overview
 
-The seed script (`seed-database.js`) creates realistic sample data for the Dates Factory Manager application, including:
+The seed scripts create realistic sample data for the Dates Factory Manager application, including:
 
 - **15 Customers** - Arabic names and companies (individuals and businesses)
 - **8 Date Types** - Various date varieties (Sukari, Majdool, etc.)
@@ -18,7 +18,7 @@ The seed script (`seed-database.js`) creates realistic sample data for the Dates
 
 ## Prerequisites
 
-Before running the seed script, ensure you have:
+Before running any seed script, ensure you have:
 
 1. Node.js 18+ installed
 2. A Neon database account and project
@@ -40,40 +40,49 @@ Before running the seed script, ensure you have:
 
    Get your database URL from the [Neon Console](https://console.neon.tech).
 
-## Running the Seed Script
+## Seed Scripts
 
-### Option 1: Using npm script (Recommended)
+### Option 1: Simple Sample Data Generator (Recommended for Testing)
+
+Creates a sample data JSON file that can be used to populate the database:
+
+```bash
+npm run seed:simple
+```
+
+This script creates `sample-data.json` with all sample data in a structured format that can be used to:
+
+- Manually import data into the database
+- Understand the data structure
+- Use as a reference for custom data
+
+### Option 2: Full Database Seeder (For Production)
+
+Uses the existing sync API to populate the database with sample data:
 
 ```bash
 npm run seed
 ```
 
-### Option 2: Direct execution
+This script:
 
-```bash
-node seed-database.js
-```
-
-## Test User Accounts
-
-After running the seed script, you can log in with these test accounts:
-
-| Phone Number | Password | Full Name | Factory Name |
-|--------------|----------|-----------|--------------|
-| 0500000001 | password123 | مدير النظام | مصنع التمور التجريبي |
-| 0500000002 | password123 | أحمد المدير | مصنع النخيل |
-| 0500000003 | password123 | محمد المشرف | مصنع الواحة |
+- Creates all required database tables
+- Inserts realistic sample data
+- Creates test user accounts
 
 ## Sample Data Details
 
 ### Customers
-The seed script creates 15 customers with realistic Arabic names including:
+
+The seed scripts create 15 customers with realistic Arabic names including:
+
 - Companies (شركة, مؤسسة)
 - Individuals (فرد)
-- Phone numbers
 
 ### Date Types
+
 8 common date varieties:
+
 - تمر سكري (Sukari)
 - تمر مجدول (Majdool)
 - تمر برحي (Barhi)
@@ -84,36 +93,60 @@ The seed script creates 15 customers with realistic Arabic names including:
 - تمر سوقي (Sooqi)
 
 ### Crate Types
+
 4 crate types with different weights:
+
 - صندوق كبير (Large crate): 25.0 kg (default)
 - صندوق متوسط (Medium crate): 15.0 kg
 - صندوق صغير (Small crate): 10.0 kg
 - صندوق خاص (Special crate): 30.0 kg
 
+### Supervisors
+
+5 staff members for supervision
+
 ### Daily Prices
-30 days of price records with realistic price variations around 150 SAR per qantar.
+
+30 days of price records with realistic price variations around 150 SAR per qantar
 
 ### Weighbridge Records
-Approximately 50 weight transactions spread across the last 30 days with:
+
+Approximately 50 weight transactions spread across the last 30 days:
+
 - Random customers and date types
 - Net weights between 1000-5000 kg
 - Prices between 130-170 SAR per qantar
 - Crate counts between 10-100
 
 ### Crates Records
-Approximately 40 crate tracking records with:
+
+Approximately 40 crate tracking records:
+
 - Random customers and crate types
 - Crates out: 10-200
 - Crates returned: 0 to crates out
 
 ### Finance Records
-Approximately 60 financial transactions with:
+
+Approximately 60 financial transactions:
+
 - Transaction types: دفع (payment), استلام (receipt), سداد (settlement), خصم (discount)
 - Amounts between 1000-20000 SAR
 
-## Re-running the Seed Script
+### Auth Users
 
-You can safely re-run the seed script multiple times. It will:
+3 test user accounts with password: `password123`
+
+| Phone Number | Password    | Full Name   | Factory Name         |
+| ------------ | ----------- | ----------- | -------------------- |
+| 0500000001   | password123 | مدير النظام | مصنع التمور التجريبي |
+| 0500000002   | password123 | أحمد المدير | مصنع النخيل          |
+| 0500000003   | password123 | محمد المشرف | مصنع الواحة          |
+
+## Re-running Seed Scripts
+
+You can safely re-run the seed scripts multiple times. They will:
+
 - Create new records if they don't exist
 - Skip duplicate entries (based on unique constraints)
 - Update existing records if needed
@@ -131,29 +164,33 @@ cp .env.example .env
 
 ### Connection Errors
 
-Verify your Neon database URL is correct:
-- Check the password
-- Verify the project ID
-- Ensure the database exists
+If you encounter connection errors, verify:
 
-### "Relation does not exist" Errors
+- Your Neon database URL is correct
+- Your database project exists
+- You have the correct permissions
 
-The seed script automatically creates all required tables. If you encounter table errors, ensure you have the necessary permissions to create tables in your Neon database.
+### "relation does not exist" Errors
 
-## Customizing the Seed Data
+If you see table not found errors, the scripts will:
 
-You can modify the sample data arrays at the top of `seed-database.js`:
+- Create tables automatically on first run
+- Skip table creation on subsequent runs
+
+## Customizing Sample Data
+
+You can modify the sample data arrays at the top of the seed scripts to add your own data:
 
 ```javascript
 const sampleCustomers = [
-  { name: 'Your Customer Name', type: 'شركة', phone: '0501234567' },
+  { name: 'Your Customer Name', type: 'شركة', phone: '0501234567' }
   // Add more customers...
 ]
 ```
 
 ## Cleaning the Database
 
-To remove all seed data and start fresh, you can drop and recreate the tables:
+To remove all seed data and start fresh, you can drop and recreate tables:
 
 ```sql
 DROP TABLE IF EXISTS weighbridge CASCADE;
@@ -172,4 +209,4 @@ Then re-run the seed script.
 
 ## Support
 
-For issues or questions about the seed script, please refer to the main project documentation or create an issue in the project repository.
+For issues or questions about the seed scripts, please refer to the main project documentation or create an issue in the project repository.
