@@ -114,7 +114,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
     } catch (dbError: any) {
       if (dbError.message?.includes('auth_users') || dbError.message?.includes('relation')) {
         return response.status(401).json({
-          success: false,
+          success: false, 
           error: 'Invalid phone number or password'
         })
       }
