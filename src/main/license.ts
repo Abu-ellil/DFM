@@ -234,6 +234,23 @@ function migrateLicenseFile(): void {
 }
 
 /**
+ * Delete license file
+ */
+export function deleteLicense(): boolean {
+  try {
+    if (existsSync(LICENSE_FILE)) {
+      unlinkSync(LICENSE_FILE)
+      console.log('License file deleted successfully')
+      return true
+    }
+    return false
+  } catch (error) {
+    console.error('Error deleting license file:', error)
+    return false
+  }
+}
+
+/**
  * Check if online verification is needed (once every 7 days)
  */
 function needsOnlineVerification(): boolean {

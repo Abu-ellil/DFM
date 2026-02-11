@@ -2294,6 +2294,16 @@ ipcMain.handle('license:openTrialRequest', async () => {
   return { success: true }
 })
 
+ipcMain.handle('license:delete', async () => {
+  try {
+    const success = licenseManager.deleteLicense()
+    return { success, message: success ? 'تم حذف مفتاح التفعيل بنجاح' : 'لم يتم العثور على مفتاح تفعيل لحذفه' }
+  } catch (error) {
+    console.error('License: Error deleting license:', error)
+    return { success: false, message: 'حدث خطأ أثناء حذف مفتاح التفعيل' }
+  }
+})
+
 // Seasons IPC
 ipcMain.handle('seasons:getAll', async () => {
   try {

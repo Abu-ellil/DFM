@@ -148,6 +148,7 @@ declare global {
         }) => Promise<{ success: boolean; message: string }>
         check: () => Promise<boolean>
         openTrialRequest: () => Promise<{ success: boolean }>
+        delete: () => Promise<{ success: boolean; message: string }>
       }
       duplicates: {
         getAll: () => Promise<any>

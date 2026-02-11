@@ -518,6 +518,7 @@ export default function Settings() {
             factoryName={factoryName}
             setFactoryName={setFactoryName}
             onActivate={handleActivate}
+            onRefresh={fetchLicenseInfo}
           />
         )
       case 'security':

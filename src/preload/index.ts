@@ -95,7 +95,8 @@ const api = {
     getMachineId: () => ipcRenderer.invoke('license:getMachineId'),
     activate: (data) => ipcRenderer.invoke('license:activate', data),
     check: () => ipcRenderer.invoke('license:check'),
-    openTrialRequest: () => ipcRenderer.invoke('license:openTrialRequest')
+    openTrialRequest: () => ipcRenderer.invoke('license:openTrialRequest'),
+    delete: () => ipcRenderer.invoke('license:delete')
   },
   duplicates: {
     getAll: () => ipcRenderer.invoke('duplicates:getAll'),

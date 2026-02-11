@@ -1,6 +1,8 @@
 import { Card } from '../../ui/Card'
 import Key from 'lucide-react/dist/esm/icons/key'
 import Info from 'lucide-react/dist/esm/icons/info'
+import Trash2 from 'lucide-react/dist/esm/icons/trash-2'
+import { toast } from 'react-toastify'
 
 interface LicenseSettingsProps {
   licenseInfo: any
@@ -9,6 +11,7 @@ interface LicenseSettingsProps {
   factoryName: string
   setFactoryName: (name: string) => void
   onActivate: () => Promise<void>
+  onRefresh?: () => void
 }
 
 export function LicenseSettings({
@@ -17,13 +20,47 @@ export function LicenseSettings({
   setLicenseKey,
   factoryName: _factoryName,
   setFactoryName: _setFactoryName,
-  onActivate
+  onActivate,
+  onRefresh
 }: LicenseSettingsProps) {
+  const handleDeleteLicense = async () => {
+    if (!window.confirm('هل أنت متأكد من حذف مفتاح التفعيل؟ سيتم إغلاق التطبيق أو منعه من العمل حتى التفعيل مرة أخرى.')) {
+      return
+    }
+
+    try {
+      const result = await window.api.license.delete()
+      if (result.success) {
+        toast.success(result.message)
+        if (onRefresh) onRefresh()
+        // Optionally reload the app or redirect to activation screen
+        setTimeout(() => window.location.reload(), 1500)
+      } else {
+        toast.error(result.message)
+      }
+    } catch (error) {
+      console.error('Error deleting license:', error)
+      toast.error('حدث خطأ أثناء حذف مفتاح التفعيل')
+    }
+  }
+
   return (
     <Card className="space-y-4">
-      <div className="flex items-center gap-2 mb-4 text-emerald-600">
-        <Key size={20} />
-        <h3 className="font-bold">ترخيص البرنامج</h3>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2 text-emerald-600">
+          <Key size={20} />
+          <h3 className="font-bold">ترخيص البرنامج</h3>
+        </div>
+        {licenseInfo?.licensed && (
+          <button
+            onClick={handleDeleteLicense}
+            className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 transition-colors font-bold"
+            title="حذف مفتاح التفعيل"
+          >
+            <Trash2 size={14} />
+            حذف التفعيل
+          </button>
+        )}
       </div>
 
       <div className="space-y-4">
@@ -32,9 +69,9 @@ export function LicenseSettings({
             <div className="flex justify-between">
               <span className="text-slate-500">حالة التفعيل:</span>
               <span
-                className={`font-bold ${licenseInfo.activated ? 'text-emerald-600' : 'text-red-500'}`}
+                className={`font-bold ${licenseInfo.licensed ? 'text-emerald-600' : 'text-red-500'}`}
               >
-                {licenseInfo.activated ? 'مفعل' : 'غير مفعل'}
+                {licenseInfo.licensed ? 'مفعل' : 'غير مفعل'}
               </span>
             </div>
             {licenseInfo.factoryName && (
@@ -52,7 +89,7 @@ export function LicenseSettings({
           </div>
         )}
 
-        {!licenseInfo?.activated && (
+        {!licenseInfo?.licensed && (
           <div className="space-y-3 pt-2">
             <div>
               <label className="block text-xs font-bold text-slate-500 mb-1">مفتاح الترخيص</label>
