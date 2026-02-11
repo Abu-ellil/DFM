@@ -21,7 +21,12 @@ import { adminApi } from '../../lib/api'
 
 export default function AdminPage() {
   const router = useRouter()
+  const [authorized, setAuthorized] = useState(false)
   const [activeTab, setActiveTab] = useState('overview')
+  const [loading, setLoading] = useState(true)
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
+  // Data states
   const [stats, setStats] = useState({
     totalUsers: 0,
     activeLicenses: 0,
@@ -30,8 +35,16 @@ export default function AdminPage() {
   })
   const [users, setUsers] = useState<any[]>([])
   const [licenses, setLicenses] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [authorized, setAuthorized] = useState(false)
+  const [factories, setFactories] = useState<any[]>([])
+  const [settings, setSettings] = useState<any>(null)
+
+  // Modal states
+  const [showAddUser, setShowAddUser] = useState(false)
+  const [showEditUser, setShowEditUser] = useState(false)
+  const [editingUser, setEditingUser] = useState<any>(null)
+  const [showAddLicense, setShowAddLicense] = useState(false)
+  const [showEditLicense, setShowEditLicense] = useState(false)
+  const [editingLicense, setEditingLicense] = useState<any>(null)
 
   const fetchAdminData = useCallback(async () => {
     setLoading(true)
@@ -40,11 +53,17 @@ export default function AdminPage() {
       setStats(statsRes.stats)
 
       if (activeTab === 'users') {
-        const usersRes = await adminApi.getUsers()
-        setUsers(usersRes.users)
+        const res = await adminApi.getUsers()
+        setUsers(res.users)
       } else if (activeTab === 'licenses') {
-        const licensesRes = await adminApi.getLicenses()
-        setLicenses(licensesRes.licenses)
+        const res = await adminApi.getLicenses()
+        setLicenses(res.licenses)
+      } else if (activeTab === 'factories') {
+        const res = await adminApi.getFactories()
+        setFactories(res.factories)
+      } else if (activeTab === 'settings') {
+        const res = await adminApi.getSettings()
+        setSettings(res.settings)
       }
     } catch (error) {
       console.error('Failed to fetch admin data:', error)
@@ -102,82 +121,168 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Admin Panel</h1>
-          <p className="text-gray-600 mt-1">System management and configuration</p>
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar */}
+      <aside className="w-64 bg-slate-900 text-slate-300 flex-shrink-0 flex flex-col shadow-xl">
+        <div className="p-6 border-b border-slate-800">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-orange-500/20">
+              <Key className="w-6 h-6" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white tracking-tight">DFM Admin</h2>
+              <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
+                Management Panel
+              </p>
+            </div>
+          </div>
         </div>
-        <div className="flex items-center space-x-4">
-          <button
-            onClick={fetchAdminData}
-            disabled={loading}
-            className="flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-          >
-            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </button>
+
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+          <SidebarLink
+            active={activeTab === 'overview'}
+            onClick={() => setActiveTab('overview')}
+            icon={<BarChart3 className="w-5 h-5" />}
+            label="Overview"
+          />
+          <SidebarLink
+            active={activeTab === 'users'}
+            onClick={() => setActiveTab('users')}
+            icon={<Users className="w-5 h-5" />}
+            label="User Management"
+          />
+          <SidebarLink
+            active={activeTab === 'licenses'}
+            onClick={() => setActiveTab('licenses')}
+            icon={<Key className="w-5 h-5" />}
+            label="License Keys"
+          />
+          <SidebarLink
+            active={activeTab === 'factories'}
+            onClick={() => setActiveTab('factories')}
+            icon={<Factory className="w-5 h-5" />}
+            label="Factories"
+          />
+          <SidebarLink
+            active={activeTab === 'settings'}
+            onClick={() => setActiveTab('settings')}
+            icon={<Settings className="w-5 h-5" />}
+            label="System Settings"
+          />
+        </nav>
+
+        <div className="p-4 border-t border-slate-800 space-y-2">
           <button
             onClick={() => {
               localStorage.removeItem('token')
               localStorage.removeItem('user')
               router.push('/login')
             }}
-            className="flex items-center px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700"
+            className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-all group"
           >
-            <LogOut className="w-4 h-4 mr-2" />
-            Logout
+            <LogOut className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            <span className="font-medium">Sign Out</span>
           </button>
         </div>
-      </div>
+      </aside>
 
-      {/* Tabs */}
-      <div className="border-b border-gray-200 mb-8">
-        <nav className="-mb-px flex space-x-8">
-          <TabButton
-            active={activeTab === 'overview'}
-            onClick={() => setActiveTab('overview')}
-            icon={<BarChart3 className="w-4 h-4 mr-2" />}
-            label="Overview"
-          />
-          <TabButton
-            active={activeTab === 'users'}
-            onClick={() => setActiveTab('users')}
-            icon={<Users className="w-4 h-4 mr-2" />}
-            label="Users"
-          />
-          <TabButton
-            active={activeTab === 'licenses'}
-            onClick={() => setActiveTab('licenses')}
-            icon={<Key className="w-4 h-4 mr-2" />}
-            label="Licenses"
-          />
-          <TabButton
-            active={activeTab === 'factories'}
-            onClick={() => setActiveTab('factories')}
-            icon={<Factory className="w-4 h-4 mr-2" />}
-            label="Factories"
-          />
-          <TabButton
-            active={activeTab === 'settings'}
-            onClick={() => setActiveTab('settings')}
-            icon={<Settings className="w-4 h-4 mr-2" />}
-            label="Settings"
-          />
-        </nav>
-      </div>
+      {/* Main Content */}
+      <main className="flex-1 overflow-y-auto flex flex-col">
+        {/* Top Header */}
+        <header className="bg-white border-b border-gray-200 px-8 py-4 flex justify-between items-center sticky top-0 z-10 shadow-sm">
+          <div>
+            <h1 className="text-xl font-bold text-gray-900 capitalize">
+              {activeTab.replace('-', ' ')}
+            </h1>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Control and monitor your system performance
+            </p>
+          </div>
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={fetchAdminData}
+              disabled={loading}
+              className="p-2 text-gray-400 hover:text-orange-500 hover:bg-orange-50 rounded-full transition-all disabled:opacity-50"
+              title="Refresh Data"
+            >
+              <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+            </button>
+            <div className="h-8 w-px bg-gray-200"></div>
+            <div className="flex items-center space-x-3">
+              <div className="text-right hidden sm:block">
+                <p className="text-sm font-bold text-gray-900">Administrator</p>
+                <p className="text-[10px] text-gray-500 font-medium">System Owner</p>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-slate-100 border-2 border-white shadow-sm flex items-center justify-center text-slate-500">
+                <Users className="w-5 h-5" />
+              </div>
+            </div>
+          </div>
+        </header>
 
-      {/* Tab Content */}
-      {activeTab === 'overview' && <OverviewTab stats={stats} loading={loading} />}
-      {activeTab === 'users' && <UsersTab users={users} loading={loading} />}
-      {activeTab === 'licenses' && <LicensesTab licenses={licenses} loading={loading} />}
-      {activeTab === 'factories' && <FactoriesTab />}
-      {activeTab === 'settings' && <SettingsTab />}
+        {/* Content Area */}
+        <div className="p-8 max-w-6xl mx-auto w-full">
+          {message && (
+            <div
+              className={`mb-6 p-4 rounded-xl border flex items-center space-x-3 animate-in fade-in slide-in-from-top-4 ${
+                message.type === 'success'
+                  ? 'bg-green-50 border-green-100 text-green-700'
+                  : 'bg-red-50 border-red-100 text-red-700'
+              }`}
+            >
+              {message.type === 'success' ? (
+                <CheckCircle className="w-5 h-5 flex-shrink-0" />
+              ) : (
+                <Ban className="w-5 h-5 flex-shrink-0" />
+              )}
+              <p className="text-sm font-medium">{message.text}</p>
+              <button
+                onClick={() => setMessage(null)}
+                className="ml-auto opacity-50 hover:opacity-100"
+              >
+                <Plus className="w-4 h-4 rotate-45" />
+              </button>
+            </div>
+          )}
+
+          {activeTab === 'overview' && <OverviewTab stats={stats} loading={loading} />}
+          {activeTab === 'users' && (
+            <UsersTab
+              users={users}
+              loading={loading}
+              showAddModal={showAddUser}
+              setShowAddModal={setShowAddUser}
+              showEditModal={showEditUser}
+              setShowEditModal={setShowEditUser}
+              editingUser={editingUser}
+              setEditingUser={setEditingUser}
+            />
+          )}
+          {activeTab === 'licenses' && (
+            <LicensesTab
+              licenses={licenses}
+              loading={loading}
+              showAddModal={showAddLicense}
+              setShowAddModal={setShowAddLicense}
+              showEditModal={showEditLicense}
+              setShowEditModal={setShowEditLicense}
+              editingLicense={editingLicense}
+              setEditingLicense={setEditingLicense}
+            />
+          )}
+          {activeTab === 'factories' && (
+            <FactoriesTab factories={factories} loading={loading} onRefresh={fetchAdminData} />
+          )}
+          {activeTab === 'settings' && (
+            <SettingsTab settings={settings} loading={loading} onRefresh={fetchAdminData} />
+          )}
+        </div>
+      </main>
     </div>
   )
 }
 
-function TabButton({
+function SidebarLink({
   active,
   onClick,
   icon,
@@ -191,21 +296,24 @@ function TabButton({
   return (
     <button
       onClick={onClick}
-      className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm ${
+      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
         active
-          ? 'border-orange-500 text-orange-600'
-          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+          ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
+          : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
       }`}
     >
-      {icon}
-      {label}
+      <span className={`${active ? 'scale-110' : 'group-hover:scale-110'} transition-transform`}>
+        {icon}
+      </span>
+      <span className="font-medium text-sm tracking-wide">{label}</span>
+      {active && <div className="ml-auto w-1.5 h-1.5 bg-white rounded-full"></div>}
     </button>
   )
 }
 
 function OverviewTab({ stats, loading }: { stats: any; loading: boolean }) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           icon={<Users className="w-6 h-6" />}
@@ -237,25 +345,85 @@ function OverviewTab({ stats, loading }: { stats: any; loading: boolean }) {
         />
       </div>
 
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">System Status</h2>
-        <div className="space-y-4">
-          <StatusItem label="API Server" status="operational" />
-          <StatusItem label="Database" status="operational" />
-          <StatusItem label="Cloud Sync" status="operational" />
-          <StatusItem label="Authentication" status="operational" />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="px-6 py-5 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
+            <h2 className="text-lg font-bold text-gray-900">System Performance</h2>
+            <span className="text-[10px] font-bold text-orange-600 uppercase tracking-widest bg-orange-50 px-2 py-1 rounded-md">
+              Real-time
+            </span>
+          </div>
+          <div className="p-6">
+            <div className="space-y-6">
+              <StatusItem
+                label="API Server"
+                status="operational"
+                description="Primary backend services"
+              />
+              <StatusItem
+                label="Neon Database"
+                status="operational"
+                description="PostgreSQL persistence layer"
+              />
+              <StatusItem
+                label="Vercel Edge"
+                status="operational"
+                description="API routing and static delivery"
+              />
+              <StatusItem
+                label="License Service"
+                status="operational"
+                description="Key generation and validation"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-xl p-8 text-white relative overflow-hidden flex flex-col justify-between">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <Settings className="w-32 h-32 rotate-12" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold mb-2">Admin Quick Actions</h3>
+            <p className="text-slate-400 text-sm mb-8">
+              Frequent operations for system maintenance
+            </p>
+          </div>
+          <div className="space-y-3 relative z-10">
+            <button className="w-full py-3 bg-white/10 hover:bg-white/20 rounded-xl text-sm font-semibold transition-all flex items-center justify-center space-x-2">
+              <RefreshCw className="w-4 h-4" />
+              <span>Clear System Cache</span>
+            </button>
+            <button className="w-full py-3 bg-orange-500 hover:bg-orange-600 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-orange-500/20">
+              Generate System Report
+            </button>
+          </div>
         </div>
       </div>
     </div>
   )
 }
 
-function UsersTab({ users, loading }: { users: any[]; loading: boolean }) {
+function UsersTab({
+  users,
+  loading,
+  showAddModal,
+  setShowAddModal,
+  showEditModal,
+  setShowEditModal,
+  editingUser,
+  setEditingUser
+}: {
+  users: any[]
+  loading: boolean
+  showAddModal: boolean
+  setShowAddModal: (show: boolean) => void
+  showEditModal: boolean
+  setShowEditModal: (show: boolean) => void
+  editingUser: any
+  setEditingUser: (user: any) => void
+}) {
   const [actionLoading, setActionLoading] = useState<{ [key: number]: boolean }>({})
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
-  const [showAddModal, setShowAddModal] = useState(false)
-  const [showEditModal, setShowEditModal] = useState(false)
-  const [editingUser, setEditingUser] = useState<any>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [roleFilter, setRoleFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
@@ -268,6 +436,7 @@ function UsersTab({ users, loading }: { users: any[]; loading: boolean }) {
     role: 'user' as const
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
@@ -285,11 +454,10 @@ function UsersTab({ users, loading }: { users: any[]; loading: boolean }) {
     e.preventDefault()
     setIsSubmitting(true)
     setMessage(null)
-
     try {
       const res = await adminApi.createUser(formData)
       if (res.success) {
-        setMessage({ type: 'success', text: res.message || 'User created successfully' })
+        setMessage({ type: 'success', text: 'User created successfully' })
         setShowAddModal(false)
         setFormData({ phone: '', password: '', full_name: '', factory_name: '', role: 'user' })
         setTimeout(() => window.location.reload(), 1000)
@@ -308,18 +476,14 @@ function UsersTab({ users, loading }: { users: any[]; loading: boolean }) {
     if (!editingUser) return
     setIsSubmitting(true)
     setMessage(null)
-
     try {
-      // Create update data (password is optional in update)
       const updateData: any = { ...formData }
       if (!updateData.password) delete updateData.password
-
       const res = await adminApi.updateUser(editingUser.id, updateData)
       if (res.success) {
-        setMessage({ type: 'success', text: res.message || 'User updated successfully' })
+        setMessage({ type: 'success', text: 'User updated successfully' })
         setShowEditModal(false)
         setEditingUser(null)
-        setFormData({ phone: '', password: '', full_name: '', factory_name: '', role: 'user' })
         setTimeout(() => window.location.reload(), 1000)
       } else {
         setMessage({ type: 'error', text: res.message || 'Failed to update user' })
@@ -335,7 +499,7 @@ function UsersTab({ users, loading }: { users: any[]; loading: boolean }) {
     setEditingUser(user)
     setFormData({
       phone: user.phone || '',
-      password: '', // Don't show existing password
+      password: '',
       full_name: user.full_name || '',
       factory_name: user.factory_name || '',
       role: (user.role as any) || 'user'
@@ -345,31 +509,16 @@ function UsersTab({ users, loading }: { users: any[]; loading: boolean }) {
 
   const handleUserAction = async (userId: number, action: string, actionName: string) => {
     setActionLoading({ ...actionLoading, [userId]: true })
-    setMessage(null)
-
     try {
-      let result: { success: boolean; message?: string } | undefined
-      switch (action) {
-        case 'activate':
-          result = await adminApi.activateUser(userId)
-          break
-        case 'deactivate':
-          result = await adminApi.deactivateUser(userId)
-          break
-        case 'ban':
-          result = await adminApi.banUser(userId)
-          break
-        case 'delete':
-          result = await adminApi.deleteUser(userId)
-          break
-      }
+      let result: any
+      if (action === 'activate') result = await adminApi.activateUser(userId)
+      else if (action === 'deactivate') result = await adminApi.deactivateUser(userId)
+      else if (action === 'ban') result = await adminApi.banUser(userId)
+      else if (action === 'delete') result = await adminApi.deleteUser(userId)
 
       if (result?.success) {
-        setMessage({ type: 'success', text: result.message || `${actionName} successful` })
-        // Refresh the users list
+        setMessage({ type: 'success', text: `${actionName} successful` })
         setTimeout(() => window.location.reload(), 1000)
-      } else {
-        setMessage({ type: 'error', text: result?.message || `${actionName} failed` })
       }
     } catch (error: any) {
       setMessage({ type: 'error', text: error.message || `${actionName} failed` })
@@ -379,53 +528,64 @@ function UsersTab({ users, loading }: { users: any[]; loading: boolean }) {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-gray-900">User Management</h2>
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-black text-gray-900 tracking-tight">User Management</h2>
+          <p className="text-sm text-gray-500">Manage system access and permissions</p>
+        </div>
         <button
           onClick={() => {
             setFormData({ phone: '', password: '', full_name: '', factory_name: '', role: 'user' })
             setShowAddModal(true)
           }}
-          className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-md text-sm font-medium hover:bg-orange-700"
+          className="flex items-center justify-center px-6 py-3 bg-orange-500 text-white rounded-xl text-sm font-bold hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20 active:scale-95"
         >
-          <Plus className="w-4 h-4 mr-2" />
-          Add User
+          <Plus className="w-5 h-5 mr-2" />
+          Create New User
         </button>
       </div>
 
-      {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-4 rounded-lg shadow-sm">
-        <div>
-          <label className="block text-xs font-medium text-gray-500 uppercase mb-1">Search</label>
-          <input
-            type="text"
-            placeholder="Search phone, name..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-orange-500 focus:border-orange-500"
-          />
+      {/* Filters Card */}
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="relative">
+          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+            Search Directory
+          </label>
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search phone, name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-500/20 transition-all placeholder:text-gray-400"
+            />
+          </div>
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-500 uppercase mb-1">Role</label>
+          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+            Access Level
+          </label>
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-orange-500 focus:border-orange-500"
+            className="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-500/20 transition-all"
           >
             <option value="all">All Roles</option>
-            <option value="admin">Admin</option>
+            <option value="admin">Administrator</option>
             <option value="manager">Manager</option>
-            <option value="user">User</option>
-            <option value="worker">Worker</option>
+            <option value="user">Standard User</option>
+            <option value="worker">Field Worker</option>
           </select>
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-500 uppercase mb-1">Status</label>
+          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+            Status
+          </label>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-orange-500 focus:border-orange-500"
+            className="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-500/20 transition-all"
           >
             <option value="all">All Statuses</option>
             <option value="active">Active</option>
@@ -437,252 +597,205 @@ function UsersTab({ users, loading }: { users: any[]; loading: boolean }) {
 
       {message && (
         <div
-          className={`p-4 rounded-md ${message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}
+          className={`p-4 rounded-xl border flex items-center space-x-3 ${message.type === 'success' ? 'bg-green-50 border-green-100 text-green-700' : 'bg-red-50 border-red-100 text-red-700'}`}
         >
-          {message.text}
+          <p className="text-sm font-bold">{message.text}</p>
         </div>
       )}
 
-      {/* Add User Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
-          <div className="relative p-8 border w-full max-w-md shadow-lg rounded-md bg-white">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium text-gray-900">Add New User</h3>
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <span className="sr-only">Close</span>
-                <Plus className="w-6 h-6 transform rotate-45" />
-              </button>
-            </div>
-            <form onSubmit={handleAddUser} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Phone Number</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
-                  placeholder="0123456789"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Full Name</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.full_name}
-                  onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Password</label>
-                <input
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Factory Name</label>
-                <input
-                  type="text"
-                  value={formData.factory_name}
-                  onChange={(e) => setFormData({ ...formData, factory_name: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Role</label>
-                <select
-                  value={formData.role}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
-                >
-                  <option value="user">User</option>
-                  <option value="manager">Manager</option>
-                  <option value="worker">Worker</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
-              <div className="mt-6 flex justify-end space-x-3">
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-4 py-2 bg-orange-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50"
-                >
-                  {isSubmitting ? 'Adding...' : 'Add User'}
-                </button>
-              </div>
-            </form>
-          </div>
+      {/* Table Card */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-100">
+            <thead>
+              <tr className="bg-gray-50/50">
+                <th className="px-8 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  Identity
+                </th>
+                <th className="px-8 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  Role
+                </th>
+                <th className="px-8 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  Status
+                </th>
+                <th className="px-8 py-4 text-right text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {loading ? (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="px-8 py-12 text-center text-gray-400 italic font-medium"
+                  >
+                    Loading secure directory...
+                  </td>
+                </tr>
+              ) : filteredUsers.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="px-8 py-12 text-center text-gray-400 italic font-medium"
+                  >
+                    No identities matching filters
+                  </td>
+                </tr>
+              ) : (
+                filteredUsers.map((user) => (
+                  <UserRow
+                    key={user.id}
+                    user={user}
+                    onEdit={() => openEditModal(user)}
+                    onAction={handleUserAction}
+                    actionLoading={actionLoading[user.id] || false}
+                  />
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-      )}
+      </div>
 
-      {/* Edit User Modal */}
-      {showEditModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
-          <div className="relative p-8 border w-full max-w-md shadow-lg rounded-md bg-white">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium text-gray-900">Edit User</h3>
+      {/* Modal - Unified styling for both Add and Edit */}
+      {(showAddModal || showEditModal) && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            onClick={() => {
+              setShowAddModal(false)
+              setShowEditModal(false)
+            }}
+          ></div>
+          <div className="relative bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="px-8 py-6 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
+              <h3 className="text-xl font-black text-gray-900 tracking-tight">
+                {showAddModal ? 'New Identity' : 'Modify Identity'}
+              </h3>
               <button
                 onClick={() => {
+                  setShowAddModal(false)
                   setShowEditModal(false)
-                  setEditingUser(null)
                 }}
-                className="text-gray-400 hover:text-gray-500"
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
               >
-                <span className="sr-only">Close</span>
-                <Plus className="w-6 h-6 transform rotate-45" />
+                <Plus className="w-5 h-5 rotate-45 text-gray-400" />
               </button>
             </div>
-            <form onSubmit={handleEditUser} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Phone Number</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
-                  placeholder="0123456789"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Full Name</label>
-                <input
-                  type="text"
-                  required
+            <form
+              onSubmit={showAddModal ? handleAddUser : handleEditUser}
+              className="p-8 space-y-5"
+            >
+              <div className="space-y-4">
+                <InputField
+                  label="Full Name"
                   value={formData.full_name}
-                  onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
+                  onChange={(v) => setFormData({ ...formData, full_name: v })}
+                  placeholder="e.g. John Doe"
+                  required
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Password (leave blank to keep current)
-                </label>
-                <input
-                  type="password"
+                <InputField
+                  label="Phone Number"
+                  value={formData.phone}
+                  onChange={(v) => setFormData({ ...formData, phone: v })}
+                  placeholder="0123456789"
+                  required
+                />
+                <InputField
+                  label={showEditModal ? 'New Password (optional)' : 'Access Password'}
                   value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
+                  onChange={(v) => setFormData({ ...formData, password: v })}
+                  type="password"
+                  required={showAddModal}
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Factory Name</label>
-                <input
-                  type="text"
+                <InputField
+                  label="Factory Affiliation"
                   value={formData.factory_name}
-                  onChange={(e) => setFormData({ ...formData, factory_name: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
+                  onChange={(v) => setFormData({ ...formData, factory_name: v })}
+                  placeholder="Factory Name"
                 />
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                    Assign Role
+                  </label>
+                  <select
+                    value={formData.role}
+                    onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
+                    className="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-500/20 transition-all"
+                  >
+                    <option value="user">Standard User</option>
+                    <option value="manager">Manager</option>
+                    <option value="worker">Field Worker</option>
+                    <option value="admin">Administrator</option>
+                  </select>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Role</label>
-                <select
-                  value={formData.role}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
-                >
-                  <option value="user">User</option>
-                  <option value="manager">Manager</option>
-                  <option value="worker">Worker</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
-              <div className="mt-6 flex justify-end space-x-3">
+              <div className="pt-4 flex space-x-3">
                 <button
                   type="button"
                   onClick={() => {
+                    setShowAddModal(false)
                     setShowEditModal(false)
-                    setEditingUser(null)
                   }}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="flex-1 py-3 text-sm font-bold text-gray-500 hover:bg-gray-50 rounded-xl transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 bg-orange-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50"
+                  className="flex-2 py-3 px-8 bg-orange-500 text-white rounded-xl text-sm font-bold hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20 disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Saving...' : 'Save Changes'}
+                  {isSubmitting ? 'Processing...' : showAddModal ? 'Create User' : 'Save Changes'}
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
-
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                User
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Role
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {loading ? (
-              <tr>
-                <td colSpan={4} className="px-6 py-4 text-center text-gray-500 italic">
-                  Loading users...
-                </td>
-              </tr>
-            ) : filteredUsers.length === 0 ? (
-              <tr>
-                <td colSpan={4} className="px-6 py-4 text-center text-gray-500 italic">
-                  No users found
-                </td>
-              </tr>
-            ) : (
-              filteredUsers.map((user) => (
-                <UserRow
-                  key={user.id}
-                  user={user}
-                  onEdit={() => openEditModal(user)}
-                  onAction={handleUserAction}
-                  actionLoading={actionLoading[user.id] || false}
-                />
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
     </div>
   )
 }
 
-function LicensesTab({ licenses, loading }: { licenses: any[]; loading: boolean }) {
+function InputField({ label, value, onChange, type = 'text', placeholder, required = false }: any) {
+  return (
+    <div>
+      <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+        {label}
+      </label>
+      <input
+        type={type}
+        required={required}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-500/20 transition-all placeholder:text-gray-300"
+      />
+    </div>
+  )
+}
+
+function LicensesTab({
+  licenses,
+  loading,
+  showAddModal,
+  setShowAddModal,
+  showEditModal,
+  setShowEditModal,
+  editingLicense,
+  setEditingLicense
+}: {
+  licenses: any[]
+  loading: boolean
+  showAddModal: boolean
+  setShowAddModal: (show: boolean) => void
+  showEditModal: boolean
+  setShowEditModal: (show: boolean) => void
+  editingLicense: any
+  setEditingLicense: (license: any) => void
+}) {
   const [actionLoading, setActionLoading] = useState<{ [key: number]: boolean }>({})
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
-  const [showAddModal, setShowAddModal] = useState(false)
-  const [showEditModal, setShowEditModal] = useState(false)
-  const [editingLicense, setEditingLicense] = useState<any>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
 
@@ -692,6 +805,7 @@ function LicensesTab({ licenses, loading }: { licenses: any[]; loading: boolean 
     machineId: ''
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   const filteredLicenses = licenses.filter((license) => {
     const matchesSearch =
@@ -708,7 +822,6 @@ function LicensesTab({ licenses, loading }: { licenses: any[]; loading: boolean 
     e.preventDefault()
     setIsSubmitting(true)
     setMessage(null)
-
     try {
       const res = await adminApi.generateLicense({
         factory_name: formData.factoryName,
@@ -716,7 +829,7 @@ function LicensesTab({ licenses, loading }: { licenses: any[]; loading: boolean 
         machine_id: formData.machineId
       })
       if (res.success) {
-        setMessage({ type: 'success', text: res.message || 'License generated successfully' })
+        setMessage({ type: 'success', text: 'License generated successfully' })
         setShowAddModal(false)
         setFormData({ factoryName: '', durationCode: 'MONTH_1', machineId: '' })
         setTimeout(() => window.location.reload(), 1000)
@@ -735,18 +848,15 @@ function LicensesTab({ licenses, loading }: { licenses: any[]; loading: boolean 
     if (!editingLicense) return
     setIsSubmitting(true)
     setMessage(null)
-
     try {
       const res = await adminApi.updateLicense(editingLicense.id, {
         factory_name: formData.factoryName,
         machine_id: formData.machineId
-        // status is usually handled via actions, but could be added here
       })
       if (res.success) {
-        setMessage({ type: 'success', text: res.message || 'License updated successfully' })
+        setMessage({ type: 'success', text: 'License updated successfully' })
         setShowEditModal(false)
         setEditingLicense(null)
-        setFormData({ factoryName: '', durationCode: 'MONTH_1', machineId: '' })
         setTimeout(() => window.location.reload(), 1000)
       } else {
         setMessage({ type: 'error', text: res.message || 'Failed to update license' })
@@ -762,7 +872,7 @@ function LicensesTab({ licenses, loading }: { licenses: any[]; loading: boolean 
     setEditingLicense(license)
     setFormData({
       factoryName: license.factory_name || '',
-      durationCode: 'MONTH_1', // Duration not applicable for update usually
+      durationCode: 'MONTH_1',
       machineId: license.machine_id || ''
     })
     setShowEditModal(true)
@@ -770,31 +880,16 @@ function LicensesTab({ licenses, loading }: { licenses: any[]; loading: boolean 
 
   const handleLicenseAction = async (licenseId: number, action: string, actionName: string) => {
     setActionLoading({ ...actionLoading, [licenseId]: true })
-    setMessage(null)
-
     try {
-      let result: { success: boolean; message?: string } | undefined
-      switch (action) {
-        case 'activate':
-          result = await adminApi.activateLicense(licenseId)
-          break
-        case 'deactivate':
-          result = await adminApi.deactivateLicense(licenseId)
-          break
-        case 'ban':
-          result = await adminApi.banLicense(licenseId)
-          break
-        case 'delete':
-          result = await adminApi.deleteLicense(licenseId)
-          break
-      }
+      let result: any
+      if (action === 'activate') result = await adminApi.activateLicense(licenseId)
+      else if (action === 'deactivate') result = await adminApi.deactivateLicense(licenseId)
+      else if (action === 'ban') result = await adminApi.banLicense(licenseId)
+      else if (action === 'delete') result = await adminApi.deleteLicense(licenseId)
 
       if (result?.success) {
-        setMessage({ type: 'success', text: result.message || `${actionName} successful` })
-        // Refresh licenses list
+        setMessage({ type: 'success', text: `${actionName} successful` })
         setTimeout(() => window.location.reload(), 1000)
-      } else {
-        setMessage({ type: 'error', text: result?.message || `${actionName} failed` })
       }
     } catch (error: any) {
       setMessage({ type: 'error', text: error.message || `${actionName} failed` })
@@ -804,129 +899,131 @@ function LicensesTab({ licenses, loading }: { licenses: any[]; loading: boolean 
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-gray-900">License Management</h2>
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-black text-gray-900 tracking-tight">License Management</h2>
+          <p className="text-sm text-gray-500">Control system access keys and validity</p>
+        </div>
         <button
           onClick={() => {
             setFormData({ factoryName: '', durationCode: 'MONTH_1', machineId: '' })
             setShowAddModal(true)
           }}
-          className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-md text-sm font-medium hover:bg-orange-700"
+          className="flex items-center justify-center px-6 py-3 bg-orange-500 text-white rounded-xl text-sm font-bold hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20 active:scale-95"
         >
-          <Plus className="w-4 h-4 mr-2" />
-          Generate License
+          <Plus className="w-5 h-5 mr-2" />
+          Generate New Key
         </button>
       </div>
 
-      {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-lg shadow-sm">
-        <div>
-          <label className="block text-xs font-medium text-gray-500 uppercase mb-1">Search</label>
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="relative">
+          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Search Registry</label>
           <input
             type="text"
             placeholder="Search key, factory, machine..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-orange-500 focus:border-orange-500"
+            className="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-500/20 transition-all placeholder:text-gray-400"
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-500 uppercase mb-1">Status</label>
+          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Key Status</label>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-orange-500 focus:border-orange-500"
+            className="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-500/20 transition-all"
           >
-            <option value="all">All Statuses</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-            <option value="expired">Expired</option>
-            <option value="banned">Banned</option>
+            <option value="all">All Keys</option>
+            <option value="active">Active Only</option>
+            <option value="inactive">Inactive Only</option>
+            <option value="expired">Expired Only</option>
+            <option value="banned">Banned Only</option>
           </select>
         </div>
       </div>
 
       {message && (
-        <div
-          className={`p-4 rounded-md ${message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}
-        >
-          {message.text}
+        <div className={`p-4 rounded-xl border flex items-center space-x-3 ${message.type === 'success' ? 'bg-green-50 border-green-100 text-green-700' : 'bg-red-50 border-red-100 text-red-700'}`}>
+          <p className="text-sm font-bold">{message.text}</p>
         </div>
       )}
 
-      {/* Generate License Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
-          <div className="relative p-8 border w-full max-w-md shadow-lg rounded-md bg-white">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium text-gray-900">Generate New License</h3>
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <span className="sr-only">Close</span>
-                <Plus className="w-6 h-6 transform rotate-45" />
-              </button>
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-100">
+            <thead>
+              <tr className="bg-gray-50/50">
+                <th className="px-8 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">License Key</th>
+                <th className="px-8 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">Affiliation</th>
+                <th className="px-8 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status</th>
+                <th className="px-8 py-4 text-right text-[10px] font-bold text-gray-400 uppercase tracking-widest">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {loading ? (
+                <tr><td colSpan={4} className="px-8 py-12 text-center text-gray-400 italic font-medium">Loading secure registry...</td></tr>
+              ) : filteredLicenses.length === 0 ? (
+                <tr><td colSpan={4} className="px-8 py-12 text-center text-gray-400 italic font-medium">No licenses matching filters</td></tr>
+              ) : (
+                filteredLicenses.map((license) => (
+                  <LicenseRow
+                    key={license.id}
+                    license={license}
+                    onEdit={() => openEditModal(license)}
+                    onAction={handleLicenseAction}
+                    actionLoading={actionLoading[license.id] || false}
+                  />
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {(showAddModal || showEditModal) && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => { setShowAddModal(false); setShowEditModal(false); }}></div>
+          <div className="relative bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="px-8 py-6 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
+              <h3 className="text-xl font-black text-gray-900 tracking-tight">{showAddModal ? 'Generate Key' : 'Modify Key'}</h3>
+              <button onClick={() => { setShowAddModal(false); setShowEditModal(false); }} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><Plus className="w-5 h-5 rotate-45 text-gray-400" /></button>
             </div>
-            <form onSubmit={handleGenerateLicense} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Factory Name</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.factoryName}
-                  onChange={(e) => setFormData({ ...formData, factoryName: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
-                  placeholder="Factory Name"
-                />
+            <form onSubmit={showAddModal ? handleGenerateLicense : handleEditLicense} className="p-8 space-y-5">
+              <div className="space-y-4">
+                <InputField label="Factory Name" value={formData.factoryName} onChange={(v) => setFormData({ ...formData, factoryName: v })} placeholder="Target Factory" required />
+                <InputField label="Machine ID (Optional)" value={formData.machineId} onChange={(v) => setFormData({ ...formData, machineId: v })} placeholder="Hardware Identifier" />
+                {showAddModal && (
+                  <div>
+                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Duration Period</label>
+                    <select
+                      value={formData.durationCode}
+                      onChange={(e) => setFormData({ ...formData, durationCode: e.target.value })}
+                      className="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-500/20 transition-all"
+                    >
+                      <option value="MONTH_1">1 Month Access</option>
+                      <option value="MONTH_3">3 Months Access</option>
+                      <option value="MONTH_6">6 Months Access</option>
+                      <option value="YEAR_1">1 Year Access</option>
+                      <option value="LIFETIME">Unlimited Access</option>
+                    </select>
+                  </div>
+                )}
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Machine ID (Optional)
-                </label>
-                <input
-                  type="text"
-                  value={formData.machineId}
-                  onChange={(e) => setFormData({ ...formData, machineId: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
-                  placeholder="Unique Machine Identifier"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Duration</label>
-                <select
-                  value={formData.durationCode}
-                  onChange={(e) => setFormData({ ...formData, durationCode: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
-                >
-                  <option value="MONTH_1">1 Month</option>
-                  <option value="MONTH_3">3 Months</option>
-                  <option value="MONTH_6">6 Months</option>
-                  <option value="YEAR_1">1 Year</option>
-                  <option value="LIFETIME">Lifetime</option>
-                </select>
-              </div>
-              <div className="mt-6 flex justify-end space-x-3">
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-4 py-2 bg-orange-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50"
-                >
-                  {isSubmitting ? 'Generating...' : 'Generate License'}
+              <div className="pt-4 flex space-x-3">
+                <button type="button" onClick={() => { setShowAddModal(false); setShowEditModal(false); }} className="flex-1 py-3 text-sm font-bold text-gray-500 hover:bg-gray-50 rounded-xl transition-all">Cancel</button>
+                <button type="submit" disabled={isSubmitting} className="flex-2 py-3 px-8 bg-orange-500 text-white rounded-xl text-sm font-bold hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20 disabled:opacity-50">
+                  {isSubmitting ? 'Processing...' : showAddModal ? 'Generate Key' : 'Save Changes'}
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
+    </div>
+  )
+}
 
       {/* Edit License Modal */}
       {showEditModal && (
@@ -1556,39 +1653,61 @@ function StatCard({
   loading: boolean
 }) {
   const colorClasses: { [key: string]: string } = {
-    blue: 'bg-blue-50 text-blue-600',
-    green: 'bg-green-50 text-green-600',
-    orange: 'bg-orange-50 text-orange-600',
-    purple: 'bg-purple-50 text-purple-600'
+    blue: 'bg-blue-50 text-blue-500 border-blue-100',
+    green: 'bg-green-50 text-green-500 border-green-100',
+    orange: 'bg-orange-50 text-orange-500 border-orange-100',
+    purple: 'bg-purple-50 text-purple-500 border-purple-100'
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <p className="text-3xl font-bold text-gray-900 mt-2">{loading ? '...' : value}</p>
-        </div>
-        <div className={`p-3 rounded-full ${colorClasses[color] || 'bg-gray-50 text-gray-600'}`}>
-          {icon}
-        </div>
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center space-x-5 hover:shadow-md transition-all group">
+      <div
+        className={`p-4 rounded-xl border transition-all group-hover:scale-110 ${colorClasses[color] || 'bg-gray-50 text-gray-500 border-gray-100'}`}
+      >
+        {icon}
+      </div>
+      <div>
+        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">{title}</p>
+        <p className="text-2xl font-black text-gray-900 mt-0.5 tracking-tight">
+          {loading ? (
+            <span className="inline-block w-8 h-6 bg-gray-100 animate-pulse rounded"></span>
+          ) : (
+            value
+          )}
+        </p>
       </div>
     </div>
   )
 }
 
-function StatusItem({ label, status }: { label: string; status: string }) {
+function StatusItem({
+  label,
+  status,
+  description
+}: {
+  label: string
+  status: string
+  description?: string
+}) {
   const statusColors: { [key: string]: string } = {
-    operational: 'bg-green-100 text-green-800',
-    degraded: 'bg-yellow-100 text-yellow-800',
-    down: 'bg-red-100 text-red-800'
+    operational: 'text-green-500 bg-green-50 border-green-100',
+    degraded: 'text-yellow-500 bg-yellow-50 border-yellow-100',
+    down: 'text-red-500 bg-red-50 border-red-100'
   }
 
   return (
-    <div className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
-      <span className="text-sm font-medium text-gray-900">{label}</span>
+    <div className="flex items-center justify-between p-4 rounded-xl border border-gray-50 hover:border-gray-100 transition-colors bg-white shadow-sm">
+      <div className="flex items-center space-x-4">
+        <div
+          className={`w-2 h-2 rounded-full animate-pulse ${status === 'operational' ? 'bg-green-500' : status === 'degraded' ? 'bg-yellow-500' : 'bg-red-500'}`}
+        ></div>
+        <div>
+          <p className="text-sm font-bold text-gray-900">{label}</p>
+          {description && <p className="text-[11px] text-gray-400 font-medium">{description}</p>}
+        </div>
+      </div>
       <span
-        className={`px-3 py-1 rounded-full text-xs font-medium ${statusColors[status] || 'bg-gray-100 text-gray-800'}`}
+        className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${statusColors[status] || 'text-gray-500 bg-gray-50 border-gray-100'}`}
       >
         {status}
       </span>
