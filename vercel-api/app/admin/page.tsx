@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Users,
@@ -33,33 +33,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true)
   const [authorized, setAuthorized] = useState(false)
 
-  useEffect(() => {
-    checkAuth()
-  }, [])
-
-  const checkAuth = () => {
-    const token = localStorage.getItem('token')
-    const userJson = localStorage.getItem('user')
-
-    if (!token || !userJson) {
-      router.push('/login')
-      return
-    }
-
-    try {
-      const user = JSON.parse(userJson)
-      if (user.role !== 'admin') {
-        router.push('/dashboard')
-        return
-      }
-      setAuthorized(true)
-      fetchAdminData()
-    } catch (e) {
-      router.push('/login')
-    }
-  }
-
-  const fetchAdminData = async () => {
+  const fetchAdminData = useCallback(async () => {
     setLoading(true)
     try {
       const statsRes = await adminApi.getStats()
@@ -82,13 +56,39 @@ export default function AdminPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [activeTab, router])
+
+  const checkAuth = useCallback(() => {
+    const token = localStorage.getItem('token')
+    const userJson = localStorage.getItem('user')
+
+    if (!token || !userJson) {
+      router.push('/login')
+      return
+    }
+
+    try {
+      const user = JSON.parse(userJson)
+      if (user.role !== 'admin') {
+        router.push('/dashboard')
+        return
+      }
+      setAuthorized(true)
+      fetchAdminData()
+    } catch (e) {
+      router.push('/login')
+    }
+  }, [router, fetchAdminData])
+
+  useEffect(() => {
+    checkAuth()
+  }, [checkAuth])
 
   useEffect(() => {
     if (authorized) {
       fetchAdminData()
     }
-  }, [activeTab, authorized])
+  }, [activeTab, authorized, fetchAdminData])
 
   if (!authorized) {
     return (
@@ -710,7 +710,11 @@ function LicensesTab({ licenses, loading }: { licenses: any[]; loading: boolean 
     setMessage(null)
 
     try {
-      const res = await adminApi.generateLicense(formData)
+      const res = await adminApi.generateLicense({
+        factory_name: formData.factoryName,
+        duration_code: formData.durationCode,
+        machine_id: formData.machineId
+      })
       if (res.success) {
         setMessage({ type: 'success', text: res.message || 'License generated successfully' })
         setShowAddModal(false)

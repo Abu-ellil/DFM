@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Users,
@@ -46,41 +46,18 @@ export default function DashboardPage() {
   const [authorized, setAuthorized] = useState(false)
   const [user, setUser] = useState<any>(null)
 
-  useEffect(() => {
-    checkAuth()
-  }, [])
-
-  const checkAuth = () => {
-    const token = localStorage.getItem('token')
-    const userJson = localStorage.getItem('user')
-
-    if (!token || !userJson) {
-      router.push('/login')
-      return
-    }
-
-    try {
-      const userData = JSON.parse(userJson)
-      setUser(userData)
-      setAuthorized(true)
-      fetchDashboardData()
-    } catch (e) {
-      router.push('/login')
-    }
-  }
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     setLoading(true)
     try {
       const [statsRes, activityRes] = await Promise.all([
         dashboardApi.getStats(),
         dashboardApi.getRecentActivity(5)
       ])
-      
+
       if (statsRes.stats) {
         setStats(statsRes.stats)
       }
-      
+
       if (Array.isArray(activityRes)) {
         setActivity(activityRes)
       } else if ((activityRes as any).activity) {
@@ -98,7 +75,30 @@ export default function DashboardPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [router])
+
+  const checkAuth = useCallback(() => {
+    const token = localStorage.getItem('token')
+    const userJson = localStorage.getItem('user')
+
+    if (!token || !userJson) {
+      router.push('/login')
+      return
+    }
+
+    try {
+      const userData = JSON.parse(userJson)
+      setUser(userData)
+      setAuthorized(true)
+      fetchDashboardData()
+    } catch (e) {
+      router.push('/login')
+    }
+  }, [router, fetchDashboardData])
+
+  useEffect(() => {
+    checkAuth()
+  }, [checkAuth])
 
   if (!authorized) {
     return (
@@ -111,10 +111,12 @@ export default function DashboardPage() {
     )
   }
 
-  const cratePieData = stats.charts ? [
-    { name: 'صناديق بالخارج', value: stats.charts.crates.total_out },
-    { name: 'صناديق مستردة', value: stats.charts.crates.total_returned }
-  ] : []
+  const cratePieData = stats.charts
+    ? [
+        { name: 'صناديق بالخارج', value: stats.charts.crates.total_out },
+        { name: 'صناديق مستردة', value: stats.charts.crates.total_returned }
+      ]
+    : []
 
   const COLORS = ['#f97316', '#22c55e', '#3b82f6', '#a855f7']
 
@@ -195,8 +197,12 @@ export default function DashboardPage() {
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="month" />
                 <YAxis />
-                <Tooltip 
-                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: '8px',
+                    border: 'none',
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                  }}
                   formatter={(value) => [`${value} كجم`, 'الوزن']}
                 />
                 <Bar dataKey="total_weight" fill="#3b82f6" radius={[4, 4, 0, 0]} />
@@ -217,12 +223,28 @@ export default function DashboardPage() {
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="month" />
                 <YAxis />
-                <Tooltip 
-                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: '8px',
+                    border: 'none',
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                  }}
                 />
                 <Legend />
-                <Line type="monotone" dataKey="total_paid" name="مدفوعات" stroke="#22c55e" strokeWidth={2} />
-                <Line type="monotone" dataKey="total_received" name="مقبوضات" stroke="#f43f5e" strokeWidth={2} />
+                <Line
+                  type="monotone"
+                  dataKey="total_paid"
+                  name="مدفوعات"
+                  stroke="#22c55e"
+                  strokeWidth={2}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="total_received"
+                  name="مقبوضات"
+                  stroke="#f43f5e"
+                  strokeWidth={2}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -253,7 +275,7 @@ export default function DashboardPage() {
                   ))}
                 </Pie>
                 <Tooltip />
-                <Legend verticalAlign="bottom" height={36}/>
+                <Legend verticalAlign="bottom" height={36} />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -268,7 +290,9 @@ export default function DashboardPage() {
             </div>
             <div className="pt-2 border-t flex justify-between text-sm font-bold">
               <span>المتبقي بالخارج:</span>
-              <span className="text-orange-600">{(stats.charts?.crates.total_out || 0) - (stats.charts?.crates.total_returned || 0)}</span>
+              <span className="text-orange-600">
+                {(stats.charts?.crates.total_out || 0) - (stats.charts?.crates.total_returned || 0)}
+              </span>
             </div>
           </div>
         </div>
@@ -284,20 +308,32 @@ export default function DashboardPage() {
               <p className="text-gray-500 italic text-center py-8">لا توجد نشاطات حديثة</p>
             ) : (
               activity.map((item, index) => (
-                <div key={index} className="flex items-start p-3 hover:bg-gray-50 rounded-lg transition-colors border-b border-gray-50 last:border-0">
-                  <div className={`p-2 rounded-full ml-4 ${
-                    item.type === 'weighbridge' ? 'bg-green-100 text-green-600' :
-                    item.type === 'finance' ? 'bg-purple-100 text-purple-600' :
-                    'bg-orange-100 text-orange-600'
-                  }`}>
-                    {item.type === 'weighbridge' ? <Truck size={16} /> :
-                     item.type === 'finance' ? <DollarSign size={16} /> :
-                     <Package size={16} />}
+                <div
+                  key={index}
+                  className="flex items-start p-3 hover:bg-gray-50 rounded-lg transition-colors border-b border-gray-50 last:border-0"
+                >
+                  <div
+                    className={`p-2 rounded-full ml-4 ${
+                      item.type === 'weighbridge'
+                        ? 'bg-green-100 text-green-600'
+                        : item.type === 'finance'
+                          ? 'bg-purple-100 text-purple-600'
+                          : 'bg-orange-100 text-orange-600'
+                    }`}
+                  >
+                    {item.type === 'weighbridge' ? (
+                      <Truck size={16} />
+                    ) : item.type === 'finance' ? (
+                      <DollarSign size={16} />
+                    ) : (
+                      <Package size={16} />
+                    )}
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900">{item.message}</p>
                     <p className="text-xs text-gray-500 mt-1">
-                      {new Date(item.timestamp).toLocaleDateString('ar-EG')} - {new Date(item.timestamp).toLocaleTimeString('ar-EG')}
+                      {new Date(item.timestamp).toLocaleDateString('ar-EG')} -{' '}
+                      {new Date(item.timestamp).toLocaleTimeString('ar-EG')}
                     </p>
                   </div>
                   <ChevronRight size={16} className="text-gray-300" />
@@ -336,7 +372,8 @@ export default function DashboardPage() {
 
       {lastSync && (
         <div className="text-center text-sm text-gray-400 mt-8 border-t pt-4">
-          آخر تحديث للبيانات: {lastSync.toLocaleDateString('ar-EG')} {lastSync.toLocaleTimeString('ar-EG')}
+          آخر تحديث للبيانات: {lastSync.toLocaleDateString('ar-EG')}{' '}
+          {lastSync.toLocaleTimeString('ar-EG')}
         </div>
       )}
     </div>
@@ -399,7 +436,9 @@ function QuickActionCard({
       <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-10 transition-opacity">
         {icon}
       </div>
-      <div className="text-orange-600 mb-4 group-hover:scale-110 transition-transform inline-block">{icon}</div>
+      <div className="text-orange-600 mb-4 group-hover:scale-110 transition-transform inline-block">
+        {icon}
+      </div>
       <h3 className="text-xl font-bold text-gray-900 mb-2">{title}</h3>
       <p className="text-gray-600 text-sm">{description}</p>
       <div className="mt-4 flex items-center text-orange-600 text-sm font-bold group-hover:translate-x-[-4px] transition-transform">

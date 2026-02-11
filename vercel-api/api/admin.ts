@@ -102,7 +102,7 @@ async function handleUsers(
     `
     return response.status(200).json({
       success: true,
-      users: users.map((u) => ({
+      users: users.map((u: any) => ({
         id: u.id,
         phone: u.phone,
         full_name: u.full_name,
@@ -191,7 +191,7 @@ async function handleLicenses(
     `
     return response.status(200).json({
       success: true,
-      licenses: licenses.map((l) => ({
+      licenses: licenses.map((l: any) => ({
         id: l.id,
         license_key: l.license_key,
         machine_id: l.machine_id,
@@ -222,6 +222,22 @@ async function handleLicenses(
   if (request.method === 'DELETE' && licenseId) {
     await sql`DELETE FROM license_keys WHERE id = ${parseInt(licenseId)}`
     return response.status(200).json({ success: true, message: 'License deleted successfully' })
+  }
+
+  // PUT /api/admin/licenses/:id (update license)
+  if (request.method === 'PUT' && licenseId) {
+    const { factory_name, machine_id, expiry_date, status } = request.body
+
+    await sql`
+      UPDATE license_keys 
+      SET factory_name = COALESCE(${factory_name}, factory_name),
+          machine_id = COALESCE(${machine_id}, machine_id),
+          expiry_date = COALESCE(${expiry_date}, expiry_date),
+          status = COALESCE(${status}, status)
+      WHERE id = ${parseInt(licenseId)}
+    `
+
+    return response.status(200).json({ success: true, message: 'License updated successfully' })
   }
 
   // POST /api/admin/licenses/:id/activate

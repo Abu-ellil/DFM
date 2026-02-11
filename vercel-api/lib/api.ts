@@ -177,6 +177,16 @@ export const adminApi = {
   },
 
   /**
+   * Update license
+   */
+  updateLicense: async (id: number, data: Partial<License>) => {
+    return apiRequest<{ success: boolean; message: string }>(`/api/admin/licenses/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    })
+  },
+
+  /**
    * Activate license
    */
   activateLicense: async (id: number) => {
@@ -430,12 +440,14 @@ export const financeApi = {
  * Type definitions
  */
 export interface User {
+  id?: number
   phone: string
   full_name?: string
   factory_name?: string
   machine_id?: string
   role: 'admin' | 'manager' | 'user' | 'worker'
-  createdAt?: string
+  status?: string
+  created_at?: string
 }
 
 export interface RegisterData {
@@ -524,13 +536,13 @@ export interface FinanceRecord {
 
 export interface License {
   id: number
-  licenseKey: string
-  machineId: string
-  factoryName: string
-  durationCode: string
-  expiryDate: string
-  status: 'active' | 'inactive' | 'expired'
-  createdAt: string
+  license_key: string
+  machine_id: string
+  factory_name: string
+  duration_code?: string
+  expiry_date: string
+  status: 'active' | 'inactive' | 'expired' | 'banned'
+  created_at: string
 }
 
 export interface Factory {
