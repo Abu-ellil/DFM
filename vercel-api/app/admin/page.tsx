@@ -221,18 +221,10 @@ export default function AdminPage() {
         <div className="p-8 max-w-6xl mx-auto w-full">
           {activeTab === 'overview' && <OverviewTab stats={stats} loading={loading} />}
           {activeTab === 'users' && (
-            <UsersTab
-              users={users}
-              loading={loading}
-              onRefresh={handleRefresh}
-            />
+            <UsersTab users={users} loading={loading} onRefresh={handleRefresh} />
           )}
           {activeTab === 'licenses' && (
-            <LicensesTab
-              licenses={licenses}
-              loading={loading}
-              onRefresh={handleRefresh}
-            />
+            <LicensesTab licenses={licenses} loading={loading} onRefresh={handleRefresh} />
           )}
           {activeTab === 'factories' && (
             <FactoriesTab factories={factories} loading={loading} onRefresh={handleRefresh} />
@@ -550,8 +542,12 @@ function UsersTab({
       </div>
 
       {message && (
-        <div className={`p-4 rounded-xl border flex items-center space-x-3 animate-in slide-in-from-top-2 ${message.type === 'success' ? 'bg-green-50 border-green-100 text-green-700' : 'bg-red-50 border-red-100 text-red-700'}`}>
-          <div className={`w-2 h-2 rounded-full ${message.type === 'success' ? 'bg-green-500' : 'bg-red-500'} animate-pulse`} />
+        <div
+          className={`p-4 rounded-xl border flex items-center space-x-3 animate-in slide-in-from-top-2 ${message.type === 'success' ? 'bg-green-50 border-green-100 text-green-700' : 'bg-red-50 border-red-100 text-red-700'}`}
+        >
+          <div
+            className={`w-2 h-2 rounded-full ${message.type === 'success' ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}
+          />
           <p className="text-sm font-bold">{message.text}</p>
         </div>
       )}
@@ -578,13 +574,19 @@ function UsersTab({
             <tbody className="divide-y divide-gray-50">
               {loading ? (
                 <tr>
-                  <td colSpan={4} className="px-8 py-12 text-center text-gray-400 italic font-medium">
+                  <td
+                    colSpan={4}
+                    className="px-8 py-12 text-center text-gray-400 italic font-medium"
+                  >
                     Synchronizing directory...
                   </td>
                 </tr>
               ) : filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-8 py-12 text-center text-gray-400 italic font-medium">
+                  <td
+                    colSpan={4}
+                    className="px-8 py-12 text-center text-gray-400 italic font-medium"
+                  >
                     No matching identities found
                   </td>
                 </tr>
@@ -606,17 +608,32 @@ function UsersTab({
 
       {(showAddModal || showEditModal) && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => { setShowAddModal(false); setShowEditModal(false); }}></div>
+          <div
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            onClick={() => {
+              setShowAddModal(false)
+              setShowEditModal(false)
+            }}
+          ></div>
           <div className="relative bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="px-8 py-6 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
               <h3 className="text-xl font-black text-gray-900 tracking-tight">
                 {showAddModal ? 'New Identity' : 'Modify Identity'}
               </h3>
-              <button onClick={() => { setShowAddModal(false); setShowEditModal(false); }} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+              <button
+                onClick={() => {
+                  setShowAddModal(false)
+                  setShowEditModal(false)
+                }}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
                 <Plus className="w-5 h-5 rotate-45 text-gray-400" />
               </button>
             </div>
-            <form onSubmit={showAddModal ? handleAddUser : handleEditUser} className="p-8 space-y-5">
+            <form
+              onSubmit={showAddModal ? handleAddUser : handleEditUser}
+              className="p-8 space-y-5"
+            >
               <div className="space-y-4">
                 <InputField
                   label="Full Legal Name"
@@ -662,9 +679,26 @@ function UsersTab({
                 </div>
               </div>
               <div className="pt-4 flex space-x-3">
-                <button type="button" onClick={() => { setShowAddModal(false); setShowEditModal(false); }} className="flex-1 py-3 text-sm font-bold text-gray-500 hover:bg-gray-50 rounded-xl transition-all">Cancel</button>
-                <button type="submit" disabled={isSubmitting} className="flex-2 py-3 px-8 bg-orange-500 text-white rounded-xl text-sm font-bold hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20 disabled:opacity-50">
-                  {isSubmitting ? 'Processing...' : showAddModal ? 'Enroll Identity' : 'Save Changes'}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddModal(false)
+                    setShowEditModal(false)
+                  }}
+                  className="flex-1 py-3 text-sm font-bold text-gray-500 hover:bg-gray-50 rounded-xl transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex-2 py-3 px-8 bg-orange-500 text-white rounded-xl text-sm font-bold hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20 disabled:opacity-50"
+                >
+                  {isSubmitting
+                    ? 'Processing...'
+                    : showAddModal
+                      ? 'Enroll Identity'
+                      : 'Save Changes'}
                 </button>
               </div>
             </form>
@@ -788,7 +822,11 @@ function LicensesTab({
     setShowEditModal(true)
   }
 
-  const handleLicenseAction = async (licenseId: number | string, action: string, actionName: string) => {
+  const handleLicenseAction = async (
+    licenseId: number | string,
+    action: string,
+    actionName: string
+  ) => {
     setActionLoading({ ...actionLoading, [licenseId]: true })
     try {
       let result: any
@@ -829,7 +867,9 @@ function LicensesTab({
 
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="relative">
-          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Search Registry</label>
+          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+            Search Registry
+          </label>
           <input
             type="text"
             placeholder="Search key, factory, machine..."
@@ -839,7 +879,9 @@ function LicensesTab({
           />
         </div>
         <div>
-          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Key Status</label>
+          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+            Key Status
+          </label>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -855,7 +897,9 @@ function LicensesTab({
       </div>
 
       {message && (
-        <div className={`p-4 rounded-xl border flex items-center space-x-3 ${message.type === 'success' ? 'bg-green-50 border-green-100 text-green-700' : 'bg-red-50 border-red-100 text-red-700'}`}>
+        <div
+          className={`p-4 rounded-xl border flex items-center space-x-3 ${message.type === 'success' ? 'bg-green-50 border-green-100 text-green-700' : 'bg-red-50 border-red-100 text-red-700'}`}
+        >
           <p className="text-sm font-bold">{message.text}</p>
         </div>
       )}
@@ -865,17 +909,39 @@ function LicensesTab({
           <table className="min-w-full divide-y divide-gray-100">
             <thead>
               <tr className="bg-gray-50/50">
-                <th className="px-8 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">License Key</th>
-                <th className="px-8 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">Affiliation</th>
-                <th className="px-8 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status</th>
-                <th className="px-8 py-4 text-right text-[10px] font-bold text-gray-400 uppercase tracking-widest">Actions</th>
+                <th className="px-8 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  License Key
+                </th>
+                <th className="px-8 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  Affiliation
+                </th>
+                <th className="px-8 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  Status
+                </th>
+                <th className="px-8 py-4 text-right text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {loading ? (
-                <tr><td colSpan={4} className="px-8 py-12 text-center text-gray-400 italic font-medium">Loading secure registry...</td></tr>
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="px-8 py-12 text-center text-gray-400 italic font-medium"
+                  >
+                    Loading secure registry...
+                  </td>
+                </tr>
               ) : filteredLicenses.length === 0 ? (
-                <tr><td colSpan={4} className="px-8 py-12 text-center text-gray-400 italic font-medium">No licenses matching filters</td></tr>
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="px-8 py-12 text-center text-gray-400 italic font-medium"
+                  >
+                    No licenses matching filters
+                  </td>
+                </tr>
               ) : (
                 filteredLicenses.map((license) => (
                   <LicenseRow
@@ -894,19 +960,51 @@ function LicensesTab({
 
       {(showAddModal || showEditModal) && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => { setShowAddModal(false); setShowEditModal(false); }}></div>
+          <div
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            onClick={() => {
+              setShowAddModal(false)
+              setShowEditModal(false)
+            }}
+          ></div>
           <div className="relative bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="px-8 py-6 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
-              <h3 className="text-xl font-black text-gray-900 tracking-tight">{showAddModal ? 'Generate Key' : 'Modify Key'}</h3>
-              <button onClick={() => { setShowAddModal(false); setShowEditModal(false); }} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><Plus className="w-5 h-5 rotate-45 text-gray-400" /></button>
+              <h3 className="text-xl font-black text-gray-900 tracking-tight">
+                {showAddModal ? 'Generate Key' : 'Modify Key'}
+              </h3>
+              <button
+                onClick={() => {
+                  setShowAddModal(false)
+                  setShowEditModal(false)
+                }}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <Plus className="w-5 h-5 rotate-45 text-gray-400" />
+              </button>
             </div>
-            <form onSubmit={showAddModal ? handleGenerateLicense : handleEditLicense} className="p-8 space-y-5">
+            <form
+              onSubmit={showAddModal ? handleGenerateLicense : handleEditLicense}
+              className="p-8 space-y-5"
+            >
               <div className="space-y-4">
-                <InputField label="Factory Name" value={formData.factoryName} onChange={(v) => setFormData({ ...formData, factoryName: v })} placeholder="Target Factory" required />
-                <InputField label="Machine ID (Optional)" value={formData.machineId} onChange={(v) => setFormData({ ...formData, machineId: v })} placeholder="Hardware Identifier" />
+                <InputField
+                  label="Factory Name"
+                  value={formData.factoryName}
+                  onChange={(v: string) => setFormData({ ...formData, factoryName: v })}
+                  placeholder="Target Factory"
+                  required
+                />
+                <InputField
+                  label="Machine ID (Optional)"
+                  value={formData.machineId}
+                  onChange={(v: string) => setFormData({ ...formData, machineId: v })}
+                  placeholder="Hardware Identifier"
+                />
                 {showAddModal && (
                   <div>
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Duration Period</label>
+                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                      Duration Period
+                    </label>
                     <select
                       value={formData.durationCode}
                       onChange={(e) => setFormData({ ...formData, durationCode: e.target.value })}
@@ -922,8 +1020,21 @@ function LicensesTab({
                 )}
               </div>
               <div className="pt-4 flex space-x-3">
-                <button type="button" onClick={() => { setShowAddModal(false); setShowEditModal(false); }} className="flex-1 py-3 text-sm font-bold text-gray-500 hover:bg-gray-50 rounded-xl transition-all">Cancel</button>
-                <button type="submit" disabled={isSubmitting} className="flex-2 py-3 px-8 bg-orange-500 text-white rounded-xl text-sm font-bold hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20 disabled:opacity-50">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddModal(false)
+                    setShowEditModal(false)
+                  }}
+                  className="flex-1 py-3 text-sm font-bold text-gray-500 hover:bg-gray-50 rounded-xl transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex-2 py-3 px-8 bg-orange-500 text-white rounded-xl text-sm font-bold hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20 disabled:opacity-50"
+                >
                   {isSubmitting ? 'Processing...' : showAddModal ? 'Generate Key' : 'Save Changes'}
                 </button>
               </div>
@@ -935,12 +1046,15 @@ function LicensesTab({
   )
 }
 
-
-    </div>
-  )
-}
-
-function FactoriesTab({ factories, loading, onRefresh }: { factories: any[]; loading: boolean; onRefresh: () => void }) {
+function FactoriesTab({
+  factories,
+  loading,
+  onRefresh
+}: {
+  factories: any[]
+  loading: boolean
+  onRefresh: () => void
+}) {
   const [actionLoading, setActionLoading] = useState<{ [key: string | number]: boolean }>({})
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [showAddModal, setShowAddModal] = useState(false)
@@ -1061,7 +1175,9 @@ function FactoriesTab({ factories, loading, onRefresh }: { factories: any[]; loa
 
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Search Facilities</label>
+          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+            Search Facilities
+          </label>
           <input
             type="text"
             placeholder="Search name, location..."
@@ -1071,7 +1187,9 @@ function FactoriesTab({ factories, loading, onRefresh }: { factories: any[]; loa
           />
         </div>
         <div>
-          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Operational Status</label>
+          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+            Operational Status
+          </label>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -1085,8 +1203,12 @@ function FactoriesTab({ factories, loading, onRefresh }: { factories: any[]; loa
       </div>
 
       {message && (
-        <div className={`p-4 rounded-xl border flex items-center space-x-3 animate-in slide-in-from-top-2 ${message.type === 'success' ? 'bg-green-50 border-green-100 text-green-700' : 'bg-red-50 border-red-100 text-red-700'}`}>
-          <div className={`w-2 h-2 rounded-full ${message.type === 'success' ? 'bg-green-500' : 'bg-red-500'} animate-pulse`} />
+        <div
+          className={`p-4 rounded-xl border flex items-center space-x-3 animate-in slide-in-from-top-2 ${message.type === 'success' ? 'bg-green-50 border-green-100 text-green-700' : 'bg-red-50 border-red-100 text-red-700'}`}
+        >
+          <div
+            className={`w-2 h-2 rounded-full ${message.type === 'success' ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}
+          />
           <p className="text-sm font-bold">{message.text}</p>
         </div>
       )}
@@ -1117,17 +1239,32 @@ function FactoriesTab({ factories, loading, onRefresh }: { factories: any[]; loa
 
       {(showAddModal || showEditModal) && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => { setShowAddModal(false); setShowEditModal(false); }}></div>
+          <div
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            onClick={() => {
+              setShowAddModal(false)
+              setShowEditModal(false)
+            }}
+          ></div>
           <div className="relative bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="px-8 py-6 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
               <h3 className="text-xl font-black text-gray-900 tracking-tight">
                 {showAddModal ? 'New Facility' : 'Modify Facility'}
               </h3>
-              <button onClick={() => { setShowAddModal(false); setShowEditModal(false); }} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+              <button
+                onClick={() => {
+                  setShowAddModal(false)
+                  setShowEditModal(false)
+                }}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
                 <Plus className="w-5 h-5 rotate-45 text-gray-400" />
               </button>
             </div>
-            <form onSubmit={showAddModal ? handleAddFactory : handleEditFactory} className="p-8 space-y-5">
+            <form
+              onSubmit={showAddModal ? handleAddFactory : handleEditFactory}
+              className="p-8 space-y-5"
+            >
               <div className="space-y-4">
                 <InputField
                   label="Facility Name"
@@ -1157,9 +1294,26 @@ function FactoriesTab({ factories, loading, onRefresh }: { factories: any[]; loa
                 </div>
               </div>
               <div className="pt-4 flex space-x-3">
-                <button type="button" onClick={() => { setShowAddModal(false); setShowEditModal(false); }} className="flex-1 py-3 text-sm font-bold text-gray-500 hover:bg-gray-50 rounded-xl transition-all">Cancel</button>
-                <button type="submit" disabled={isSubmitting} className="flex-2 py-3 px-8 bg-orange-500 text-white rounded-xl text-sm font-bold hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20 disabled:opacity-50">
-                  {isSubmitting ? 'Processing...' : showAddModal ? 'Register Facility' : 'Save Changes'}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddModal(false)
+                    setShowEditModal(false)
+                  }}
+                  className="flex-1 py-3 text-sm font-bold text-gray-500 hover:bg-gray-50 rounded-xl transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex-2 py-3 px-8 bg-orange-500 text-white rounded-xl text-sm font-bold hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20 disabled:opacity-50"
+                >
+                  {isSubmitting
+                    ? 'Processing...'
+                    : showAddModal
+                      ? 'Register Facility'
+                      : 'Save Changes'}
                 </button>
               </div>
             </form>
@@ -1170,7 +1324,15 @@ function FactoriesTab({ factories, loading, onRefresh }: { factories: any[]; loa
   )
 }
 
-function SettingsTab({ settings, loading, onRefresh }: { settings: any; loading: boolean; onRefresh: () => void }) {
+function SettingsTab({
+  settings,
+  loading,
+  onRefresh
+}: {
+  settings: any
+  loading: boolean
+  onRefresh: () => void
+}) {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
@@ -1207,7 +1369,9 @@ function SettingsTab({ settings, loading, onRefresh }: { settings: any; loading:
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-black text-gray-900 tracking-tight">System Configuration</h2>
-          <p className="text-sm text-gray-500">Global environment variables and application logic</p>
+          <p className="text-sm text-gray-500">
+            Global environment variables and application logic
+          </p>
         </div>
         {saving && (
           <div className="flex items-center px-4 py-2 bg-orange-50 text-orange-600 rounded-xl text-xs font-bold border border-orange-100 animate-pulse">
@@ -1218,8 +1382,12 @@ function SettingsTab({ settings, loading, onRefresh }: { settings: any; loading:
       </div>
 
       {message && (
-        <div className={`p-4 rounded-xl border flex items-center space-x-3 animate-in slide-in-from-top-2 ${message.type === 'success' ? 'bg-green-50 border-green-100 text-green-700' : 'bg-red-50 border-red-100 text-red-700'}`}>
-          <div className={`w-2 h-2 rounded-full ${message.type === 'success' ? 'bg-green-500' : 'bg-red-500'} animate-pulse`} />
+        <div
+          className={`p-4 rounded-xl border flex items-center space-x-3 animate-in slide-in-from-top-2 ${message.type === 'success' ? 'bg-green-50 border-green-100 text-green-700' : 'bg-red-50 border-red-100 text-red-700'}`}
+        >
+          <div
+            className={`w-2 h-2 rounded-full ${message.type === 'success' ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}
+          />
           <p className="text-sm font-bold">{message.text}</p>
         </div>
       )}
@@ -1428,18 +1596,26 @@ function UserRow({
             {user.full_name?.substring(0, 2).toUpperCase() || '??'}
           </div>
           <div>
-            <p className="text-sm font-bold text-gray-900 leading-none mb-1">{user.full_name || 'Anonymous User'}</p>
-            <p className="text-[11px] font-medium text-gray-400 font-mono tracking-tight">{user.phone}</p>
+            <p className="text-sm font-bold text-gray-900 leading-none mb-1">
+              {user.full_name || 'Anonymous User'}
+            </p>
+            <p className="text-[11px] font-medium text-gray-400 font-mono tracking-tight">
+              {user.phone}
+            </p>
           </div>
         </div>
       </td>
       <td className="px-8 py-5">
-        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${roleColors[user.role] || roleColors.user}`}>
+        <span
+          className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${roleColors[user.role] || roleColors.user}`}
+        >
           {user.role}
         </span>
       </td>
       <td className="px-8 py-5">
-        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${statusColors[user.status] || 'text-gray-400 bg-gray-50 border-gray-100'}`}>
+        <span
+          className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${statusColors[user.status] || 'text-gray-400 bg-gray-50 border-gray-100'}`}
+        >
           {user.status || 'active'}
         </span>
       </td>
@@ -1452,7 +1628,7 @@ function UserRow({
           >
             <Edit className="w-4 h-4" />
           </button>
-          
+
           {user.status !== 'active' && (
             <button
               onClick={() => onAction(user.id, 'activate', 'Activation')}
@@ -1529,22 +1705,32 @@ function LicenseRow({
           <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-500">
             <Key className="w-4 h-4" />
           </div>
-          <p className="text-sm font-mono font-bold text-gray-900 tracking-tighter">{license.license_key}</p>
+          <p className="text-sm font-mono font-bold text-gray-900 tracking-tighter">
+            {license.license_key}
+          </p>
         </div>
       </td>
       <td className="px-8 py-5">
         <div>
-          <p className="text-sm font-bold text-gray-900">{license.factory_name || 'General Access'}</p>
-          <p className="text-[10px] font-medium text-gray-400 font-mono">{license.machine_id || 'ANY_HARDWARE'}</p>
+          <p className="text-sm font-bold text-gray-900">
+            {license.factory_name || 'General Access'}
+          </p>
+          <p className="text-[10px] font-medium text-gray-400 font-mono">
+            {license.machine_id || 'ANY_HARDWARE'}
+          </p>
         </div>
       </td>
       <td className="px-8 py-5">
         <div className="flex flex-col">
-          <span className={`w-fit px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border mb-1 ${statusColors[license.status] || 'text-gray-400 bg-gray-50 border-gray-100'}`}>
+          <span
+            className={`w-fit px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border mb-1 ${statusColors[license.status] || 'text-gray-400 bg-gray-50 border-gray-100'}`}
+          >
             {license.status}
           </span>
           <p className="text-[10px] font-medium text-gray-400">
-            {license.expiry_date ? `Expires ${new Date(license.expiry_date).toLocaleDateString()}` : 'Lifetime Access'}
+            {license.expiry_date
+              ? `Expires ${new Date(license.expiry_date).toLocaleDateString()}`
+              : 'Lifetime Access'}
           </p>
         </div>
       </td>
@@ -1557,7 +1743,7 @@ function LicenseRow({
           >
             <Edit className="w-4 h-4" />
           </button>
-          
+
           {license.status !== 'active' && (
             <button
               onClick={() => onAction(license.id, 'activate', 'Activation')}
@@ -1638,7 +1824,15 @@ function FactoryCard({
   )
 }
 
-function SettingSection({ title, icon, children }: { title: string; icon?: React.ReactNode; children: React.ReactNode }) {
+function SettingSection({
+  title,
+  icon,
+  children
+}: {
+  title: string
+  icon?: React.ReactNode
+  children: React.ReactNode
+}) {
   return (
     <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden transition-all hover:shadow-md">
       <div className="px-6 py-4 bg-gray-50/50 border-b border-gray-50 flex items-center space-x-3">
@@ -1722,7 +1916,10 @@ function SettingItem({
       </div>
       <div className="flex items-center">
         {isEditing ? (
-          <form onSubmit={handleSubmit} className="flex items-center space-x-2 animate-in zoom-in-95 duration-200">
+          <form
+            onSubmit={handleSubmit}
+            className="flex items-center space-x-2 animate-in zoom-in-95 duration-200"
+          >
             {type === 'select' ? (
               <select
                 value={editValue}
@@ -1764,7 +1961,7 @@ function SettingItem({
             </button>
           </form>
         ) : (
-          <div 
+          <div
             onClick={() => {
               setEditValue(value)
               setIsEditing(true)
