@@ -1,6 +1,6 @@
 {
   "name": "dates-factory-manager-cloud-api",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Cloud sync API and Web Dashboard for Dates Factory Manager V2",
   "type": "module",
   "scripts": {
@@ -38,6 +38,6 @@
     "vercel": "^34.0.0"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": "20.x"
   }
 }

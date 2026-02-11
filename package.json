@@ -1,10 +1,13 @@
 {
   "name": "DFM",
-  "version": "1.1.13",
+  "version": "1.1.14",
   "description": "DFM - An Electron application with React and TypeScript",
   "main": "./out/main/index.js",
   "author": "example.com",
   "homepage": "https://electron-vite.org",
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint --cache .",

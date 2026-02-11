@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.14] - 2026-02-11
+
+### Added
+
+- **Admin Dashboard Improvements**: Completed the admin panel with full license management capabilities.
+- **License Management**: Added ability to update and delete licenses directly from the admin interface.
+- **Security & Validation**: Improved license verification endpoints and added robust error handling.
+- **Technical Refactoring**: Modularized admin components and updated ID types for better maintainability.
+
 ## [1.1.13] - 2026-02-10
 
 ### Changed
