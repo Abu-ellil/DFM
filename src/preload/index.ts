@@ -71,6 +71,7 @@ const api = {
   telegram: {
     send: (data) => ipcRenderer.invoke('telegram:send', data),
     sendReport: () => ipcRenderer.invoke('telegram:sendReport'),
+    sendDb: () => ipcRenderer.invoke('telegram:sendDb'),
     // Bot management
     startBot: () => ipcRenderer.invoke('telegram:startBot'),
     stopBot: () => ipcRenderer.invoke('telegram:stopBot'),

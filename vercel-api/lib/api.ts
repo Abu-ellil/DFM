@@ -204,6 +204,59 @@ export const adminApi = {
     return apiRequest<{ success: boolean; message: string }>(`/api/admin/licenses/${id}/ban`, {
       method: 'POST'
     })
+  },
+
+  /**
+   * Get all factories
+   */
+  getFactories: async () => {
+    return apiRequest<{ factories: Factory[] }>('/api/admin/factories')
+  },
+
+  /**
+   * Create factory
+   */
+  createFactory: async (data: Partial<Factory>) => {
+    return apiRequest<{ success: boolean; message: string }>('/api/admin/factories', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  },
+
+  /**
+   * Update factory
+   */
+  updateFactory: async (id: number, data: Partial<Factory>) => {
+    return apiRequest<{ success: boolean; message: string }>(`/api/admin/factories/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    })
+  },
+
+  /**
+   * Delete factory
+   */
+  deleteFactory: async (id: number) => {
+    return apiRequest<{ success: boolean; message: string }>(`/api/admin/factories/${id}`, {
+      method: 'DELETE'
+    })
+  },
+
+  /**
+   * Get settings
+   */
+  getSettings: async () => {
+    return apiRequest<{ settings: SystemSettings }>('/api/admin/settings')
+  },
+
+  /**
+   * Update settings
+   */
+  updateSettings: async (data: Partial<SystemSettings>) => {
+    return apiRequest<{ success: boolean; message: string }>('/api/admin/settings', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
   }
 }
 
@@ -429,6 +482,11 @@ export interface DashboardStats {
   weighbridge: number
   crates: number
   finance: number
+  charts?: {
+    weights: Array<{ month: string; total_weight: number }>
+    finance: Array<{ month: string; total_paid: number; total_received: number }>
+    crates: { total_out: number; total_returned: number }
+  }
 }
 
 export interface ActivityItem {
@@ -473,4 +531,24 @@ export interface License {
   expiryDate: string
   status: 'active' | 'inactive' | 'expired'
   createdAt: string
+}
+
+export interface Factory {
+  id: number
+  name: string
+  location?: string
+  status: 'active' | 'inactive'
+  createdAt: string
+}
+
+export interface SystemSettings {
+  appName: string
+  supportEmail: string
+  sessionTimeout: string
+  passwordPolicy: string
+  connectionPool: number
+  backupFrequency: string
+  maintenanceMode: boolean
+  allowRegistration: boolean
+  defaultUserRole: 'user' | 'worker' | 'manager' | 'admin'
 }

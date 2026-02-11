@@ -2,19 +2,22 @@ import { Card } from '../../ui/Card'
 import Database from 'lucide-react/dist/esm/icons/database'
 import Upload from 'lucide-react/dist/esm/icons/upload'
 import FileSpreadsheet from 'lucide-react/dist/esm/icons/file-spreadsheet'
+import Send from 'lucide-react/dist/esm/icons/send'
 
 interface DatabaseSettingsProps {
   isProcessing: boolean
   onSync: () => Promise<void>
   onImportDb: () => Promise<void>
   onImportExcel: () => Promise<void>
+  onSendDb: () => Promise<void>
 }
 
 export function DatabaseSettings({
   isProcessing,
   onSync,
   onImportDb,
-  onImportExcel
+  onImportExcel,
+  onSendDb
 }: DatabaseSettingsProps) {
   return (
     <Card className="space-y-4">
@@ -53,6 +56,15 @@ export function DatabaseSettings({
           >
             <FileSpreadsheet size={18} />
             {isProcessing ? 'جاري المعالجة...' : 'استيراد عملاء من Excel'}
+          </button>
+
+          <button
+            onClick={onSendDb}
+            disabled={isProcessing}
+            className="w-full bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+          >
+            <Send size={18} />
+            {isProcessing ? 'جاري الإرسال...' : 'إرسال قاعدة البيانات إلى تليجرام'}
           </button>
         </div>
       </div>

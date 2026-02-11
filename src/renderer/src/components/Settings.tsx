@@ -293,6 +293,29 @@ export default function Settings() {
     }
   }
 
+  const handleSendDb = async () => {
+    if (!formData.telegram_token || !formData.telegram_chat_id) {
+      toast.error('يرجى إدخال بيانات تلجرام أولاً')
+      return
+    }
+
+    try {
+      setIsProcessing(true)
+      const result = await (window as any).api.telegram.sendDb()
+
+      if (result.success) {
+        toast.success(result.message || 'تم إرسال قاعدة البيانات بنجاح')
+      } else {
+        toast.error(result.error || result.message || 'فشل إرسال قاعدة البيانات')
+      }
+    } catch (error) {
+      console.error('Send DB error:', error)
+      toast.error('حدث خطأ أثناء إرسال قاعدة البيانات')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
   const fetchBotStatus = async () => {
     const stats = await window.api.telegram.getStats()
     setBotStatus(stats)
@@ -471,6 +494,7 @@ export default function Settings() {
             onSync={handleSync}
             onImportDb={handleImportDb}
             onImportExcel={handleImportExcel}
+            onSendDb={handleSendDb}
           />
         )
       case 'cloud':

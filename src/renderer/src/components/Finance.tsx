@@ -42,7 +42,7 @@ export default function Finance() {
   const [newTransaction, setNewTransaction] = useState({
     date: new Date().toISOString().split('T')[0],
     customer_id: '',
-    transaction_type: 'مقبوض',
+    transaction_type: 'مدفوع',
     amount_paid: 0,
     amount_received: 0,
     payment_method: 'نقدا' as PaymentMethod,
@@ -495,21 +495,6 @@ export default function Finance() {
                     <input
                       type="radio"
                       name="type"
-                      checked={newTransaction.transaction_type === 'مقبوض'}
-                      onChange={() =>
-                        setNewTransaction({
-                          ...newTransaction,
-                          transaction_type: 'مقبوض',
-                          amount_paid: 0
-                        })
-                      }
-                    />
-                    <span className="text-sm font-bold text-emerald-600">مقبوض (إيراد)</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="type"
                       checked={newTransaction.transaction_type === 'مدفوع'}
                       onChange={() =>
                         setNewTransaction({
@@ -520,6 +505,21 @@ export default function Finance() {
                       }
                     />
                     <span className="text-sm font-bold text-red-600">مدفوع (مصروف)</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="type"
+                      checked={newTransaction.transaction_type === 'مقبوض'}
+                      onChange={() =>
+                        setNewTransaction({
+                          ...newTransaction,
+                          transaction_type: 'مقبوض',
+                          amount_paid: 0
+                        })
+                      }
+                    />
+                    <span className="text-sm font-bold text-emerald-600">مقبوض (إيراد)</span>
                   </label>
                 </div>
               </div>
@@ -724,21 +724,6 @@ export default function Finance() {
                     <input
                       type="radio"
                       name="edit-type"
-                      checked={editingTransaction.transaction_type === 'مقبوض'}
-                      onChange={() =>
-                        setEditingTransaction({
-                          ...editingTransaction,
-                          transaction_type: 'مقبوض',
-                          amount_paid: 0
-                        })
-                      }
-                    />
-                    <span className="text-sm font-bold text-emerald-600">مقبوض (إيراد)</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="edit-type"
                       checked={editingTransaction.transaction_type === 'مدفوع'}
                       onChange={() =>
                         setEditingTransaction({
@@ -749,6 +734,21 @@ export default function Finance() {
                       }
                     />
                     <span className="text-sm font-bold text-red-600">مدفوع (مصروف)</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="edit-type"
+                      checked={editingTransaction.transaction_type === 'مقبوض'}
+                      onChange={() =>
+                        setEditingTransaction({
+                          ...editingTransaction,
+                          transaction_type: 'مقبوض',
+                          amount_paid: 0
+                        })
+                      }
+                    />
+                    <span className="text-sm font-bold text-emerald-600">مقبوض (إيراد)</span>
                   </label>
                 </div>
               </div>

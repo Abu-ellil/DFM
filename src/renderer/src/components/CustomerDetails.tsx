@@ -887,8 +887,8 @@ export default function CustomerDetails({ customerId, onBack }: CustomerDetailsP
                       setNewFinance({ ...newFinance, transaction_type: e.target.value })
                     }
                   >
-                    <option value="مقبوض">مقبوض من العميل</option>
                     <option value="مدفوع">مدفوع للعميل</option>
+                    <option value="مقبوض">مقبوض من العميل</option>
                   </select>
                 </div>
               </div>

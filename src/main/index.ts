@@ -2206,6 +2206,59 @@ ipcMain.handle('telegram:sendReport', async () => {
   }
 })
 
+ipcMain.handle('telegram:sendDb', async () => {
+  try {
+    const db = getDb()
+
+    const settings = db.exec('SELECT * FROM settings')
+    const telegramSettings: Record<string, string> = {}
+    if (settings.length > 0) {
+      settings[0].values.forEach((row) => {
+        telegramSettings[row[0] as string] = row[1] as string
+      })
+    }
+
+    const telegramToken = telegramSettings.telegram_token
+    const chatId = telegramSettings.telegram_chat_id
+
+    if (!telegramToken || !chatId) {
+      return { success: false, message: 'يرجى إعداد توكن البوت ومعرف الشات أولاً' }
+    }
+
+    await saveDatabase()
+
+    const dbPath = getDbPath()
+    const dbBuffer = await readFile(dbPath)
+
+    const TelegramBot = (await import('node-telegram-bot-api')).default
+    const bot = new TelegramBot(telegramToken, { polling: false })
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19).replace('T', '_')
+    const caption = `
+📄 نسخة احتياطية من قاعدة البيانات
+📅 التاريخ: ${new Date().toLocaleDateString('ar-EG')}
+📁 الملف: date_factory_v2.db
+
+تم إرسال قاعدة البيانات الاحتياطية بنجاح.
+    `.trim()
+
+    await bot.sendDocument(
+      chatId,
+      dbBuffer,
+      {},
+      {
+        filename: `date_factory_v2_${timestamp}.db`,
+        caption: caption
+      }
+    )
+
+    return { success: true, message: 'تم إرسال قاعدة البيانات بنجاح' }
+  } catch (error: any) {
+    console.error('Send DB error:', error)
+    return { success: false, error: error.message || 'فشل إرسال قاعدة البيانات' }
+  }
+})
+
 // License IPC
 ipcMain.handle('license:getInfo', async () => {
   return licenseManager.getLicenseInfo()
