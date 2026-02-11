@@ -109,6 +109,10 @@ export default function AdminPage() {
     }
   }, [activeTab, authorized, fetchAdminData])
 
+  const handleRefresh = () => {
+    fetchAdminData()
+  }
+
   if (!authorized) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -407,26 +411,19 @@ function OverviewTab({ stats, loading }: { stats: any; loading: boolean }) {
 function UsersTab({
   users,
   loading,
-  showAddModal,
-  setShowAddModal,
-  showEditModal,
-  setShowEditModal,
-  editingUser,
-  setEditingUser
+  onRefresh
 }: {
   users: any[]
   loading: boolean
-  showAddModal: boolean
-  setShowAddModal: (show: boolean) => void
-  showEditModal: boolean
-  setShowEditModal: (show: boolean) => void
-  editingUser: any
-  setEditingUser: (user: any) => void
+  onRefresh: () => void
 }) {
   const [actionLoading, setActionLoading] = useState<{ [key: number]: boolean }>({})
   const [searchTerm, setSearchTerm] = useState('')
   const [roleFilter, setRoleFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editingUser, setEditingUser] = useState<any>(null)
 
   const [formData, setFormData] = useState({
     phone: '',
@@ -457,12 +454,12 @@ function UsersTab({
     try {
       const res = await adminApi.createUser(formData)
       if (res.success) {
-        setMessage({ type: 'success', text: 'User created successfully' })
+        setMessage({ type: 'success', text: 'Identity successfully enrolled in registry' })
         setShowAddModal(false)
         setFormData({ phone: '', password: '', full_name: '', factory_name: '', role: 'user' })
-        setTimeout(() => window.location.reload(), 1000)
+        onRefresh()
       } else {
-        setMessage({ type: 'error', text: res.message || 'Failed to create user' })
+        setMessage({ type: 'error', text: res.message || 'Enrollment failed' })
       }
     } catch (error: any) {
       setMessage({ type: 'error', text: error.message || 'Creation failed' })
@@ -481,12 +478,12 @@ function UsersTab({
       if (!updateData.password) delete updateData.password
       const res = await adminApi.updateUser(editingUser.id, updateData)
       if (res.success) {
-        setMessage({ type: 'success', text: 'User updated successfully' })
+        setMessage({ type: 'success', text: 'Identity profile successfully updated' })
         setShowEditModal(false)
         setEditingUser(null)
-        setTimeout(() => window.location.reload(), 1000)
+        onRefresh()
       } else {
-        setMessage({ type: 'error', text: res.message || 'Failed to update user' })
+        setMessage({ type: 'error', text: res.message || 'Update failed' })
       }
     } catch (error: any) {
       setMessage({ type: 'error', text: error.message || 'Update failed' })
@@ -517,8 +514,8 @@ function UsersTab({
       else if (action === 'delete') result = await adminApi.deleteUser(userId)
 
       if (result?.success) {
-        setMessage({ type: 'success', text: `${actionName} successful` })
-        setTimeout(() => window.location.reload(), 1000)
+        setMessage({ type: 'success', text: `${actionName} operation completed` })
+        onRefresh()
       }
     } catch (error: any) {
       setMessage({ type: 'error', text: error.message || `${actionName} failed` })
@@ -531,8 +528,8 @@ function UsersTab({
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-black text-gray-900 tracking-tight">User Management</h2>
-          <p className="text-sm text-gray-500">Manage system access and permissions</p>
+          <h2 className="text-2xl font-black text-gray-900 tracking-tight">Identity Registry</h2>
+          <p className="text-sm text-gray-500">Manage system access and personnel permissions</p>
         </div>
         <button
           onClick={() => {
@@ -542,25 +539,22 @@ function UsersTab({
           className="flex items-center justify-center px-6 py-3 bg-orange-500 text-white rounded-xl text-sm font-bold hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20 active:scale-95"
         >
           <Plus className="w-5 h-5 mr-2" />
-          Create New User
+          Enroll New Identity
         </button>
       </div>
 
-      {/* Filters Card */}
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="relative">
           <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
             Search Directory
           </label>
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search phone, name..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-500/20 transition-all placeholder:text-gray-400"
-            />
-          </div>
+          <input
+            type="text"
+            placeholder="Search phone, name..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-500/20 transition-all placeholder:text-gray-400"
+          />
         </div>
         <div>
           <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
@@ -588,32 +582,30 @@ function UsersTab({
             className="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-500/20 transition-all"
           >
             <option value="all">All Statuses</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-            <option value="banned">Banned</option>
+            <option value="active">Active Only</option>
+            <option value="inactive">Suspended</option>
+            <option value="banned">Restricted</option>
           </select>
         </div>
       </div>
 
       {message && (
-        <div
-          className={`p-4 rounded-xl border flex items-center space-x-3 ${message.type === 'success' ? 'bg-green-50 border-green-100 text-green-700' : 'bg-red-50 border-red-100 text-red-700'}`}
-        >
+        <div className={`p-4 rounded-xl border flex items-center space-x-3 animate-in slide-in-from-top-2 ${message.type === 'success' ? 'bg-green-50 border-green-100 text-green-700' : 'bg-red-50 border-red-100 text-red-700'}`}>
+          <div className={`w-2 h-2 rounded-full ${message.type === 'success' ? 'bg-green-500' : 'bg-red-500'} animate-pulse`} />
           <p className="text-sm font-bold">{message.text}</p>
         </div>
       )}
 
-      {/* Table Card */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-100">
             <thead>
               <tr className="bg-gray-50/50">
                 <th className="px-8 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                  Identity
+                  Identity Profile
                 </th>
                 <th className="px-8 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                  Role
+                  Permission
                 </th>
                 <th className="px-8 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                   Status
@@ -626,20 +618,14 @@ function UsersTab({
             <tbody className="divide-y divide-gray-50">
               {loading ? (
                 <tr>
-                  <td
-                    colSpan={4}
-                    className="px-8 py-12 text-center text-gray-400 italic font-medium"
-                  >
-                    Loading secure directory...
+                  <td colSpan={4} className="px-8 py-12 text-center text-gray-400 italic font-medium">
+                    Synchronizing directory...
                   </td>
                 </tr>
               ) : filteredUsers.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan={4}
-                    className="px-8 py-12 text-center text-gray-400 italic font-medium"
-                  >
-                    No identities matching filters
+                  <td colSpan={4} className="px-8 py-12 text-center text-gray-400 italic font-medium">
+                    No matching identities found
                   </td>
                 </tr>
               ) : (
@@ -658,66 +644,50 @@ function UsersTab({
         </div>
       </div>
 
-      {/* Modal - Unified styling for both Add and Edit */}
       {(showAddModal || showEditModal) && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
-            onClick={() => {
-              setShowAddModal(false)
-              setShowEditModal(false)
-            }}
-          ></div>
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => { setShowAddModal(false); setShowEditModal(false); }}></div>
           <div className="relative bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="px-8 py-6 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
               <h3 className="text-xl font-black text-gray-900 tracking-tight">
                 {showAddModal ? 'New Identity' : 'Modify Identity'}
               </h3>
-              <button
-                onClick={() => {
-                  setShowAddModal(false)
-                  setShowEditModal(false)
-                }}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              >
+              <button onClick={() => { setShowAddModal(false); setShowEditModal(false); }} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                 <Plus className="w-5 h-5 rotate-45 text-gray-400" />
               </button>
             </div>
-            <form
-              onSubmit={showAddModal ? handleAddUser : handleEditUser}
-              className="p-8 space-y-5"
-            >
+            <form onSubmit={showAddModal ? handleAddUser : handleEditUser} className="p-8 space-y-5">
               <div className="space-y-4">
                 <InputField
-                  label="Full Name"
+                  label="Full Legal Name"
                   value={formData.full_name}
-                  onChange={(v) => setFormData({ ...formData, full_name: v })}
+                  onChange={(v: string) => setFormData({ ...formData, full_name: v })}
                   placeholder="e.g. John Doe"
                   required
                 />
                 <InputField
-                  label="Phone Number"
+                  label="Contact Number"
                   value={formData.phone}
-                  onChange={(v) => setFormData({ ...formData, phone: v })}
+                  onChange={(v: string) => setFormData({ ...formData, phone: v })}
                   placeholder="0123456789"
                   required
                 />
                 <InputField
-                  label={showEditModal ? 'New Password (optional)' : 'Access Password'}
+                  label={showEditModal ? 'Update Password (optional)' : 'Access Password'}
                   value={formData.password}
-                  onChange={(v) => setFormData({ ...formData, password: v })}
+                  onChange={(v: string) => setFormData({ ...formData, password: v })}
                   type="password"
                   required={showAddModal}
                 />
                 <InputField
                   label="Factory Affiliation"
                   value={formData.factory_name}
-                  onChange={(v) => setFormData({ ...formData, factory_name: v })}
-                  placeholder="Factory Name"
+                  onChange={(v: string) => setFormData({ ...formData, factory_name: v })}
+                  placeholder="Assigned Factory"
                 />
                 <div>
                   <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
-                    Assign Role
+                    Access Permission
                   </label>
                   <select
                     value={formData.role}
@@ -732,22 +702,9 @@ function UsersTab({
                 </div>
               </div>
               <div className="pt-4 flex space-x-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowAddModal(false)
-                    setShowEditModal(false)
-                  }}
-                  className="flex-1 py-3 text-sm font-bold text-gray-500 hover:bg-gray-50 rounded-xl transition-all"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex-2 py-3 px-8 bg-orange-500 text-white rounded-xl text-sm font-bold hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20 disabled:opacity-50"
-                >
-                  {isSubmitting ? 'Processing...' : showAddModal ? 'Create User' : 'Save Changes'}
+                <button type="button" onClick={() => { setShowAddModal(false); setShowEditModal(false); }} className="flex-1 py-3 text-sm font-bold text-gray-500 hover:bg-gray-50 rounded-xl transition-all">Cancel</button>
+                <button type="submit" disabled={isSubmitting} className="flex-2 py-3 px-8 bg-orange-500 text-white rounded-xl text-sm font-bold hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20 disabled:opacity-50">
+                  {isSubmitting ? 'Processing...' : showAddModal ? 'Enroll Identity' : 'Save Changes'}
                 </button>
               </div>
             </form>
@@ -1140,9 +1097,7 @@ function LicensesTab({
   )
 }
 
-function FactoriesTab() {
-  const [factories, setFactories] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+function FactoriesTab({ factories, loading, onRefresh }: { factories: any[]; loading: boolean; onRefresh: () => void }) {
   const [actionLoading, setActionLoading] = useState<{ [key: number]: boolean }>({})
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [showAddModal, setShowAddModal] = useState(false)
@@ -1156,22 +1111,6 @@ function FactoriesTab() {
     status: 'active' as const
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
-
-  useEffect(() => {
-    fetchFactories()
-  }, [])
-
-  const fetchFactories = async () => {
-    setLoading(true)
-    try {
-      const res = await adminApi.getFactories()
-      setFactories(res.factories)
-    } catch (error) {
-      console.error('Failed to fetch factories:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const filteredFactories = factories.filter((factory) => {
     const matchesSearch =
@@ -1191,10 +1130,10 @@ function FactoriesTab() {
     try {
       const res = await adminApi.createFactory(formData)
       if (res.success) {
-        setMessage({ type: 'success', text: res.message || 'Factory added successfully' })
+        setMessage({ type: 'success', text: 'New factory facility added successfully' })
         setShowAddModal(false)
         setFormData({ name: '', location: '', status: 'active' })
-        fetchFactories()
+        onRefresh()
       } else {
         setMessage({ type: 'error', text: res.message || 'Failed to add factory' })
       }
@@ -1214,11 +1153,11 @@ function FactoriesTab() {
     try {
       const res = await adminApi.updateFactory(editingFactory.id, formData)
       if (res.success) {
-        setMessage({ type: 'success', text: res.message || 'Factory updated successfully' })
+        setMessage({ type: 'success', text: 'Factory facility updated successfully' })
         setShowEditModal(false)
         setEditingFactory(null)
         setFormData({ name: '', location: '', status: 'active' })
-        fetchFactories()
+        onRefresh()
       } else {
         setMessage({ type: 'error', text: res.message || 'Failed to update factory' })
       }
@@ -1240,14 +1179,14 @@ function FactoriesTab() {
   }
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this factory?')) return
+    if (!confirm('Permanently decommission and delete this factory facility?')) return
 
     setActionLoading({ ...actionLoading, [id]: true })
     try {
       const res = await adminApi.deleteFactory(id)
       if (res.success) {
-        setMessage({ type: 'success', text: res.message || 'Factory deleted' })
-        fetchFactories()
+        setMessage({ type: 'success', text: 'Factory facility decommissioned' })
+        onRefresh()
       } else {
         setMessage({ type: 'error', text: res.message || 'Failed to delete' })
       }
@@ -1259,206 +1198,65 @@ function FactoriesTab() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-gray-900">Factory Management</h2>
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-black text-gray-900 tracking-tight">Facility Management</h2>
+          <p className="text-sm text-gray-500">Oversee production sites and operational units</p>
+        </div>
         <button
           onClick={() => {
             setFormData({ name: '', location: '', status: 'active' })
             setShowAddModal(true)
           }}
-          className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-md text-sm font-medium hover:bg-orange-700"
+          className="flex items-center justify-center px-6 py-3 bg-orange-500 text-white rounded-xl text-sm font-bold hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20 active:scale-95"
         >
-          <Plus className="w-4 h-4 mr-2" />
-          Add Factory
+          <Plus className="w-5 h-5 mr-2" />
+          Register New Facility
         </button>
       </div>
 
-      {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-lg shadow-sm">
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-xs font-medium text-gray-500 uppercase mb-1">Search</label>
+          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Search Facilities</label>
           <input
             type="text"
-            placeholder="Search factory name, location..."
+            placeholder="Search name, location..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-orange-500 focus:border-orange-500"
+            className="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-500/20 transition-all placeholder:text-gray-400"
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-500 uppercase mb-1">Status</label>
+          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Operational Status</label>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-orange-500 focus:border-orange-500"
+            className="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-500/20 transition-all"
           >
-            <option value="all">All Statuses</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
+            <option value="all">All Facilities</option>
+            <option value="active">Active Facilities</option>
+            <option value="inactive">Inactive Facilities</option>
           </select>
         </div>
       </div>
 
       {message && (
-        <div
-          className={`p-4 rounded-md ${message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}
-        >
-          {message.text}
-        </div>
-      )}
-
-      {/* Add Factory Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
-          <div className="relative p-8 border w-full max-w-md shadow-lg rounded-md bg-white">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium text-gray-900">Add New Factory</h3>
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <span className="sr-only">Close</span>
-                <Plus className="w-6 h-6 transform rotate-45" />
-              </button>
-            </div>
-            <form onSubmit={handleAddFactory} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Factory Name</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
-                  placeholder="Factory A"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Location</label>
-                <input
-                  type="text"
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
-                  placeholder="Cairo, Egypt"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Status</label>
-                <select
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
-                >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-              </div>
-              <div className="mt-6 flex justify-end space-x-3">
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-4 py-2 bg-orange-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50"
-                >
-                  {isSubmitting ? 'Adding...' : 'Add Factory'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Factory Modal */}
-      {showEditModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
-          <div className="relative p-8 border w-full max-w-md shadow-lg rounded-md bg-white">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium text-gray-900">Edit Factory</h3>
-              <button
-                onClick={() => {
-                  setShowEditModal(false)
-                  setEditingFactory(null)
-                }}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <span className="sr-only">Close</span>
-                <Plus className="w-6 h-6 transform rotate-45" />
-              </button>
-            </div>
-            <form onSubmit={handleEditFactory} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Factory Name</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
-                  placeholder="Factory A"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Location</label>
-                <input
-                  type="text"
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
-                  placeholder="Cairo, Egypt"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Status</label>
-                <select
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
-                >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-              </div>
-              <div className="mt-6 flex justify-end space-x-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowEditModal(false)
-                    setEditingFactory(null)
-                  }}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-4 py-2 bg-orange-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50"
-                >
-                  {isSubmitting ? 'Saving...' : 'Save Changes'}
-                </button>
-              </div>
-            </form>
-          </div>
+        <div className={`p-4 rounded-xl border flex items-center space-x-3 animate-in slide-in-from-top-2 ${message.type === 'success' ? 'bg-green-50 border-green-100 text-green-700' : 'bg-red-50 border-red-100 text-red-700'}`}>
+          <div className={`w-2 h-2 rounded-full ${message.type === 'success' ? 'bg-green-500' : 'bg-red-500'} animate-pulse`} />
+          <p className="text-sm font-bold">{message.text}</p>
         </div>
       )}
 
       {loading ? (
-        <div className="text-center py-12">
-          <RefreshCw className="w-8 h-8 animate-spin mx-auto text-gray-400" />
-          <p className="mt-2 text-gray-500">Loading factories...</p>
+        <div className="text-center py-20 bg-white rounded-3xl border border-gray-100">
+          <RefreshCw className="w-10 h-10 animate-spin mx-auto text-orange-200 mb-4" />
+          <p className="text-gray-400 font-medium italic">Synchronizing facility data...</p>
         </div>
       ) : filteredFactories.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg shadow-md">
-          <Factory className="w-12 h-12 mx-auto text-gray-300 mb-4" />
-          <p className="text-gray-500 italic">No factories found</p>
+        <div className="text-center py-20 bg-white rounded-3xl border border-gray-100">
+          <Factory className="w-16 h-16 mx-auto text-gray-100 mb-4" />
+          <p className="text-gray-400 font-medium italic">No facilities matching criteria</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1473,31 +1271,65 @@ function FactoriesTab() {
           ))}
         </div>
       )}
+
+      {(showAddModal || showEditModal) && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => { setShowAddModal(false); setShowEditModal(false); }}></div>
+          <div className="relative bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="px-8 py-6 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
+              <h3 className="text-xl font-black text-gray-900 tracking-tight">
+                {showAddModal ? 'New Facility' : 'Modify Facility'}
+              </h3>
+              <button onClick={() => { setShowAddModal(false); setShowEditModal(false); }} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                <Plus className="w-5 h-5 rotate-45 text-gray-400" />
+              </button>
+            </div>
+            <form onSubmit={showAddModal ? handleAddFactory : handleEditFactory} className="p-8 space-y-5">
+              <div className="space-y-4">
+                <InputField
+                  label="Facility Name"
+                  value={formData.name}
+                  onChange={(v: string) => setFormData({ ...formData, name: v })}
+                  placeholder="e.g. Cairo Central Unit"
+                  required
+                />
+                <InputField
+                  label="Geographic Location"
+                  value={formData.location}
+                  onChange={(v: string) => setFormData({ ...formData, location: v })}
+                  placeholder="City, Region"
+                />
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                    Operational Status
+                  </label>
+                  <select
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+                    className="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-500/20 transition-all"
+                  >
+                    <option value="active">Active & Operational</option>
+                    <option value="inactive">Inactive / Maintenance</option>
+                  </select>
+                </div>
+              </div>
+              <div className="pt-4 flex space-x-3">
+                <button type="button" onClick={() => { setShowAddModal(false); setShowEditModal(false); }} className="flex-1 py-3 text-sm font-bold text-gray-500 hover:bg-gray-50 rounded-xl transition-all">Cancel</button>
+                <button type="submit" disabled={isSubmitting} className="flex-2 py-3 px-8 bg-orange-500 text-white rounded-xl text-sm font-bold hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20 disabled:opacity-50">
+                  {isSubmitting ? 'Processing...' : showAddModal ? 'Register Facility' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
-function SettingsTab() {
-  const [settings, setSettings] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+function SettingsTab({ settings, loading, onRefresh }: { settings: any; loading: boolean; onRefresh: () => void }) {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
-
-  useEffect(() => {
-    fetchSettings()
-  }, [])
-
-  const fetchSettings = async () => {
-    setLoading(true)
-    try {
-      const res = await adminApi.getSettings()
-      setSettings(res.settings)
-    } catch (error) {
-      console.error('Failed to fetch settings:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const handleUpdate = async (key: string, value: any) => {
     setSaving(true)
@@ -1506,8 +1338,8 @@ function SettingsTab() {
       const updatedSettings = { ...settings, [key]: value }
       const res = await adminApi.updateSettings(updatedSettings)
       if (res.success) {
-        setSettings(updatedSettings)
-        setMessage({ type: 'success', text: 'Setting updated successfully' })
+        setMessage({ type: 'success', text: 'System configuration updated' })
+        onRefresh()
       } else {
         setMessage({ type: 'error', text: res.message || 'Update failed' })
       }
@@ -1520,120 +1352,126 @@ function SettingsTab() {
 
   if (loading) {
     return (
-      <div className="text-center py-12">
-        <RefreshCw className="w-8 h-8 animate-spin mx-auto text-gray-400" />
-        <p className="mt-2 text-gray-500">Loading settings...</p>
+      <div className="text-center py-20 bg-white rounded-3xl border border-gray-100 animate-in fade-in duration-500">
+        <RefreshCw className="w-10 h-10 animate-spin mx-auto text-orange-200 mb-4" />
+        <p className="text-gray-400 font-medium italic">Synchronizing system settings...</p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-gray-900">System Settings</h2>
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-black text-gray-900 tracking-tight">System Configuration</h2>
+          <p className="text-sm text-gray-500">Global environment variables and application logic</p>
+        </div>
         {saving && (
-          <div className="flex items-center text-sm text-gray-500">
-            <RefreshCw className="w-4 h-4 animate-spin mr-2" />
-            Saving changes...
+          <div className="flex items-center px-4 py-2 bg-orange-50 text-orange-600 rounded-xl text-xs font-bold border border-orange-100 animate-pulse">
+            <RefreshCw className="w-3 h-3 animate-spin mr-2" />
+            Persisting Changes...
           </div>
         )}
       </div>
 
       {message && (
-        <div
-          className={`p-4 rounded-md ${message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}
-        >
-          {message.text}
+        <div className={`p-4 rounded-xl border flex items-center space-x-3 animate-in slide-in-from-top-2 ${message.type === 'success' ? 'bg-green-50 border-green-100 text-green-700' : 'bg-red-50 border-red-100 text-red-700'}`}>
+          <div className={`w-2 h-2 rounded-full ${message.type === 'success' ? 'bg-green-500' : 'bg-red-500'} animate-pulse`} />
+          <p className="text-sm font-bold">{message.text}</p>
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow-md p-6 space-y-8">
-        <SettingSection title="General Settings">
-          <SettingItem
-            label="Application Name"
-            value={settings?.appName || 'Dates Factory Manager'}
-            onUpdate={(val) => handleUpdate('appName', val)}
-            validation={(val) => (val.length < 3 ? 'Name too short' : null)}
-          />
-          <SettingItem
-            label="Support Email"
-            value={settings?.supportEmail || 'support@datesfactory.com'}
-            onUpdate={(val) => handleUpdate('supportEmail', val)}
-            validation={(val) =>
-              !val.includes('@') || !val.includes('.') ? 'Invalid email' : null
-            }
-          />
-          <SettingItem
-            label="Maintenance Mode"
-            value={settings?.maintenanceMode || false}
-            type="toggle"
-            onUpdate={(val) => handleUpdate('maintenanceMode', val)}
-          />
-        </SettingSection>
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        <div className="space-y-8">
+          <SettingSection title="Identity & Branding" icon={<Settings className="w-4 h-4" />}>
+            <SettingItem
+              label="Application Name"
+              value={settings?.appName || 'Dates Factory Manager'}
+              onUpdate={(val) => handleUpdate('appName', val)}
+              validation={(val) => (val.length < 3 ? 'Name too short' : null)}
+            />
+            <SettingItem
+              label="Support Protocol Email"
+              value={settings?.supportEmail || 'support@datesfactory.com'}
+              onUpdate={(val) => handleUpdate('supportEmail', val)}
+              validation={(val) =>
+                !val.includes('@') || !val.includes('.') ? 'Invalid email' : null
+              }
+            />
+            <SettingItem
+              label="Emergency Maintenance Mode"
+              value={settings?.maintenanceMode || false}
+              type="toggle"
+              onUpdate={(val) => handleUpdate('maintenanceMode', val)}
+            />
+          </SettingSection>
 
-        <SettingSection title="User & Registration">
-          <SettingItem
-            label="Allow User Registration"
-            value={settings?.allowRegistration ?? true}
-            type="toggle"
-            onUpdate={(val) => handleUpdate('allowRegistration', val)}
-          />
-          <SettingItem
-            label="Default User Role"
-            value={settings?.defaultUserRole || 'user'}
-            type="select"
-            options={[
-              { label: 'User', value: 'user' },
-              { label: 'Worker', value: 'worker' },
-              { label: 'Manager', value: 'manager' }
-            ]}
-            onUpdate={(val) => handleUpdate('defaultUserRole', val)}
-          />
-          <SettingItem
-            label="Password Policy"
-            value={settings?.passwordPolicy || 'Minimum 6 characters'}
-            onUpdate={(val) => handleUpdate('passwordPolicy', val)}
-          />
-        </SettingSection>
+          <SettingSection title="User Protocols" icon={<Users className="w-4 h-4" />}>
+            <SettingItem
+              label="Public Registration"
+              value={settings?.allowRegistration ?? true}
+              type="toggle"
+              onUpdate={(val) => handleUpdate('allowRegistration', val)}
+            />
+            <SettingItem
+              label="Default Access Level"
+              value={settings?.defaultUserRole || 'user'}
+              type="select"
+              options={[
+                { label: 'Standard User', value: 'user' },
+                { label: 'Factory Worker', value: 'worker' },
+                { label: 'Plant Manager', value: 'manager' }
+              ]}
+              onUpdate={(val) => handleUpdate('defaultUserRole', val)}
+            />
+            <SettingItem
+              label="Security Policy Label"
+              value={settings?.passwordPolicy || 'Minimum 6 characters'}
+              onUpdate={(val) => handleUpdate('passwordPolicy', val)}
+            />
+          </SettingSection>
+        </div>
 
-        <SettingSection title="Security & Sessions">
-          <SettingItem
-            label="Session Timeout"
-            value={settings?.sessionTimeout || '30 minutes'}
-            type="select"
-            options={[
-              { label: '15 minutes', value: '15 minutes' },
-              { label: '30 minutes', value: '30 minutes' },
-              { label: '1 hour', value: '1 hour' },
-              { label: '4 hours', value: '4 hours' },
-              { label: '8 hours', value: '8 hours' }
-            ]}
-            onUpdate={(val) => handleUpdate('sessionTimeout', val)}
-          />
-        </SettingSection>
+        <div className="space-y-8">
+          <SettingSection title="Session & Security" icon={<Lock className="w-4 h-4" />}>
+            <SettingItem
+              label="Token Expiration"
+              value={settings?.sessionTimeout || '30 minutes'}
+              type="select"
+              options={[
+                { label: '15 Minutes', value: '15 minutes' },
+                { label: '30 Minutes', value: '30 minutes' },
+                { label: '1 Hour', value: '1 hour' },
+                { label: '4 Hours', value: '4 hours' },
+                { label: '8 Hours', value: '8 hours' }
+              ]}
+              onUpdate={(val) => handleUpdate('sessionTimeout', val)}
+            />
+          </SettingSection>
 
-        <SettingSection title="Database & System">
-          <SettingItem
-            label="Connection Pool Size"
-            value={settings?.connectionPool || 10}
-            type="number"
-            onUpdate={(val) => handleUpdate('connectionPool', parseInt(val))}
-            validation={(val) =>
-              parseInt(val) < 1 || parseInt(val) > 100 ? 'Must be between 1 and 100' : null
-            }
-          />
-          <SettingItem
-            label="Backup Frequency"
-            value={settings?.backupFrequency || 'Daily'}
-            type="select"
-            options={[
-              { label: 'Hourly', value: 'Hourly' },
-              { label: 'Daily', value: 'Daily' },
-              { label: 'Weekly', value: 'Weekly' }
-            ]}
-            onUpdate={(val) => handleUpdate('backupFrequency', val)}
-          />
-        </SettingSection>
+          <SettingSection title="Infrastructure & Ops" icon={<Database className="w-4 h-4" />}>
+            <SettingItem
+              label="Neon Connection Pool"
+              value={settings?.connectionPool || 10}
+              type="number"
+              onUpdate={(val) => handleUpdate('connectionPool', parseInt(val))}
+              validation={(val) =>
+                parseInt(val) < 1 || parseInt(val) > 100 ? 'Range: 1-100' : null
+              }
+            />
+            <SettingItem
+              label="Automated Backup Cadence"
+              value={settings?.backupFrequency || 'Daily'}
+              type="select"
+              options={[
+                { label: 'Every Hour', value: 'Hourly' },
+                { label: 'Once Daily', value: 'Daily' },
+                { label: 'Every Week', value: 'Weekly' }
+              ]}
+              onUpdate={(val) => handleUpdate('backupFrequency', val)}
+            />
+          </SettingSection>
+        </div>
       </div>
     </div>
   )
@@ -1727,83 +1565,97 @@ function UserRow({
   actionLoading: boolean
 }) {
   const statusColors: { [key: string]: string } = {
-    active: 'bg-green-100 text-green-800',
-    inactive: 'bg-yellow-100 text-yellow-800',
-    banned: 'bg-red-100 text-red-800'
+    active: 'text-green-600 bg-green-50 border-green-100',
+    inactive: 'text-yellow-600 bg-yellow-50 border-yellow-100',
+    banned: 'text-red-600 bg-red-50 border-red-100'
+  }
+
+  const roleColors: { [key: string]: string } = {
+    admin: 'text-purple-600 bg-purple-50 border-purple-100',
+    manager: 'text-blue-600 bg-blue-50 border-blue-100',
+    worker: 'text-slate-600 bg-slate-50 border-slate-100',
+    user: 'text-gray-600 bg-gray-50 border-gray-100'
   }
 
   return (
-    <tr>
-      <td className="px-6 py-4 whitespace-nowrap">
-        <div>
-          <div className="text-sm font-medium text-gray-900">{user.full_name || 'No Name'}</div>
-          <div className="text-sm text-gray-500">{user.phone}</div>
+    <tr className="group hover:bg-gray-50/50 transition-colors">
+      <td className="px-8 py-5">
+        <div className="flex items-center space-x-4">
+          <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 font-bold text-xs border-2 border-white shadow-sm">
+            {user.full_name?.substring(0, 2).toUpperCase() || '??'}
+          </div>
+          <div>
+            <p className="text-sm font-bold text-gray-900 leading-none mb-1">{user.full_name || 'Anonymous User'}</p>
+            <p className="text-[11px] font-medium text-gray-400 font-mono tracking-tight">{user.phone}</p>
+          </div>
         </div>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-        <span
-          className={`px-2 py-1 rounded-full text-xs font-medium ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}`}
-        >
+      <td className="px-8 py-5">
+        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${roleColors[user.role] || roleColors.user}`}>
           {user.role}
         </span>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap">
-        <span
-          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColors[user.status] || 'bg-gray-100 text-gray-800'}`}
-        >
+      <td className="px-8 py-5">
+        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${statusColors[user.status] || 'text-gray-400 bg-gray-50 border-gray-100'}`}>
           {user.status || 'active'}
         </span>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-        <button
-          onClick={onEdit}
-          className="text-blue-600 hover:text-blue-900 disabled:opacity-50"
-          title="Edit"
-        >
-          <Edit className="w-4 h-4 inline" />
-        </button>
-        {user.status !== 'active' && (
+      <td className="px-8 py-5">
+        <div className="flex items-center justify-end space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
-            onClick={() => onAction(user.id, 'activate', 'Activate')}
-            disabled={actionLoading}
-            className="text-green-600 hover:text-green-900 disabled:opacity-50"
-            title="Activate"
+            onClick={onEdit}
+            className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all"
+            title="Edit Details"
           >
-            <CheckCircle className="w-4 h-4 inline" />
+            <Edit className="w-4 h-4" />
           </button>
-        )}
-        {user.status !== 'inactive' && (
+          
+          {user.status !== 'active' && (
+            <button
+              onClick={() => onAction(user.id, 'activate', 'Activation')}
+              disabled={actionLoading}
+              className="p-2 text-slate-400 hover:text-green-500 hover:bg-green-50 rounded-lg transition-all disabled:opacity-30"
+              title="Grant Access"
+            >
+              <CheckCircle className="w-4 h-4" />
+            </button>
+          )}
+
+          {user.status !== 'inactive' && (
+            <button
+              onClick={() => onAction(user.id, 'deactivate', 'Deactivation')}
+              disabled={actionLoading}
+              className="p-2 text-slate-400 hover:text-yellow-600 hover:bg-yellow-50 rounded-lg transition-all disabled:opacity-30"
+              title="Suspend Access"
+            >
+              <Power className="w-4 h-4" />
+            </button>
+          )}
+
+          {user.status !== 'banned' && (
+            <button
+              onClick={() => onAction(user.id, 'ban', 'Banning')}
+              disabled={actionLoading}
+              className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all disabled:opacity-30"
+              title="Restrict User"
+            >
+              <Ban className="w-4 h-4" />
+            </button>
+          )}
+
           <button
-            onClick={() => onAction(user.id, 'deactivate', 'Deactivate')}
+            onClick={() => {
+              if (confirm('Permanently remove this user identity? This cannot be undone.')) {
+                onAction(user.id, 'delete', 'Deletion')
+              }
+            }}
             disabled={actionLoading}
-            className="text-yellow-600 hover:text-yellow-900 disabled:opacity-50"
-            title="Deactivate"
+            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all disabled:opacity-30"
+            title="Terminate Account"
           >
-            <Power className="w-4 h-4 inline" />
+            <Trash2 className="w-4 h-4" />
           </button>
-        )}
-        {user.status !== 'banned' && (
-          <button
-            onClick={() => onAction(user.id, 'ban', 'Ban')}
-            disabled={actionLoading}
-            className="text-orange-600 hover:text-orange-900 disabled:opacity-50"
-            title="Ban"
-          >
-            <Ban className="w-4 h-4 inline" />
-          </button>
-        )}
-        <button
-          onClick={() => {
-            if (confirm('Are you sure you want to delete this user?')) {
-              onAction(user.id, 'delete', 'Delete')
-            }
-          }}
-          disabled={actionLoading}
-          className="text-red-600 hover:text-red-900 disabled:opacity-50"
-          title="Delete"
-        >
-          <Trash2 className="w-4 h-4 inline" />
-        </button>
+        </div>
       </td>
     </tr>
   )
@@ -1821,70 +1673,83 @@ function LicenseRow({
   actionLoading: boolean
 }) {
   const statusColors: { [key: string]: string } = {
-    active: 'bg-green-100 text-green-800',
-    inactive: 'bg-yellow-100 text-yellow-800',
-    expired: 'bg-red-100 text-red-800',
-    banned: 'bg-red-100 text-red-800'
+    active: 'text-green-600 bg-green-50 border-green-100',
+    inactive: 'text-yellow-600 bg-yellow-50 border-yellow-100',
+    expired: 'text-red-600 bg-red-50 border-red-100',
+    banned: 'text-slate-600 bg-slate-50 border-slate-100'
   }
 
   return (
-    <tr>
-      <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm font-mono font-medium text-gray-900">{license.license_key}</div>
+    <tr className="group hover:bg-gray-50/50 transition-colors">
+      <td className="px-8 py-5">
+        <div className="flex items-center space-x-3">
+          <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-500">
+            <Key className="w-4 h-4" />
+          </div>
+          <p className="text-sm font-mono font-bold text-gray-900 tracking-tighter">{license.license_key}</p>
+        </div>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-        {license.factory_name || 'N/A'}
+      <td className="px-8 py-5">
+        <div>
+          <p className="text-sm font-bold text-gray-900">{license.factory_name || 'General Access'}</p>
+          <p className="text-[10px] font-medium text-gray-400 font-mono">{license.machine_id || 'ANY_HARDWARE'}</p>
+        </div>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap">
-        <span
-          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColors[license.status] || 'bg-gray-100 text-gray-800'}`}
-        >
-          {license.status}
-        </span>
+      <td className="px-8 py-5">
+        <div className="flex flex-col">
+          <span className={`w-fit px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border mb-1 ${statusColors[license.status] || 'text-gray-400 bg-gray-50 border-gray-100'}`}>
+            {license.status}
+          </span>
+          <p className="text-[10px] font-medium text-gray-400">
+            {license.expiry_date ? `Expires ${new Date(license.expiry_date).toLocaleDateString()}` : 'Lifetime Access'}
+          </p>
+        </div>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-        {license.expiry_date ? new Date(license.expiry_date).toLocaleDateString() : 'No expiry'}
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-        <button
-          onClick={onEdit}
-          className="text-blue-600 hover:text-blue-900 disabled:opacity-50"
-          title="Edit"
-        >
-          <Edit className="w-4 h-4 inline" />
-        </button>
-        {license.status !== 'active' && (
+      <td className="px-8 py-5 text-right">
+        <div className="flex items-center justify-end space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
-            onClick={() => onAction(license.id, 'activate', 'Activate')}
-            disabled={actionLoading}
-            className="text-green-600 hover:text-green-900 disabled:opacity-50"
-            title="Activate"
+            onClick={onEdit}
+            className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all"
+            title="Modify Key"
           >
-            <CheckCircle className="w-4 h-4 inline" />
+            <Edit className="w-4 h-4" />
           </button>
-        )}
-        {license.status !== 'inactive' && (
+          
+          {license.status !== 'active' && (
+            <button
+              onClick={() => onAction(license.id, 'activate', 'Activation')}
+              disabled={actionLoading}
+              className="p-2 text-slate-400 hover:text-green-500 hover:bg-green-50 rounded-lg transition-all disabled:opacity-30"
+              title="Activate Key"
+            >
+              <CheckCircle className="w-4 h-4" />
+            </button>
+          )}
+
+          {license.status !== 'inactive' && (
+            <button
+              onClick={() => onAction(license.id, 'deactivate', 'Deactivation')}
+              disabled={actionLoading}
+              className="p-2 text-slate-400 hover:text-yellow-600 hover:bg-yellow-50 rounded-lg transition-all disabled:opacity-30"
+              title="Suspend Key"
+            >
+              <Power className="w-4 h-4" />
+            </button>
+          )}
+
           <button
-            onClick={() => onAction(license.id, 'deactivate', 'Deactivate')}
+            onClick={() => {
+              if (confirm('Permanently revoke and delete this license key?')) {
+                onAction(license.id, 'delete', 'Revocation')
+              }
+            }}
             disabled={actionLoading}
-            className="text-yellow-600 hover:text-yellow-900 disabled:opacity-50"
-            title="Deactivate"
+            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all disabled:opacity-30"
+            title="Revoke Key"
           >
-            <Power className="w-4 h-4 inline" />
+            <Trash2 className="w-4 h-4" />
           </button>
-        )}
-        <button
-          onClick={() => {
-            if (confirm('Are you sure you want to delete this license?')) {
-              onAction(license.id, 'delete', 'Delete')
-            }
-          }}
-          disabled={actionLoading}
-          className="text-red-600 hover:text-red-900 disabled:opacity-50"
-          title="Delete"
-        >
-          <Trash2 className="w-4 h-4 inline" />
-        </button>
+        </div>
       </td>
     </tr>
   )
@@ -1930,11 +1795,14 @@ function FactoryCard({
   )
 }
 
-function SettingSection({ title, children }: { title: string; children: React.ReactNode }) {
+function SettingSection({ title, icon, children }: { title: string; icon?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="space-y-4">
-      <h3 className="text-md font-medium text-gray-700 border-b pb-2">{title}</h3>
-      <div className="grid grid-cols-1 gap-4">{children}</div>
+    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden transition-all hover:shadow-md">
+      <div className="px-6 py-4 bg-gray-50/50 border-b border-gray-50 flex items-center space-x-3">
+        {icon && <div className="p-2 bg-white rounded-lg shadow-sm text-orange-500">{icon}</div>}
+        <h3 className="text-sm font-black text-gray-900 uppercase tracking-wider">{title}</h3>
+      </div>
+      <div className="p-6 space-y-1 divide-y divide-gray-50">{children}</div>
     </div>
   )
 }
@@ -1973,22 +1841,24 @@ function SettingItem({
   }
 
   const handleToggle = () => {
-    const newValue = !value
-    onUpdate(newValue)
+    onUpdate(!value)
   }
 
   if (type === 'toggle') {
     return (
-      <div className="flex items-center justify-between py-3">
-        <span className="text-sm text-gray-600">{label}</span>
+      <div className="flex items-center justify-between py-4 first:pt-0 last:pb-0">
+        <div>
+          <span className="text-sm font-bold text-gray-700 block">{label}</span>
+          <p className="text-[10px] text-gray-400 font-medium">Toggle system status</p>
+        </div>
         <button
           onClick={handleToggle}
-          className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 ${
-            value ? 'bg-orange-600' : 'bg-gray-200'
+          className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-all duration-200 ease-in-out focus:outline-none ${
+            value ? 'bg-orange-500' : 'bg-gray-200'
           }`}
         >
           <span
-            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
               value ? 'translate-x-5' : 'translate-x-0'
             }`}
           />
@@ -1998,19 +1868,23 @@ function SettingItem({
   }
 
   return (
-    <div className="flex items-center justify-between py-2">
-      <div className="flex flex-col">
-        <span className="text-sm text-gray-600">{label}</span>
-        {error && <span className="text-xs text-red-500 mt-1">{error}</span>}
+    <div className="flex items-center justify-between py-4 first:pt-0 last:pb-0">
+      <div className="flex-1 mr-4">
+        <span className="text-sm font-bold text-gray-700 block">{label}</span>
+        {error ? (
+          <span className="text-[10px] text-red-500 font-bold animate-pulse">{error}</span>
+        ) : (
+          <p className="text-[10px] text-gray-400 font-medium">Click to modify configuration</p>
+        )}
       </div>
       <div className="flex items-center">
         {isEditing ? (
-          <form onSubmit={handleSubmit} className="flex items-center space-x-2">
+          <form onSubmit={handleSubmit} className="flex items-center space-x-2 animate-in zoom-in-95 duration-200">
             {type === 'select' ? (
               <select
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
-                className="text-sm border rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                className="bg-gray-50 border-none rounded-xl px-3 py-2 text-xs font-bold focus:ring-2 focus:ring-orange-500/20"
                 autoFocus
               >
                 {options?.map((opt) => (
@@ -2024,17 +1898,15 @@ function SettingItem({
                 type={type === 'number' ? 'number' : 'text'}
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
-                className={`text-sm border rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-orange-500 ${
-                  error ? 'border-red-500' : ''
-                }`}
+                className="bg-gray-50 border-none rounded-xl px-3 py-2 text-xs font-bold focus:ring-2 focus:ring-orange-500/20 w-32"
                 autoFocus
               />
             )}
             <button
               type="submit"
-              className="text-green-600 hover:text-green-800 text-sm font-medium"
+              className="p-2 text-green-500 hover:bg-green-50 rounded-lg transition-all"
             >
-              Save
+              <CheckCircle className="w-4 h-4" />
             </button>
             <button
               type="button"
@@ -2043,28 +1915,28 @@ function SettingItem({
                 setEditValue(value)
                 setError(null)
               }}
-              className="text-gray-500 hover:text-gray-700 text-sm font-medium"
+              className="p-2 text-gray-400 hover:bg-gray-100 rounded-lg transition-all"
             >
-              Cancel
+              <Plus className="w-4 h-4 rotate-45" />
             </button>
           </form>
         ) : (
-          <>
-            <span className="text-sm font-medium text-gray-900 mr-4">
+          <div 
+            onClick={() => {
+              setEditValue(value)
+              setIsEditing(true)
+            }}
+            className="flex items-center group cursor-pointer"
+          >
+            <span className="text-xs font-black text-slate-900 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 group-hover:border-orange-200 group-hover:bg-orange-50 transition-all mr-2">
               {type === 'select'
                 ? options?.find((o) => o.value === value)?.label || value
                 : value?.toString()}
             </span>
-            <button
-              onClick={() => {
-                setEditValue(value)
-                setIsEditing(true)
-              }}
-              className="text-orange-600 hover:text-orange-900"
-            >
-              <Edit className="w-4 h-4" />
-            </button>
-          </>
+            <div className="p-1.5 text-gray-300 group-hover:text-orange-500 transition-colors">
+              <Edit className="w-3.5 h-3.5" />
+            </div>
+          </div>
         )}
       </div>
     </div>
