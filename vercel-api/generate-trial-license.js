@@ -3,16 +3,11 @@
 const https = require('https')
 const crypto = require('crypto')
 
-const SECRET_KEY = 'DateFactory2026SecretKey'
+const SECRET_KEY = process.env.LICENSE_SECRET || 'DateFactory2024SecretKey#$%^&*()!@#'
 
 function generateLicenseKey(machineId, durationCode = '4D') {
   const data = machineId + '|' + durationCode + '|' + SECRET_KEY
-  const hash = crypto
-    .createHash('sha256')
-    .update(data)
-    .digest('hex')
-    .substring(0, 16)
-    .toUpperCase()
+  const hash = crypto.createHash('sha256').update(data).digest('hex').substring(0, 16).toUpperCase()
 
   const parts = []
   for (let i = 0; i < 4; i++) {

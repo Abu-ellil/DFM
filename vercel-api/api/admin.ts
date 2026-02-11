@@ -1,6 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { authenticateAdmin } from '../src/lib/auth.js'
 import { createNeonConnection } from '../src/lib/neon.js'
+import crypto from 'crypto'
+
+const SECRET_KEY = process.env.LICENSE_SECRET || 'DateFactory2024SecretKey#$%^&*()!@#'
 
 /**
  * Consolidated Admin API
@@ -228,9 +231,32 @@ async function handleLicenses(
 
     // Generate license key if not provided
     if (!license_key) {
-      const randomPart = () => Math.random().toString(36).substring(2, 6).toUpperCase()
-      const dCode = (duration_code || 'MONTH_1').split('_').map((p: string) => p[0]).join('')
-      license_key = `${randomPart()}-${randomPart()}-${randomPart()}-${randomPart()}-${dCode}`
+      const dCode = (duration_code || 'MONTH_1')
+        .split('_')
+        .map((p: string) => p[0])
+        .join('')
+
+      if (machine_id && machine_id !== 'GENERAL') {
+        // Generate deterministic key based on machine ID (matches client app logic)
+        const data = machine_id.toUpperCase() + '|' + dCode + '|' + SECRET_KEY
+        const hash = crypto
+          .createHash('sha256')
+          .update(data)
+          .digest('hex')
+          .substring(0, 16)
+          .toUpperCase()
+
+        const parts = []
+        for (let i = 0; i < 4; i++) {
+          parts.push(hash.substring(i * 4, (i + 1) * 4))
+        }
+        parts.push(dCode)
+        license_key = parts.join('-')
+      } else {
+        // Fallback to random key for general use
+        const randomPart = () => Math.random().toString(36).substring(2, 6).toUpperCase()
+        license_key = `${randomPart()}-${randomPart()}-${randomPart()}-${randomPart()}-${dCode}`
+      }
     }
 
     // Default machine_id if not provided

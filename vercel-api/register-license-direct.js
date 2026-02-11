@@ -10,17 +10,12 @@ if (!databaseUrl) {
   process.exit(1)
 }
 
-const SECRET_KEY = 'DateFactory2026SecretKey'
+const SECRET_KEY = process.env.LICENSE_SECRET || 'DateFactory2024SecretKey#$%^&*()!@#'
 const machineId = 'BBD4A43C1EBC4692'
 
 function generateLicenseKey(machineId, durationCode = '30D') {
   const data = machineId + '|' + durationCode + '|' + SECRET_KEY
-  const hash = crypto
-    .createHash('sha256')
-    .update(data)
-    .digest('hex')
-    .substring(0, 16)
-    .toUpperCase()
+  const hash = crypto.createHash('sha256').update(data).digest('hex').substring(0, 16).toUpperCase()
 
   const parts = []
   for (let i = 0; i < 4; i++) {

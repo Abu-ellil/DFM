@@ -4,7 +4,7 @@ import { neon } from '@neondatabase/serverless'
 import crypto from 'crypto'
 
 const databaseUrl = process.env.NEON_DATABASE_URL
-const SECRET_KEY = process.env.LICENSE_SECRET || 'DateFactory2026SecretKey'
+const SECRET_KEY = process.env.LICENSE_SECRET || 'DateFactory2024SecretKey#$%^&*()!@#'
 
 /**
  * Consolidated License API
