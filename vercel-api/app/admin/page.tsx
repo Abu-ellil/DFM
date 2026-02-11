@@ -15,7 +15,9 @@ import {
   LogOut,
   Power,
   Ban,
-  CheckCircle
+  CheckCircle,
+  Lock,
+  Database
 } from 'lucide-react'
 import { adminApi } from '../../lib/api'
 
@@ -24,7 +26,6 @@ export default function AdminPage() {
   const [authorized, setAuthorized] = useState(false)
   const [activeTab, setActiveTab] = useState('overview')
   const [loading, setLoading] = useState(true)
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   // Data states
   const [stats, setStats] = useState({
@@ -37,14 +38,6 @@ export default function AdminPage() {
   const [licenses, setLicenses] = useState<any[]>([])
   const [factories, setFactories] = useState<any[]>([])
   const [settings, setSettings] = useState<any>(null)
-
-  // Modal states
-  const [showAddUser, setShowAddUser] = useState(false)
-  const [showEditUser, setShowEditUser] = useState(false)
-  const [editingUser, setEditingUser] = useState<any>(null)
-  const [showAddLicense, setShowAddLicense] = useState(false)
-  const [showEditLicense, setShowEditLicense] = useState(false)
-  const [editingLicense, setEditingLicense] = useState<any>(null)
 
   const fetchAdminData = useCallback(async () => {
     setLoading(true)
@@ -226,59 +219,26 @@ export default function AdminPage() {
 
         {/* Content Area */}
         <div className="p-8 max-w-6xl mx-auto w-full">
-          {message && (
-            <div
-              className={`mb-6 p-4 rounded-xl border flex items-center space-x-3 animate-in fade-in slide-in-from-top-4 ${
-                message.type === 'success'
-                  ? 'bg-green-50 border-green-100 text-green-700'
-                  : 'bg-red-50 border-red-100 text-red-700'
-              }`}
-            >
-              {message.type === 'success' ? (
-                <CheckCircle className="w-5 h-5 flex-shrink-0" />
-              ) : (
-                <Ban className="w-5 h-5 flex-shrink-0" />
-              )}
-              <p className="text-sm font-medium">{message.text}</p>
-              <button
-                onClick={() => setMessage(null)}
-                className="ml-auto opacity-50 hover:opacity-100"
-              >
-                <Plus className="w-4 h-4 rotate-45" />
-              </button>
-            </div>
-          )}
-
           {activeTab === 'overview' && <OverviewTab stats={stats} loading={loading} />}
           {activeTab === 'users' && (
             <UsersTab
               users={users}
               loading={loading}
-              showAddModal={showAddUser}
-              setShowAddModal={setShowAddUser}
-              showEditModal={showEditUser}
-              setShowEditModal={setShowEditUser}
-              editingUser={editingUser}
-              setEditingUser={setEditingUser}
+              onRefresh={handleRefresh}
             />
           )}
           {activeTab === 'licenses' && (
             <LicensesTab
               licenses={licenses}
               loading={loading}
-              showAddModal={showAddLicense}
-              setShowAddModal={setShowAddLicense}
-              showEditModal={showEditLicense}
-              setShowEditModal={setShowEditLicense}
-              editingLicense={editingLicense}
-              setEditingLicense={setEditingLicense}
+              onRefresh={handleRefresh}
             />
           )}
           {activeTab === 'factories' && (
-            <FactoriesTab factories={factories} loading={loading} onRefresh={fetchAdminData} />
+            <FactoriesTab factories={factories} loading={loading} onRefresh={handleRefresh} />
           )}
           {activeTab === 'settings' && (
-            <SettingsTab settings={settings} loading={loading} onRefresh={fetchAdminData} />
+            <SettingsTab settings={settings} loading={loading} onRefresh={handleRefresh} />
           )}
         </div>
       </main>
@@ -417,7 +377,7 @@ function UsersTab({
   loading: boolean
   onRefresh: () => void
 }) {
-  const [actionLoading, setActionLoading] = useState<{ [key: number]: boolean }>({})
+  const [actionLoading, setActionLoading] = useState<{ [key: string | number]: boolean }>({})
   const [searchTerm, setSearchTerm] = useState('')
   const [roleFilter, setRoleFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
@@ -504,7 +464,7 @@ function UsersTab({
     setShowEditModal(true)
   }
 
-  const handleUserAction = async (userId: number, action: string, actionName: string) => {
+  const handleUserAction = async (userId: number | string, action: string, actionName: string) => {
     setActionLoading({ ...actionLoading, [userId]: true })
     try {
       let result: any
@@ -736,25 +696,18 @@ function InputField({ label, value, onChange, type = 'text', placeholder, requir
 function LicensesTab({
   licenses,
   loading,
-  showAddModal,
-  setShowAddModal,
-  showEditModal,
-  setShowEditModal,
-  editingLicense,
-  setEditingLicense
+  onRefresh
 }: {
   licenses: any[]
   loading: boolean
-  showAddModal: boolean
-  setShowAddModal: (show: boolean) => void
-  showEditModal: boolean
-  setShowEditModal: (show: boolean) => void
-  editingLicense: any
-  setEditingLicense: (license: any) => void
+  onRefresh: () => void
 }) {
-  const [actionLoading, setActionLoading] = useState<{ [key: number]: boolean }>({})
+  const [actionLoading, setActionLoading] = useState<{ [key: string | number]: boolean }>({})
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editingLicense, setEditingLicense] = useState<any>(null)
 
   const [formData, setFormData] = useState({
     factoryName: '',
@@ -789,7 +742,7 @@ function LicensesTab({
         setMessage({ type: 'success', text: 'License generated successfully' })
         setShowAddModal(false)
         setFormData({ factoryName: '', durationCode: 'MONTH_1', machineId: '' })
-        setTimeout(() => window.location.reload(), 1000)
+        onRefresh()
       } else {
         setMessage({ type: 'error', text: res.message || 'Failed to generate license' })
       }
@@ -814,7 +767,7 @@ function LicensesTab({
         setMessage({ type: 'success', text: 'License updated successfully' })
         setShowEditModal(false)
         setEditingLicense(null)
-        setTimeout(() => window.location.reload(), 1000)
+        onRefresh()
       } else {
         setMessage({ type: 'error', text: res.message || 'Failed to update license' })
       }
@@ -835,7 +788,7 @@ function LicensesTab({
     setShowEditModal(true)
   }
 
-  const handleLicenseAction = async (licenseId: number, action: string, actionName: string) => {
+  const handleLicenseAction = async (licenseId: number | string, action: string, actionName: string) => {
     setActionLoading({ ...actionLoading, [licenseId]: true })
     try {
       let result: any
@@ -846,7 +799,7 @@ function LicensesTab({
 
       if (result?.success) {
         setMessage({ type: 'success', text: `${actionName} successful` })
-        setTimeout(() => window.location.reload(), 1000)
+        onRefresh()
       }
     } catch (error: any) {
       setMessage({ type: 'error', text: error.message || `${actionName} failed` })
@@ -982,123 +935,13 @@ function LicensesTab({
   )
 }
 
-      {/* Edit License Modal */}
-      {showEditModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
-          <div className="relative p-8 border w-full max-w-md shadow-lg rounded-md bg-white">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium text-gray-900">Edit License</h3>
-              <button
-                onClick={() => {
-                  setShowEditModal(false)
-                  setEditingLicense(null)
-                }}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <span className="sr-only">Close</span>
-                <Plus className="w-6 h-6 transform rotate-45" />
-              </button>
-            </div>
-            <form onSubmit={handleEditLicense} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Factory Name</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.factoryName}
-                  onChange={(e) => setFormData({ ...formData, factoryName: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
-                  placeholder="Factory Name"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Machine ID</label>
-                <input
-                  type="text"
-                  value={formData.machineId}
-                  onChange={(e) => setFormData({ ...formData, machineId: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
-                  placeholder="Unique Machine Identifier"
-                />
-              </div>
-              <div className="mt-6 flex justify-end space-x-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowEditModal(false)
-                    setEditingLicense(null)
-                  }}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-4 py-2 bg-orange-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50"
-                >
-                  {isSubmitting ? 'Saving...' : 'Save Changes'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                License Key
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Factory
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Expiry
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {loading ? (
-              <tr>
-                <td colSpan={5} className="px-6 py-4 text-center text-gray-500 italic">
-                  Loading licenses...
-                </td>
-              </tr>
-            ) : filteredLicenses.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-6 py-4 text-center text-gray-500 italic">
-                  No licenses found
-                </td>
-              </tr>
-            ) : (
-              filteredLicenses.map((license) => (
-                <LicenseRow
-                  key={license.id}
-                  license={license}
-                  onEdit={() => openEditModal(license)}
-                  onAction={handleLicenseAction}
-                  actionLoading={actionLoading[license.id] || false}
-                />
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
     </div>
   )
 }
 
 function FactoriesTab({ factories, loading, onRefresh }: { factories: any[]; loading: boolean; onRefresh: () => void }) {
-  const [actionLoading, setActionLoading] = useState<{ [key: number]: boolean }>({})
+  const [actionLoading, setActionLoading] = useState<{ [key: string | number]: boolean }>({})
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [showAddModal, setShowAddModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
@@ -1178,7 +1021,7 @@ function FactoriesTab({ factories, loading, onRefresh }: { factories: any[]; loa
     setShowEditModal(true)
   }
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: number | string) => {
     if (!confirm('Permanently decommission and delete this factory facility?')) return
 
     setActionLoading({ ...actionLoading, [id]: true })
@@ -1561,7 +1404,7 @@ function UserRow({
 }: {
   user: any
   onEdit: () => void
-  onAction: (userId: number, action: string, actionName: string) => void
+  onAction: (userId: number | string, action: string, actionName: string) => void
   actionLoading: boolean
 }) {
   const statusColors: { [key: string]: string } = {
@@ -1669,7 +1512,7 @@ function LicenseRow({
 }: {
   license: any
   onEdit: () => void
-  onAction: (licenseId: number, action: string, actionName: string) => void
+  onAction: (licenseId: number | string, action: string, actionName: string) => void
   actionLoading: boolean
 }) {
   const statusColors: { [key: string]: string } = {

@@ -107,7 +107,7 @@ export const adminApi = {
   /**
    * Update user
    */
-  updateUser: async (id: number, data: Partial<User>) => {
+  updateUser: async (id: number | string, data: Partial<User>) => {
     return apiRequest<{ success: boolean; message: string }>(`/api/admin/users/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data)
@@ -117,7 +117,7 @@ export const adminApi = {
   /**
    * Delete user
    */
-  deleteUser: async (id: number) => {
+  deleteUser: async (id: number | string) => {
     return apiRequest<{ success: boolean; message: string }>(`/api/admin/users/${id}`, {
       method: 'DELETE'
     })
@@ -126,7 +126,7 @@ export const adminApi = {
   /**
    * Activate user
    */
-  activateUser: async (id: number) => {
+  activateUser: async (id: number | string) => {
     return apiRequest<{ success: boolean; message: string }>(`/api/admin/users/${id}/activate`, {
       method: 'POST'
     })
@@ -135,7 +135,7 @@ export const adminApi = {
   /**
    * Deactivate user
    */
-  deactivateUser: async (id: number) => {
+  deactivateUser: async (id: number | string) => {
     return apiRequest<{ success: boolean; message: string }>(`/api/admin/users/${id}/deactivate`, {
       method: 'POST'
     })
@@ -144,7 +144,7 @@ export const adminApi = {
   /**
    * Ban user
    */
-  banUser: async (id: number) => {
+  banUser: async (id: number | string) => {
     return apiRequest<{ success: boolean; message: string }>(`/api/admin/users/${id}/ban`, {
       method: 'POST'
     })
@@ -170,7 +170,7 @@ export const adminApi = {
   /**
    * Delete license
    */
-  deleteLicense: async (id: number) => {
+  deleteLicense: async (id: number | string) => {
     return apiRequest<{ success: boolean; message: string }>(`/api/admin/licenses/${id}`, {
       method: 'DELETE'
     })
@@ -179,7 +179,7 @@ export const adminApi = {
   /**
    * Update license
    */
-  updateLicense: async (id: number, data: Partial<License>) => {
+  updateLicense: async (id: number | string, data: Partial<License>) => {
     return apiRequest<{ success: boolean; message: string }>(`/api/admin/licenses/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data)
@@ -189,7 +189,7 @@ export const adminApi = {
   /**
    * Activate license
    */
-  activateLicense: async (id: number) => {
+  activateLicense: async (id: number | string) => {
     return apiRequest<{ success: boolean; message: string }>(`/api/admin/licenses/${id}/activate`, {
       method: 'POST'
     })
@@ -198,7 +198,7 @@ export const adminApi = {
   /**
    * Deactivate license
    */
-  deactivateLicense: async (id: number) => {
+  deactivateLicense: async (id: number | string) => {
     return apiRequest<{ success: boolean; message: string }>(
       `/api/admin/licenses/${id}/deactivate`,
       {
@@ -210,7 +210,7 @@ export const adminApi = {
   /**
    * Ban license
    */
-  banLicense: async (id: number) => {
+  banLicense: async (id: number | string) => {
     return apiRequest<{ success: boolean; message: string }>(`/api/admin/licenses/${id}/ban`, {
       method: 'POST'
     })
@@ -236,7 +236,7 @@ export const adminApi = {
   /**
    * Update factory
    */
-  updateFactory: async (id: number, data: Partial<Factory>) => {
+  updateFactory: async (id: number | string, data: Partial<Factory>) => {
     return apiRequest<{ success: boolean; message: string }>(`/api/admin/factories/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data)
@@ -246,7 +246,7 @@ export const adminApi = {
   /**
    * Delete factory
    */
-  deleteFactory: async (id: number) => {
+  deleteFactory: async (id: number | string) => {
     return apiRequest<{ success: boolean; message: string }>(`/api/admin/factories/${id}`, {
       method: 'DELETE'
     })
@@ -440,7 +440,7 @@ export const financeApi = {
  * Type definitions
  */
 export interface User {
-  id?: number
+  id?: number | string
   phone: string
   full_name?: string
   factory_name?: string
@@ -509,7 +509,7 @@ export interface ActivityItem {
 }
 
 export interface Customer {
-  id: number
+  id: number | string
   name: string
   type: 'supplier' | 'customer'
   phone: string
@@ -518,15 +518,15 @@ export interface Customer {
 }
 
 export interface WeighbridgeRecord {
-  id: number
-  customerId: number
+  id: number | string
+  customerId: number | string
   weight: number
   date: string
   notes?: string
 }
 
 export interface FinanceRecord {
-  id: number
+  id: number | string
   type: 'income' | 'expense'
   amount: number
   category: string
@@ -535,7 +535,7 @@ export interface FinanceRecord {
 }
 
 export interface License {
-  id: number
+  id: number | string
   license_key: string
   machine_id: string
   factory_name: string
@@ -546,7 +546,7 @@ export interface License {
 }
 
 export interface Factory {
-  id: number
+  id: number | string
   name: string
   location?: string
   status: 'active' | 'inactive'
