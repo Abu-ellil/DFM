@@ -224,9 +224,29 @@ async function handleLicenses(
 
   // POST /api/admin/licenses (generate license)
   if (request.method === 'POST' && !licenseId) {
-    const { license_key, machine_id, factory_name, duration_code, expiry_date } = request.body
-    if (!license_key || !machine_id) {
-      return response.status(400).json({ success: false, error: 'Missing required fields' })
+    let { license_key, machine_id, factory_name, duration_code, expiry_date } = request.body
+
+    // Generate license key if not provided
+    if (!license_key) {
+      const randomPart = () => Math.random().toString(36).substring(2, 6).toUpperCase()
+      const dCode = (duration_code || 'MONTH_1').split('_').map((p: string) => p[0]).join('')
+      license_key = `${randomPart()}-${randomPart()}-${randomPart()}-${randomPart()}-${dCode}`
+    }
+
+    // Default machine_id if not provided
+    if (!machine_id) {
+      machine_id = 'GENERAL'
+    }
+
+    // Calculate expiry date if not provided
+    if (!expiry_date && duration_code) {
+      const now = new Date()
+      if (duration_code === 'MONTH_1') now.setMonth(now.getMonth() + 1)
+      else if (duration_code === 'MONTH_3') now.setMonth(now.getMonth() + 3)
+      else if (duration_code === 'MONTH_6') now.setMonth(now.getMonth() + 6)
+      else if (duration_code === 'YEAR_1') now.setFullYear(now.getFullYear() + 1)
+      else if (duration_code === 'LIFETIME') now.setFullYear(now.getFullYear() + 99)
+      expiry_date = now.toISOString()
     }
 
     await sql`
@@ -234,7 +254,11 @@ async function handleLicenses(
       VALUES (${license_key.toUpperCase()}, ${machine_id}, ${factory_name || null}, ${duration_code || null}, ${expiry_date || null}, 'active')
     `
 
-    return response.status(201).json({ success: true, message: 'License generated successfully' })
+    return response.status(201).json({
+      success: true,
+      message: 'License generated successfully',
+      license: { license_key, expiry_date }
+    })
   }
 
   // DELETE /api/admin/licenses/:id (delete license)
