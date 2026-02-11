@@ -992,13 +992,12 @@ function LicensesTab({
                   value={formData.factoryName}
                   onChange={(v: string) => setFormData({ ...formData, factoryName: v })}
                   placeholder="Target Factory"
-                  required
                 />
                 <InputField
                   label="Machine ID (Optional)"
                   value={formData.machineId}
                   onChange={(v: string) => setFormData({ ...formData, machineId: v })}
-                  placeholder="Hardware Identifier"
+                  placeholder="Hardware Identifier (Leave empty for GENERAL)"
                 />
                 {showAddModal && (
                   <div>

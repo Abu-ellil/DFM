@@ -96,7 +96,7 @@ async function initializeLicenseTable(): Promise<void> {
         license_key VARCHAR(30) UNIQUE NOT NULL,
         machine_id VARCHAR(20) NOT NULL,
         factory_name VARCHAR(100),
-        duration_code VARCHAR(5),
+        duration_code VARCHAR(20),
         expiry_date TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
