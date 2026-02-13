@@ -2297,7 +2297,10 @@ ipcMain.handle('license:openTrialRequest', async () => {
 ipcMain.handle('license:delete', async () => {
   try {
     const success = licenseManager.deleteLicense()
-    return { success, message: success ? 'تم حذف مفتاح التفعيل بنجاح' : 'لم يتم العثور على مفتاح تفعيل لحذفه' }
+    return {
+      success,
+      message: success ? 'تم حذف مفتاح التفعيل بنجاح' : 'لم يتم العثور على مفتاح تفعيل لحذفه'
+    }
   } catch (error) {
     console.error('License: Error deleting license:', error)
     return { success: false, message: 'حدث خطأ أثناء حذف مفتاح التفعيل' }
@@ -2482,6 +2485,19 @@ ipcMain.handle('duplicates:getAll', async () => {
       weighbridge: [],
       crates: [],
       finance: [],
+      sales_invoices: [],
+      sales_items: [],
+      sales_products: [],
+      customers: [],
+      date_types: [],
+      crate_types: [],
+      daily_prices: [],
+      supervisors: [],
+      seasons: [],
+      users: [],
+      user_roles: [],
+      telegram_users: [],
+      telegram_registrations: [],
       summary: { total: 0, byTable: {} }
     }
 
@@ -2500,17 +2516,17 @@ ipcMain.handle('duplicates:getAll', async () => {
     // 1. Weighbridge duplicates
     duplicates.weighbridge = query(`
       SELECT w.*, c.name as customer_name,
-             (SELECT COUNT(*) FROM weighbridge w2 
-              WHERE w2.date = w.date 
-              AND w2.customer_id = w.customer_id 
-              AND w2.gross_weight = w.gross_weight 
+             (SELECT COUNT(*) FROM weighbridge w2
+              WHERE w2.date = w.date
+              AND w2.customer_id = w.customer_id
+              AND w2.gross_weight = w.gross_weight
               AND w2.net_weight = w.net_weight) as duplicate_count
       FROM weighbridge w
       LEFT JOIN customers c ON w.customer_id = c.id
       WHERE (w.date || w.customer_id || w.gross_weight || w.net_weight) IN (
           SELECT (date || customer_id || gross_weight || net_weight)
-          FROM weighbridge 
-          GROUP BY date, customer_id, gross_weight, net_weight 
+          FROM weighbridge
+          GROUP BY date, customer_id, gross_weight, net_weight
           HAVING COUNT(*) > 1
       )
       ORDER BY w.date DESC, w.customer_id, w.id
@@ -2520,17 +2536,17 @@ ipcMain.handle('duplicates:getAll', async () => {
     // 2. Crates duplicates
     duplicates.crates = query(`
       SELECT cr.*, c.name as customer_name,
-             (SELECT COUNT(*) FROM crates cr2 
-              WHERE cr2.date = cr.date 
-              AND cr2.customer_id = cr.customer_id 
-              AND cr2.crates_out = cr.crates_out 
+             (SELECT COUNT(*) FROM crates cr2
+              WHERE cr2.date = cr.date
+              AND cr2.customer_id = cr.customer_id
+              AND cr2.crates_out = cr.crates_out
               AND cr2.crates_returned = cr.crates_returned) as duplicate_count
       FROM crates cr
       LEFT JOIN customers c ON cr.customer_id = c.id
       WHERE (cr.date || cr.customer_id || cr.crates_out || cr.crates_returned) IN (
           SELECT (date || customer_id || crates_out || crates_returned)
-          FROM crates 
-          GROUP BY date, customer_id, crates_out, crates_returned 
+          FROM crates
+          GROUP BY date, customer_id, crates_out, crates_returned
           HAVING COUNT(*) > 1
       )
       ORDER BY cr.date DESC, cr.customer_id, cr.id
@@ -2540,37 +2556,323 @@ ipcMain.handle('duplicates:getAll', async () => {
     // 3. Finance duplicates
     duplicates.finance = query(`
       SELECT f.*, c.name as customer_name,
-             (SELECT COUNT(*) FROM finance f2 
-              WHERE f2.date = f.date 
-              AND f2.customer_id = f.customer_id 
+             (SELECT COUNT(*) FROM finance f2
+              WHERE f2.date = f.date
+              AND f2.customer_id = f.customer_id
               AND f2.transaction_type = f.transaction_type
-              AND f2.amount_paid = f.amount_paid 
+              AND f2.amount_paid = f.amount_paid
               AND f2.amount_received = f.amount_received) as duplicate_count
       FROM finance f
       LEFT JOIN customers c ON f.customer_id = c.id
       WHERE (f.date || f.customer_id || f.transaction_type || f.amount_paid || f.amount_received) IN (
           SELECT (date || customer_id || transaction_type || amount_paid || amount_received)
-          FROM finance 
-          GROUP BY date, customer_id, transaction_type, amount_paid, amount_received 
+          FROM finance
+          GROUP BY date, customer_id, transaction_type, amount_paid, amount_received
           HAVING COUNT(*) > 1
       )
       ORDER BY f.date DESC, f.customer_id, f.id
     `)
     duplicates.summary.byTable.finance = duplicates.finance.length
 
+    // 4. Sales Invoices duplicates
+    duplicates.sales_invoices = query(`
+      SELECT si.*,
+             (SELECT COUNT(*) FROM sales_invoices si2
+              WHERE si2.date = si.date
+              AND si2.buyer_name = si.buyer_name
+              AND si2.buyer_phone = si.buyer_phone
+              AND si2.total_weight = si.total_weight
+              AND si2.total_amount = si.total_amount) as duplicate_count
+      FROM sales_invoices si
+      WHERE (si.date || si.buyer_name || si.buyer_phone || si.total_weight || si.total_amount) IN (
+          SELECT (date || buyer_name || buyer_phone || total_weight || total_amount)
+          FROM sales_invoices
+          GROUP BY date, buyer_name, buyer_phone, total_weight, total_amount
+          HAVING COUNT(*) > 1
+      )
+      ORDER BY si.date DESC, si.id
+    `)
+    duplicates.summary.byTable.sales_invoices = duplicates.sales_invoices.length
+
+    // 5. Sales Items duplicates
+    duplicates.sales_items = query(`
+      SELECT sit.*, si.date as invoice_date, si.buyer_name,
+             (SELECT COUNT(*) FROM sales_items sit2
+              WHERE sit2.invoice_id = sit.invoice_id
+              AND sit2.product_id = sit.product_id
+              AND sit2.quantity = sit.quantity
+              AND sit2.price_per_kg = sit.price_per_kg
+              AND sit2.total_weight = sit.total_weight
+              AND sit2.total_amount = sit.total_amount) as duplicate_count
+      FROM sales_items sit
+      LEFT JOIN sales_invoices si ON sit.invoice_id = si.id
+      WHERE (sit.invoice_id || sit.product_id || sit.quantity || sit.price_per_kg || sit.total_weight || sit.total_amount) IN (
+          SELECT (invoice_id || product_id || quantity || price_per_kg || total_weight || total_amount)
+          FROM sales_items
+          GROUP BY invoice_id, product_id, quantity, price_per_kg, total_weight, total_amount
+          HAVING COUNT(*) > 1
+      )
+      ORDER BY sit.id
+    `)
+    duplicates.summary.byTable.sales_items = duplicates.sales_items.length
+
+    // 6. Sales Products duplicates
+    duplicates.sales_products = query(`
+      SELECT sp.*,
+             (SELECT COUNT(*) FROM sales_products sp2
+              WHERE sp2.name = sp.name
+              AND sp2.unit_type = sp.unit_type
+              AND sp2.weight_per_unit = sp.weight_per_unit) as duplicate_count
+      FROM sales_products sp
+      WHERE (sp.name || sp.unit_type || sp.weight_per_unit) IN (
+          SELECT (name || unit_type || weight_per_unit)
+          FROM sales_products
+          GROUP BY name, unit_type, weight_per_unit
+          HAVING COUNT(*) > 1
+      )
+      ORDER BY sp.name
+    `)
+    duplicates.summary.byTable.sales_products = duplicates.sales_products.length
+
+    // 7. Customers duplicates
+    duplicates.customers = query(`
+      SELECT c.*,
+             (SELECT COUNT(*) FROM customers c2
+              WHERE c2.name = c.name
+              AND c2.type = c.type
+              AND c2.phone = c.phone) as duplicate_count
+      FROM customers c
+      WHERE (c.name || c.type || c.phone) IN (
+          SELECT (name || type || phone)
+          FROM customers
+          GROUP BY name, type, phone
+          HAVING COUNT(*) > 1
+      )
+      ORDER BY c.name
+    `)
+    duplicates.summary.byTable.customers = duplicates.customers.length
+
+    // 8. Date Types duplicates
+    duplicates.date_types = query(`
+      SELECT dt.*,
+             (SELECT COUNT(*) FROM date_types dt2
+              WHERE dt2.name = dt.name) as duplicate_count
+      FROM date_types dt
+      WHERE (dt.name) IN (
+          SELECT name
+          FROM date_types
+          GROUP BY name
+          HAVING COUNT(*) > 1
+      )
+      ORDER BY dt.name
+    `)
+    duplicates.summary.byTable.date_types = duplicates.date_types.length
+
+    // 9. Crate Types duplicates
+    duplicates.crate_types = query(`
+      SELECT ct.*,
+             (SELECT COUNT(*) FROM crate_types ct2
+              WHERE ct2.name = ct.name
+              AND ct2.weight = ct.weight) as duplicate_count
+      FROM crate_types ct
+      WHERE (ct.name || ct.weight) IN (
+          SELECT (name || weight)
+          FROM crate_types
+          GROUP BY name, weight
+          HAVING COUNT(*) > 1
+      )
+      ORDER BY ct.name
+    `)
+    duplicates.summary.byTable.crate_types = duplicates.crate_types.length
+
+    // 10. Daily Prices duplicates
+    duplicates.daily_prices = query(`
+      SELECT dp.*,
+             (SELECT COUNT(*) FROM daily_prices dp2
+              WHERE dp2.date = dp.date
+              AND dp2.price_per_qantar = dp.price_per_qantar
+              AND dp2.qantar_weight = dp.qantar_weight) as duplicate_count
+      FROM daily_prices dp
+      WHERE (dp.date || dp.price_per_qantar || dp.qantar_weight) IN (
+          SELECT (date || price_per_qantar || qantar_weight)
+          FROM daily_prices
+          GROUP BY date, price_per_qantar, qantar_weight
+          HAVING COUNT(*) > 1
+      )
+      ORDER BY dp.date DESC
+    `)
+    duplicates.summary.byTable.daily_prices = duplicates.daily_prices.length
+
+    // 11. Supervisors duplicates
+    duplicates.supervisors = query(`
+      SELECT s.*,
+             (SELECT COUNT(*) FROM supervisors s2
+              WHERE s2.name = s.name) as duplicate_count
+      FROM supervisors s
+      WHERE (s.name) IN (
+          SELECT name
+          FROM supervisors
+          GROUP BY name
+          HAVING COUNT(*) > 1
+      )
+      ORDER BY s.name
+    `)
+    duplicates.summary.byTable.supervisors = duplicates.supervisors.length
+
+    // 12. Seasons duplicates
+    duplicates.seasons = query(`
+      SELECT s.*,
+             (SELECT COUNT(*) FROM seasons s2
+              WHERE s2.name = s.name
+              AND s2.start_date = s.start_date
+              AND s2.end_date = s.end_date) as duplicate_count
+      FROM seasons s
+      WHERE (s.name || s.start_date || s.end_date) IN (
+          SELECT (name || start_date || end_date)
+          FROM seasons
+          GROUP BY name, start_date, end_date
+          HAVING COUNT(*) > 1
+      )
+      ORDER BY s.start_date DESC
+    `)
+    duplicates.summary.byTable.seasons = duplicates.seasons.length
+
+    // 13. Users duplicates
+    duplicates.users = query(`
+      SELECT u.*,
+             (SELECT COUNT(*) FROM users u2
+              WHERE u2.username = u.username
+              AND u2.phone = u.phone
+              AND u2.full_name = u.full_name) as duplicate_count
+      FROM users u
+      WHERE (u.username || u.phone || u.full_name) IN (
+          SELECT (username || phone || full_name)
+          FROM users
+          GROUP BY username, phone, full_name
+          HAVING COUNT(*) > 1
+      )
+      ORDER BY u.username
+    `)
+    duplicates.summary.byTable.users = duplicates.users.length
+
+    // 14. User Roles duplicates
+    duplicates.user_roles = query(`
+      SELECT ur.*,
+             (SELECT COUNT(*) FROM user_roles ur2
+              WHERE ur2.user_id = ur.user_id
+              AND ur2.role = ur.role
+              AND ur2.assigned_by = ur.assigned_by) as duplicate_count
+      FROM user_roles ur
+      WHERE (ur.user_id || ur.role || ur.assigned_by) IN (
+          SELECT (user_id || role || assigned_by)
+          FROM user_roles
+          GROUP BY user_id, role, assigned_by
+          HAVING COUNT(*) > 1
+      )
+      ORDER BY ur.user_id, ur.role
+    `)
+    duplicates.summary.byTable.user_roles = duplicates.user_roles.length
+
+    // 15. Telegram Users duplicates
+    duplicates.telegram_users = query(`
+      SELECT tu.*,
+             (SELECT COUNT(*) FROM telegram_users tu2
+              WHERE tu2.telegram_id = tu.telegram_id
+              AND tu2.username = tu.username
+              AND tu2.phone = tu.phone) as duplicate_count
+      FROM telegram_users tu
+      WHERE (tu.telegram_id || tu.username || tu.phone) IN (
+          SELECT (telegram_id || username || phone)
+          FROM telegram_users
+          GROUP BY telegram_id, username, phone
+          HAVING COUNT(*) > 1
+      )
+      ORDER BY tu.registration_date DESC
+    `)
+    duplicates.summary.byTable.telegram_users = duplicates.telegram_users.length
+
+    // 16. Telegram Registrations duplicates
+    duplicates.telegram_registrations = query(`
+      SELECT tr.*,
+             (SELECT COUNT(*) FROM telegram_registrations tr2
+              WHERE tr2.telegram_id = tr.telegram_id
+              AND tr2.full_name = tr.full_name
+              AND tr2.phone = tr.phone) as duplicate_count
+      FROM telegram_registrations tr
+      WHERE (tr.telegram_id || tr.full_name || tr.phone) IN (
+          SELECT (telegram_id || full_name || phone)
+          FROM telegram_registrations
+          GROUP BY telegram_id, full_name, phone
+          HAVING COUNT(*) > 1
+      )
+      ORDER BY tr.requested_at DESC
+    `)
+    duplicates.summary.byTable.telegram_registrations = duplicates.telegram_registrations.length
+
+    // Calculate total
     duplicates.summary.total =
-      duplicates.weighbridge.length + duplicates.crates.length + duplicates.finance.length
+      duplicates.weighbridge.length +
+      duplicates.crates.length +
+      duplicates.finance.length +
+      duplicates.sales_invoices.length +
+      duplicates.sales_items.length +
+      duplicates.sales_products.length +
+      duplicates.customers.length +
+      duplicates.date_types.length +
+      duplicates.crate_types.length +
+      duplicates.daily_prices.length +
+      duplicates.supervisors.length +
+      duplicates.seasons.length +
+      duplicates.users.length +
+      duplicates.user_roles.length +
+      duplicates.telegram_users.length +
+      duplicates.telegram_registrations.length
 
     return duplicates
   } catch (error) {
     console.error('Get duplicates error:', error)
-    return { weighbridge: [], crates: [], finance: [], summary: { total: 0, byTable: {} } }
+    return {
+      weighbridge: [],
+      crates: [],
+      finance: [],
+      sales_invoices: [],
+      sales_items: [],
+      sales_products: [],
+      customers: [],
+      date_types: [],
+      crate_types: [],
+      daily_prices: [],
+      supervisors: [],
+      seasons: [],
+      users: [],
+      user_roles: [],
+      telegram_users: [],
+      telegram_registrations: [],
+      summary: { total: 0, byTable: {} }
+    }
   }
 })
 
 ipcMain.handle('duplicates:delete', async (_event, { table, id }) => {
   try {
-    const validTables = ['weighbridge', 'crates', 'finance']
+    const validTables = [
+      'weighbridge',
+      'crates',
+      'finance',
+      'sales_invoices',
+      'sales_items',
+      'sales_products',
+      'customers',
+      'date_types',
+      'crate_types',
+      'daily_prices',
+      'supervisors',
+      'seasons',
+      'users',
+      'user_roles',
+      'telegram_users',
+      'telegram_registrations'
+    ]
     if (!validTables.includes(table)) {
       return { success: false, message: 'جدول غير صالح' }
     }
@@ -2595,7 +2897,7 @@ ipcMain.handle('duplicates:autoClean', async () => {
     const clean = (table: string, columns: string[]) => {
       const columnList = columns.join(', ')
       const stmt = db.prepare(`
-        DELETE FROM ${table} 
+        DELETE FROM ${table}
         WHERE id NOT IN (
             SELECT MIN(id) FROM ${table} GROUP BY ${columnList}
         )
@@ -2618,6 +2920,32 @@ ipcMain.handle('duplicates:autoClean', async () => {
         'amount_paid',
         'amount_received'
       ])
+      totalCleaned += clean('sales_invoices', [
+        'date',
+        'buyer_name',
+        'buyer_phone',
+        'total_weight',
+        'total_amount'
+      ])
+      totalCleaned += clean('sales_items', [
+        'invoice_id',
+        'product_id',
+        'quantity',
+        'price_per_kg',
+        'total_weight',
+        'total_amount'
+      ])
+      totalCleaned += clean('sales_products', ['name', 'unit_type', 'weight_per_unit'])
+      totalCleaned += clean('customers', ['name', 'type', 'phone'])
+      totalCleaned += clean('date_types', ['name'])
+      totalCleaned += clean('crate_types', ['name', 'weight'])
+      totalCleaned += clean('daily_prices', ['date', 'price_per_qantar', 'qantar_weight'])
+      totalCleaned += clean('supervisors', ['name'])
+      totalCleaned += clean('seasons', ['name', 'start_date', 'end_date'])
+      totalCleaned += clean('users', ['username', 'phone', 'full_name'])
+      totalCleaned += clean('user_roles', ['user_id', 'role', 'assigned_by'])
+      totalCleaned += clean('telegram_users', ['telegram_id', 'username', 'phone'])
+      totalCleaned += clean('telegram_registrations', ['telegram_id', 'full_name', 'phone'])
       const commitStmt = db.prepare('COMMIT')
       commitStmt.run()
       commitStmt.free()

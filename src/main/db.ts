@@ -450,6 +450,18 @@ const runSyncMigrations = (db: Database): void => {
  * Add web authentication columns for existing databases
  */
 const runWebAuthMigrations = (db: Database): void => {
+  // Add phone column to users table if it doesn't exist (for backward compatibility)
+  try {
+    db.run(`ALTER TABLE users ADD COLUMN phone TEXT`)
+  } catch {
+    // Column already exists, ignore error
+  }
+  // Add full_name column to users table if it doesn't exist (for backward compatibility)
+  try {
+    db.run(`ALTER TABLE users ADD COLUMN full_name TEXT`)
+  } catch {
+    // Column already exists, ignore error
+  }
   // Add machine_id and web_password columns to users table if they don't exist
   try {
     db.run(`ALTER TABLE users ADD COLUMN machine_id TEXT`)
