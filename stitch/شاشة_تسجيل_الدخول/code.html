@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans+Arabic:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1c5f20",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#131f14",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "Noto Sans Arabic", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', 'Noto Sans Arabic', sans-serif;
+        }
+        .electron-shadow {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen flex items-center justify-center p-4">
+<!-- Main Desktop-style Login Window -->
+<div class="w-full max-w-[900px] flex flex-col md:flex-row bg-white dark:bg-slate-900 electron-shadow rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800">
+<!-- Sidebar / Logo Section (Industrial Aesthetic) -->
+<div class="hidden md:flex md:w-5/12 bg-primary p-12 flex-col justify-between text-white relative overflow-hidden">
+<!-- Abstract Industrial Pattern Overlay -->
+<div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 24px 24px;"></div>
+<div class="relative z-10">
+<div class="flex items-center gap-3 mb-8">
+<div class="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+<span class="material-symbols-outlined text-3xl">factory</span>
+</div>
+<h1 class="text-2xl font-bold tracking-tight">نظام الإدارة</h1>
+</div>
+<div class="space-y-6 mt-12">
+<h2 class="text-3xl font-extrabold leading-tight">التحكم الذكي <br/>بمنشأتك الصناعية</h2>
+<p class="text-primary/20 text-white/70 text-lg leading-relaxed">
+                        منصة متكاملة لإدارة خطوط الإنتاج، المخازن، والموارد البشرية في مكان واحد وبكفاءة عالية.
+                    </p>
+</div>
+</div>
+<div class="relative z-10 mt-auto">
+<div class="flex items-center gap-2 text-sm text-white/50">
+<span class="material-symbols-outlined text-sm">verified_user</span>
+<span>نظام آمن ومشفر بالكامل</span>
+</div>
+</div>
+</div>
+<!-- Login Form Section -->
+<div class="flex-1 p-8 md:p-16 flex flex-col justify-center">
+<!-- Mobile Logo (Visible only on small screens) -->
+<div class="md:hidden flex items-center gap-3 mb-8 text-primary">
+<span class="material-symbols-outlined text-4xl">factory</span>
+<h1 class="text-xl font-bold">نظام إدارة المصنع</h1>
+</div>
+<div class="mb-10">
+<h3 class="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">تسجيل الدخول</h3>
+<p class="text-slate-500 dark:text-slate-400">يرجى إدخال بيانات الاعتماد الخاصة بك للوصول إلى لوحة التحكم.</p>
+</div>
+<form class="space-y-6" onsubmit="return false;">
+<!-- Username Field -->
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-slate-700 dark:text-slate-300" for="username">
+                        اسم المستخدم
+                    </label>
+<div class="relative">
+<div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-400">
+<span class="material-symbols-outlined text-xl">person</span>
+</div>
+<input class="block w-full pr-11 pl-4 py-3.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-slate-900 dark:text-slate-100 placeholder:text-slate-400" id="username" name="username" placeholder="أدخل اسم المستخدم" type="text"/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="space-y-2">
+<div class="flex justify-between items-center">
+<label class="block text-sm font-semibold text-slate-700 dark:text-slate-300" for="password">
+                            كلمة المرور
+                        </label>
+<a class="text-xs font-medium text-primary hover:underline" href="#">نسيت كلمة المرور؟</a>
+</div>
+<div class="relative">
+<div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-400">
+<span class="material-symbols-outlined text-xl">lock</span>
+</div>
+<input class="block w-full pr-11 pl-12 py-3.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-slate-900 dark:text-slate-100 placeholder:text-slate-400" id="password" name="password" placeholder="••••••••" type="password"/>
+<button class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 hover:text-slate-600 transition-colors" type="button">
+<span class="material-symbols-outlined text-xl">visibility</span>
+</button>
+</div>
+</div>
+<!-- Remember Me -->
+<div class="flex items-center gap-3">
+<input class="w-5 h-5 rounded border-slate-300 dark:border-slate-600 text-primary focus:ring-primary cursor-pointer" id="remember" name="remember" type="checkbox"/>
+<label class="text-sm font-medium text-slate-600 dark:text-slate-400 cursor-pointer select-none" for="remember">
+                        تذكرني في المرة القادمة
+                    </label>
+</div>
+<!-- Submit Button -->
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 px-6 rounded-lg transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg shadow-primary/20" type="submit">
+<span class="material-symbols-outlined">login</span>
+                    تسجيل الدخول
+                </button>
+</form>
+<!-- Bottom Links/Support -->
+<div class="mt-12 pt-8 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-400">
+<div class="flex items-center gap-4">
+<a class="hover:text-primary transition-colors" href="#">سياسة الخصوصية</a>
+<a class="hover:text-primary transition-colors" href="#">شروط الخدمة</a>
+</div>
+<div class="flex items-center gap-1 font-mono">
+<span>V 2.4.1</span>
+<span class="mx-1">•</span>
+<span>نظام المصنع برو</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Decorative Background Elements -->
+<div class="fixed top-0 left-0 w-full h-1 bg-primary/20 pointer-events-none"></div>
+<div class="fixed bottom-8 right-8 text-slate-300 dark:text-slate-700 select-none pointer-events-none hidden lg:block">
+<span class="material-symbols-outlined text-[120px] opacity-20">precision_manufacturing</span>
+</div>
+</body></html>

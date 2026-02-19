@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>نظام المصنع ERP - إدارة الصناديق</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1c5f20",
+                        "accent-orange": "#f97316",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#131f14",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', 'Noto Sans Arabic', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-nav {
+            background-color: #1c5f20;
+            color: white !important;
+        }
+        /* Custom scrollbar for ERP density */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+<div class="flex h-screen overflow-hidden">
+<!-- Sidebar Navigation -->
+<aside class="w-64 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 flex flex-col shrink-0">
+<div class="p-6 flex items-center gap-3 border-b border-slate-100 dark:border-slate-800">
+<div class="bg-primary rounded-lg p-2 text-white">
+<span class="material-symbols-outlined">factory</span>
+</div>
+<div>
+<h1 class="text-lg font-bold text-primary leading-none">إدارة المصنع</h1>
+<p class="text-xs text-slate-500 mt-1">نظام ERP المتكامل</p>
+</div>
+</div>
+<nav class="flex-1 overflow-y-auto p-4 space-y-2">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm font-medium">لوحة القيادة</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">warehouse</span>
+<span class="text-sm font-medium">المخازن</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg active-nav shadow-md shadow-primary/20" href="#">
+<span class="material-symbols-outlined">package_2</span>
+<span class="text-sm font-medium">الصناديق</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-sm font-medium">الموردين</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="text-sm font-medium">المشتريات</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-sm font-medium">التقارير</span>
+</a>
+</nav>
+<div class="p-4 border-t border-slate-100 dark:border-slate-800">
+<div class="flex items-center gap-3 p-2 bg-slate-50 dark:bg-slate-800 rounded-lg">
+<div class="w-8 h-8 rounded-full bg-slate-300 flex items-center justify-center overflow-hidden">
+<img alt="Profile" class="w-full h-full object-cover" data-alt="User profile picture placeholder" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdsfAn25A2b11bBwQVqNOALETZkyBlPvgHcnz-rIuqj8qkgiNKlSi-7yrxSLyqIwLBSt3bDLOd8zj6EbTyiz12v5kFRCSWTalYn_PuywCZ4WwFSOc6YC7d1612TGcVwIH_y_oS-fJwxhVq5KDTlusfqhmPTmTJOeF-P-xZVr0j1RdChlqeBU0TM2LVpG7bqPHv7vTBd6MaV-0N3Okq_uWwaCJEl5110hmwXZAPkZ78GzA-636-_ssjpthrvZycbSs6qNQ7HPoT"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-xs font-bold truncate">أحمد محمد</p>
+<p class="text-[10px] text-slate-500">مدير المخازن</p>
+</div>
+<span class="material-symbols-outlined text-slate-400 text-sm">settings</span>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+<!-- Header -->
+<header class="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 shrink-0">
+<div class="flex items-center gap-4">
+<h2 class="text-xl font-bold">جرد وإدارة الصناديق</h2>
+<div class="hidden md:flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+<span class="text-xs font-medium">تحديث مباشر</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-4 py-2 bg-accent-orange text-white rounded-lg font-bold text-sm hover:bg-orange-600 shadow-lg shadow-orange-500/20 transition-all">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+                        إضافة حركة
+                    </button>
+</div>
+</header>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto p-8 space-y-6">
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+<div>
+<p class="text-xs font-medium text-slate-500 mb-1">إجمالي الصناديق بالمخزون</p>
+<h3 class="text-2xl font-bold">12,450</h3>
+<p class="text-[10px] text-emerald-600 font-bold mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">trending_up</span> +2.5% من الشهر الماضي
+                            </p>
+</div>
+<div class="bg-emerald-50 dark:bg-emerald-900/30 p-3 rounded-lg text-emerald-600">
+<span class="material-symbols-outlined text-3xl">inventory_2</span>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+<div>
+<p class="text-xs font-medium text-slate-500 mb-1">صناديق عند الموردين</p>
+<h3 class="text-2xl font-bold text-amber-600">3,200</h3>
+<p class="text-[10px] text-slate-400 font-medium mt-1">تتطلب تسوية خلال 3 أيام</p>
+</div>
+<div class="bg-amber-50 dark:bg-amber-900/30 p-3 rounded-lg text-amber-600">
+<span class="material-symbols-outlined text-3xl">local_shipping</span>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+<div>
+<p class="text-xs font-medium text-slate-500 mb-1">صيانة مطلوبة</p>
+<h3 class="text-2xl font-bold text-rose-600">150</h3>
+<p class="text-[10px] text-rose-500 font-bold mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">warning</span> عاجل - خط الإنتاج ب
+                            </p>
+</div>
+<div class="bg-rose-50 dark:bg-rose-900/30 p-3 rounded-lg text-rose-600">
+<span class="material-symbols-outlined text-3xl">build</span>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+<div>
+<p class="text-xs font-medium text-slate-500 mb-1">القيمة الإجمالية (ر.س)</p>
+<h3 class="text-2xl font-bold">45,000</h3>
+<p class="text-[10px] text-slate-400 font-medium mt-1">أصول ثابتة مسجلة</p>
+</div>
+<div class="bg-blue-50 dark:bg-blue-900/30 p-3 rounded-lg text-blue-600">
+<span class="material-symbols-outlined text-3xl">payments</span>
+</div>
+</div>
+</div>
+<!-- High-Density Inventory Table -->
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+<div class="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/30">
+<div class="flex items-center gap-4">
+<h4 class="font-bold">مخزون الصناديق التفصيلي</h4>
+<div class="relative">
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+<input class="pr-9 py-1.5 rounded-lg border-slate-200 dark:border-slate-800 dark:bg-slate-900 text-xs w-64 focus:ring-primary focus:border-primary" placeholder="بحث عن نوع..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+<button class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500">
+<span class="material-symbols-outlined">download</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-right">
+<thead>
+<tr class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 text-xs uppercase font-bold border-b border-slate-200 dark:border-slate-800">
+<th class="px-6 py-4">نوع الصندوق</th>
+<th class="px-6 py-4">اللون</th>
+<th class="px-6 py-4">وزن الفارغ (كجم)</th>
+<th class="px-6 py-4">الرصيد الحالي</th>
+<th class="px-6 py-4">آخر العمليات</th>
+<th class="px-6 py-4 text-left">الإجراءات</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+<td class="px-6 py-3">
+<div class="flex flex-col">
+<span class="font-bold text-sm">بلاستيك صناعي XL</span>
+<span class="text-[10px] text-slate-500">Ref: CR-901</span>
+</div>
+</td>
+<td class="px-6 py-3">
+<div class="flex items-center gap-2">
+<div class="w-4 h-4 rounded-full bg-blue-600 ring-2 ring-slate-200 ring-offset-1"></div>
+<span class="text-xs">أزرق داكن</span>
+</div>
+</td>
+<td class="px-6 py-3 text-sm font-medium">2.50</td>
+<td class="px-6 py-3">
+<span class="px-2.5 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-md font-bold text-sm">4,500</span>
+</td>
+<td class="px-6 py-3">
+<div class="flex items-center gap-1.5">
+<span class="w-24 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden relative">
+<span class="absolute right-0 top-0 h-full bg-emerald-500 w-[75%] rounded-full"></span>
+</span>
+<span class="text-[10px] font-bold text-slate-500">75% نشط</span>
+</div>
+</td>
+<td class="px-6 py-3 text-left">
+<div class="flex items-center justify-end gap-2">
+<button class="flex items-center gap-1 px-3 py-1.5 border border-primary text-primary rounded-lg text-xs font-bold hover:bg-primary hover:text-white transition-all">
+<span class="material-symbols-outlined text-[16px]">swap_horiz</span>
+                                                حركة
+                                            </button>
+<button class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+<span class="material-symbols-outlined text-[20px]">edit_square</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+<td class="px-6 py-3">
+<div class="flex flex-col">
+<span class="font-bold text-sm">خشب معالج قياسي</span>
+<span class="text-[10px] text-slate-500">Ref: WD-442</span>
+</div>
+</td>
+<td class="px-6 py-3">
+<div class="flex items-center gap-2">
+<div class="w-4 h-4 rounded-full bg-[#8B4513] ring-2 ring-slate-200 ring-offset-1"></div>
+<span class="text-xs">بني طبيعي</span>
+</div>
+</td>
+<td class="px-6 py-3 text-sm font-medium">4.20</td>
+<td class="px-6 py-3">
+<span class="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-400 rounded-md font-bold text-sm">2,100</span>
+</td>
+<td class="px-6 py-3">
+<div class="flex items-center gap-1.5">
+<span class="w-24 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden relative">
+<span class="absolute right-0 top-0 h-full bg-amber-500 w-[40%] rounded-full"></span>
+</span>
+<span class="text-[10px] font-bold text-slate-500">40% نشط</span>
+</div>
+</td>
+<td class="px-6 py-3 text-left">
+<div class="flex items-center justify-end gap-2">
+<button class="flex items-center gap-1 px-3 py-1.5 border border-primary text-primary rounded-lg text-xs font-bold hover:bg-primary hover:text-white transition-all">
+<span class="material-symbols-outlined text-[16px]">swap_horiz</span>
+                                                حركة
+                                            </button>
+<button class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+<span class="material-symbols-outlined text-[20px]">edit_square</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+<td class="px-6 py-3">
+<div class="flex flex-col">
+<span class="font-bold text-sm">بلاستيك صغير (خفيف)</span>
+<span class="text-[10px] text-slate-500">Ref: CR-200</span>
+</div>
+</td>
+<td class="px-6 py-3">
+<div class="flex items-center gap-2">
+<div class="w-4 h-4 rounded-full bg-emerald-600 ring-2 ring-slate-200 ring-offset-1"></div>
+<span class="text-xs">أخضر</span>
+</div>
+</td>
+<td class="px-6 py-3 text-sm font-medium">1.10</td>
+<td class="px-6 py-3">
+<span class="px-2.5 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-md font-bold text-sm">5,350</span>
+</td>
+<td class="px-6 py-3">
+<div class="flex items-center gap-1.5">
+<span class="w-24 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden relative">
+<span class="absolute right-0 top-0 h-full bg-emerald-500 w-[95%] rounded-full"></span>
+</span>
+<span class="text-[10px] font-bold text-slate-500">95% نشط</span>
+</div>
+</td>
+<td class="px-6 py-3 text-left">
+<div class="flex items-center justify-end gap-2">
+<button class="flex items-center gap-1 px-3 py-1.5 border border-primary text-primary rounded-lg text-xs font-bold hover:bg-primary hover:text-white transition-all">
+<span class="material-symbols-outlined text-[16px]">swap_horiz</span>
+                                                حركة
+                                            </button>
+<button class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+<span class="material-symbols-outlined text-[20px]">edit_square</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+<td class="px-6 py-3">
+<div class="flex flex-col">
+<span class="font-bold text-sm">معدني مقوى (للثقيل)</span>
+<span class="text-[10px] text-slate-500">Ref: MT-800</span>
+</div>
+</td>
+<td class="px-6 py-3">
+<div class="flex items-center gap-2">
+<div class="w-4 h-4 rounded-full bg-slate-400 ring-2 ring-slate-200 ring-offset-1"></div>
+<span class="text-xs">رمادي</span>
+</div>
+</td>
+<td class="px-6 py-3 text-sm font-medium">8.50</td>
+<td class="px-6 py-3">
+<span class="px-2.5 py-1 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 rounded-md font-bold text-sm">500</span>
+</td>
+<td class="px-6 py-3">
+<div class="flex items-center gap-1.5">
+<span class="w-24 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden relative">
+<span class="absolute right-0 top-0 h-full bg-rose-500 w-[10%] rounded-full"></span>
+</span>
+<span class="text-[10px] font-bold text-slate-500">10% نشط</span>
+</div>
+</td>
+<td class="px-6 py-3 text-left">
+<div class="flex items-center justify-end gap-2">
+<button class="flex items-center gap-1 px-3 py-1.5 border border-primary text-primary rounded-lg text-xs font-bold hover:bg-primary hover:text-white transition-all">
+<span class="material-symbols-outlined text-[16px]">swap_horiz</span>
+                                                حركة
+                                            </button>
+<button class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+<span class="material-symbols-outlined text-[20px]">edit_square</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Quick Action Panel (Side Panel View) -->
+<div class="absolute inset-y-0 left-0 w-96 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 shadow-2xl z-50 transform transition-transform translate-x-0">
+<div class="flex flex-col h-full">
+<div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-accent-orange">add_card</span>
+<h3 class="font-bold text-lg">إضافة حركة سريعة</h3>
+</div>
+<button class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto p-6 space-y-5">
+<div class="space-y-2">
+<label class="text-xs font-bold text-slate-500">نوع الحركة</label>
+<div class="grid grid-cols-2 gap-2">
+<button class="flex items-center justify-center gap-2 py-3 px-4 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 ring-2 ring-emerald-500 font-bold">
+<span class="material-symbols-outlined text-[20px]">login</span>
+                                    دخول
+                                </button>
+<button class="flex items-center justify-center gap-2 py-3 px-4 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-400 font-bold">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+                                    خروج
+                                </button>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-xs font-bold text-slate-500">نوع الصندوق</label>
+<select class="w-full rounded-lg border-slate-200 dark:border-slate-800 dark:bg-slate-900 text-sm focus:ring-primary">
+<option>بلاستيك صناعي XL</option>
+<option>خشب معالج قياسي</option>
+<option>بلاستيك صغير</option>
+<option>معدني مقوى</option>
+</select>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-2">
+<label class="text-xs font-bold text-slate-500">الكمية</label>
+<input class="w-full rounded-lg border-slate-200 dark:border-slate-800 dark:bg-slate-900 text-sm focus:ring-primary" placeholder="0" type="number"/>
+</div>
+<div class="space-y-2">
+<label class="text-xs font-bold text-slate-500">رقم المرجع</label>
+<input class="w-full rounded-lg border-slate-200 dark:border-slate-800 dark:bg-slate-900 text-sm focus:ring-primary" placeholder="REF-000" type="text"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-xs font-bold text-slate-500">المورد / الجهة</label>
+<select class="w-full rounded-lg border-slate-200 dark:border-slate-800 dark:bg-slate-900 text-sm focus:ring-primary">
+<option>مخزن الشركة الرئيسي</option>
+<option>الشركة الوطنية للبلاستيك</option>
+<option>مورد أخشاب الشرق</option>
+</select>
+</div>
+<div class="space-y-2 pt-4">
+<label class="text-xs font-bold text-slate-500">ملاحظات</label>
+<textarea class="w-full rounded-lg border-slate-200 dark:border-slate-800 dark:bg-slate-900 text-sm focus:ring-primary" placeholder="أضف أي تفاصيل إضافية هنا..." rows="3"></textarea>
+</div>
+</div>
+<div class="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30">
+<button class="w-full py-3 bg-primary text-white rounded-lg font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">save</span>
+                            تأكيد وتسجيل الحركة
+                        </button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

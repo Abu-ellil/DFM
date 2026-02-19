@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>تذكرة وزن جديدة - ERP Factory</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#1c5f20",
+              "accent-orange": "#f59e0b",
+              "background-light": "#f6f8f6",
+              "background-dark": "#131f14",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-size: 24px; vertical-align: middle; }
+        .large-number-input { font-size: 2.5rem; font-weight: 800; }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col font-display">
+<!-- Top Navigation Bar -->
+<header class="bg-white dark:bg-slate-900 border-b border-primary/10 px-6 py-3 flex items-center justify-between sticky top-0 z-50">
+<div class="flex items-center gap-4">
+<div class="bg-primary text-white p-2 rounded-lg">
+<span class="material-symbols-outlined">balance</span>
+</div>
+<div>
+<h1 class="text-xl font-bold text-primary leading-none">ERP Factory</h1>
+<p class="text-xs text-slate-500 font-medium mt-1 uppercase tracking-wider">Weight Management System</p>
+</div>
+</div>
+<nav class="hidden md:flex items-center gap-8 mr-12">
+<a class="text-primary font-bold flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-xl">dashboard</span> لوحة التحكم
+            </a>
+<a class="text-slate-600 dark:text-slate-300 font-medium flex items-center gap-2 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">receipt_long</span> تذاكر الوزن
+            </a>
+<a class="text-slate-600 dark:text-slate-300 font-medium flex items-center gap-2 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">group</span> الموردين
+            </a>
+</nav>
+<div class="flex items-center gap-4">
+<div class="text-left ml-4">
+<p class="text-sm font-bold leading-none">أحمد محمد</p>
+<p class="text-[10px] text-slate-500 uppercase">Operator #04</p>
+</div>
+<div class="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Operator profile picture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDg0lWlYG_uENPV-ORBPfoXlVdjB0rHhrLR0LE5Bb8qhHFAfSA4WibCsl3nDp21FAObVqquqxa9oK34jkvr7M1RagEklqllQz7XdAQeJPYwH4YpnAbTCZQU4CGxEJQb1wzvZfGazTYSpoic7dB9Dnfv3XEsfIz6fYOdPJbGdsJTulhPvqr7vi5SiE2CejiozWd4s3AcoF0uZYkZX2pFY4MpGu-CJtlnq-e03mf5IwtjIlscNshxS-yfuVXCJ5Pi25UXXVFGdFYe"/>
+</div>
+</div>
+</header>
+<main class="flex-1 p-4 lg:p-8 max-w-[1600px] mx-auto w-full">
+<!-- Ticket Info Header -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 bg-white dark:bg-slate-900 p-6 rounded-xl border border-primary/10 shadow-sm">
+<div>
+<h2 class="text-3xl font-black tracking-tight flex items-center gap-3">
+                    تذكرة وزن جديدة
+                    <span class="text-primary bg-primary/10 px-3 py-1 rounded-lg text-lg">#WT-8829</span>
+</h2>
+<p class="text-slate-500 font-medium mt-1">
+<span class="material-symbols-outlined text-sm">calendar_today</span> 24 أكتوبر 2023 | 
+                    <span class="material-symbols-outlined text-sm">schedule</span> 10:45 صباحاً
+                </p>
+</div>
+<div class="flex gap-3">
+<button class="px-6 py-3 rounded-lg border border-slate-200 dark:border-slate-700 font-bold flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined">restart_alt</span> مسح البيانات
+                </button>
+</div>
+</div>
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+<!-- Entry Section (Right Side) -->
+<div class="xl:col-span-7 space-y-6">
+<div class="bg-white dark:bg-slate-900 p-8 rounded-xl border border-primary/10 shadow-sm">
+<h3 class="text-xl font-bold mb-6 flex items-center gap-2 text-primary border-b border-primary/10 pb-4">
+<span class="material-symbols-outlined">edit_note</span> بيانات الإدخال
+                    </h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Supplier Selection -->
+<div class="md:col-span-2">
+<label class="block text-lg font-bold mb-2 text-slate-700 dark:text-slate-300">اختيار المورد (Supplier Selection)</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<select class="w-full h-16 pr-12 pl-4 rounded-xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 focus:border-primary focus:ring-0 text-xl font-semibold transition-all appearance-none">
+<option value="">ابحث عن اسم المورد أو الكود...</option>
+<option value="1">شركة النور للتوريدات الزراعية (SUP-001)</option>
+<option value="2">مزارع الهدى الحديثة (SUP-002)</option>
+<option value="3">الشركة العالمية للاستيراد (SUP-003)</option>
+</select>
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">expand_more</span>
+</div>
+</div>
+<!-- Gross Weight -->
+<div class="md:col-span-2">
+<label class="block text-lg font-bold mb-2 text-primary">الوزن القائم (Gross Weight)</label>
+<div class="relative group">
+<input autofocus="" class="large-number-input w-full h-28 pr-6 pl-20 rounded-xl border-4 border-primary/20 focus:border-primary focus:ring-0 bg-white dark:bg-slate-950 text-primary transition-all shadow-inner" placeholder="0.00" type="number"/>
+<span class="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-black text-slate-400">KG</span>
+</div>
+</div>
+<!-- Crate Type -->
+<div>
+<label class="block text-lg font-bold mb-2 text-slate-700 dark:text-slate-300">نوع الصندوق (Crate Type)</label>
+<select class="w-full h-16 px-4 rounded-xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 focus:border-primary focus:ring-0 text-xl font-semibold transition-all appearance-none">
+<option value="plastic">بلاستيك عادي (1.5 kg)</option>
+<option value="wood">خشب كبير (2.5 kg)</option>
+<option value="carton">كرتون (0.8 kg)</option>
+</select>
+</div>
+<!-- Number of Crates -->
+<div>
+<label class="block text-lg font-bold mb-2 text-slate-700 dark:text-slate-300">عدد الصناديق (Count)</label>
+<input class="w-full h-16 px-4 rounded-xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 focus:border-primary focus:ring-0 text-2xl font-bold transition-all" type="number" value="1"/>
+</div>
+<!-- Price per 45kg -->
+<div class="md:col-span-2">
+<label class="block text-lg font-bold mb-2 text-slate-700 dark:text-slate-300">السعر لكل 45 كجم (Price per 45kg)</label>
+<div class="relative">
+<input class="w-full h-20 pr-6 pl-16 rounded-xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 focus:border-primary focus:ring-0 text-3xl font-black transition-all" placeholder="0.00" type="number"/>
+<span class="absolute left-6 top-1/2 -translate-y-1/2 text-xl font-bold text-slate-400 uppercase">EGP</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Calculation Section (Left Side) -->
+<div class="xl:col-span-5 space-y-6">
+<div class="bg-primary/5 dark:bg-primary/10 p-8 rounded-xl border border-primary/20 shadow-md">
+<h3 class="text-xl font-bold mb-6 flex items-center gap-2 text-primary border-b border-primary/20 pb-4">
+<span class="material-symbols-outlined">calculate</span> نتائج الحساب التلقائي
+                    </h3>
+<div class="space-y-4">
+<!-- Weight Breakdown -->
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-white dark:bg-slate-950 p-4 rounded-lg border border-slate-200 dark:border-slate-800">
+<p class="text-xs font-bold text-slate-500 uppercase mb-1">وزن الفارغ</p>
+<p class="text-2xl font-black text-slate-700 dark:text-slate-300">1.50 <span class="text-sm font-normal">KG</span></p>
+</div>
+<div class="bg-white dark:bg-slate-950 p-4 rounded-lg border border-slate-200 dark:border-slate-800">
+<p class="text-xs font-bold text-slate-500 uppercase mb-1">الوزن القائم</p>
+<p class="text-2xl font-black text-slate-700 dark:text-slate-300">1,245.00 <span class="text-sm font-normal">KG</span></p>
+</div>
+</div>
+<!-- Net Weight Highlight -->
+<div class="bg-primary text-white p-6 rounded-xl shadow-lg shadow-primary/20">
+<div class="flex justify-between items-center mb-1">
+<p class="text-sm font-bold opacity-80 uppercase tracking-widest">صافي الوزن (Net Weight)</p>
+<span class="material-symbols-outlined">scale</span>
+</div>
+<div class="flex items-baseline gap-2">
+<p class="text-5xl font-black">1,243.50</p>
+<p class="text-xl font-bold">KG</p>
+</div>
+</div>
+<!-- Metrics -->
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-white dark:bg-slate-950 p-5 rounded-lg border border-slate-200 dark:border-slate-800">
+<p class="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">الوزن بالقنطار (Quintars)</p>
+<p class="text-3xl font-black text-primary">27.63</p>
+<p class="text-[10px] text-slate-400 mt-1">1 Quintar = 45 kg</p>
+</div>
+<div class="bg-white dark:bg-slate-950 p-5 rounded-lg border border-slate-200 dark:border-slate-800">
+<p class="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">العمولة (Commission)</p>
+<p class="text-3xl font-black text-slate-700 dark:text-slate-300">124.35</p>
+<p class="text-[10px] text-slate-400 mt-1">Calculated @ 2%</p>
+</div>
+</div>
+<!-- Total Amount -->
+<div class="bg-white dark:bg-slate-950 p-6 rounded-xl border-4 border-accent-orange/30 shadow-xl mt-6">
+<div class="flex justify-between items-center mb-2">
+<p class="text-sm font-black text-accent-orange uppercase tracking-widest">المبلغ الإجمالي (Total Amount)</p>
+</div>
+<div class="flex items-baseline justify-between">
+<div class="flex items-baseline gap-2">
+<p class="text-5xl font-black text-slate-900 dark:text-white">41,250.75</p>
+<p class="text-xl font-bold text-slate-400">EGP</p>
+</div>
+<span class="material-symbols-outlined text-accent-orange text-4xl">payments</span>
+</div>
+</div>
+</div>
+<!-- Action Bar -->
+<div class="mt-8">
+<button class="w-full bg-accent-orange hover:bg-orange-600 active:scale-[0.98] text-white text-3xl font-black py-8 rounded-xl shadow-lg shadow-accent-orange/30 transition-all flex items-center justify-center gap-4 group">
+<span class="material-symbols-outlined text-4xl group-hover:rotate-12 transition-transform">print</span>
+                            حفظ وطباعة (SAVE + PRINT)
+                        </button>
+<p class="text-center text-xs text-slate-400 mt-4 font-bold flex items-center justify-center gap-1 uppercase tracking-tighter">
+<span class="material-symbols-outlined text-[12px]">keyboard</span>
+                            Press ENTER to submit
+                        </p>
+</div>
+</div>
+<!-- Recent History Context -->
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<h4 class="text-sm font-bold text-slate-400 uppercase mb-4 tracking-widest">تذاكر سابقة لهذا المورد</h4>
+<div class="space-y-3">
+<div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-100 dark:border-slate-800">
+<div>
+<p class="text-xs font-bold text-slate-500 leading-none">تذكرة #WT-8828</p>
+<p class="text-sm font-black mt-1">1,050.00 KG</p>
+</div>
+<p class="text-sm font-bold text-primary">34,800.00 EGP</p>
+</div>
+<div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-100 dark:border-slate-800 opacity-60">
+<div>
+<p class="text-xs font-bold text-slate-500 leading-none">تذكرة #WT-8827</p>
+<p class="text-sm font-black mt-1">820.50 KG</p>
+</div>
+<p class="text-sm font-bold text-primary">27,150.00 EGP</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Visual Footer -->
+<footer class="mt-auto py-6 px-8 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center text-xs text-slate-400 font-bold uppercase tracking-widest">
+<div class="flex items-center gap-6">
+<span class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                Scales Online (RS-232 Connected)
+            </span>
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">cloud_done</span>
+                Server Synced
+            </span>
+</div>
+<div class="flex items-center gap-4">
+<span>Factory ERP v2.4.0</span>
+<div class="w-px h-4 bg-slate-200 dark:bg-slate-800"></div>
+<span>System Status: Optimal</span>
+</div>
+</footer>
+</body></html>

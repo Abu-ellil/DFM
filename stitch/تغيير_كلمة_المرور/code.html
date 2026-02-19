@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#1c5f20",
+              "accent": "#f57c00",
+              "background-light": "#f6f8f6",
+              "background-dark": "#131f14",
+            },
+            fontFamily: {
+              "display": ["Inter", "system-ui", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', 'Noto Sans Arabic', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen font-display">
+<div class="flex h-screen overflow-hidden">
+<!-- Sidebar Navigation -->
+<aside class="w-72 bg-white dark:bg-slate-900 border-l border-primary/10 flex flex-col h-full shadow-sm z-20">
+<div class="p-6 flex items-center gap-3 border-b border-primary/5">
+<div class="bg-primary size-10 rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined">factory</span>
+</div>
+<div>
+<h1 class="font-bold text-primary text-lg leading-tight">نظام تخطيط الموارد</h1>
+<p class="text-xs text-slate-500">لوحة التحكم الصناعية</p>
+</div>
+</div>
+<nav class="flex-1 overflow-y-auto p-4 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-medium text-sm">الرئيسية</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined">precision_manufacturing</span>
+<span class="font-medium text-sm">خط الإنتاج</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-medium text-sm">المخزون</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary/10 text-primary border-r-4 border-primary" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-medium text-sm">إعدادات النظام</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-medium text-sm">الموظفين</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-medium text-sm">المالية</span>
+</a>
+</nav>
+<div class="p-4 border-t border-primary/5">
+<div class="bg-primary/5 rounded-xl p-4 flex items-center gap-3">
+<div class="size-10 rounded-full bg-slate-200 overflow-hidden">
+<img alt="صورة المستخدم" data-alt="Admin user profile picture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRY74AGsnoJWqZYh7i_VE1CotheOjfv8c9NCXX0vtVhEgBG6xr5C7QFbdJJZxPkge0DOWzQzfEoekWJs7RYd8XGCJG7_BPpziZdW0LuArl3JvwIKVzKXqemrnqa6iRLF3LHMYcplw1sTwd6N1emVDa-Rf6S20aoXRUENrgiN29sKdl0lsdIVolVQ8oCrmhDT4bDrKbvjMlDueYIOvsXVNtKL0LGLf0IY0ap6M5wQV2mwtgBLAx8W2QvtZGuGoqNS9ZGVS_FhNj"/>
+</div>
+<div class="flex-1 overflow-hidden">
+<p class="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">م. أحمد كمال</p>
+<p class="text-[10px] text-slate-500 truncate">مدير النظام</p>
+</div>
+<button class="text-slate-400 hover:text-red-600 transition-colors">
+<span class="material-symbols-outlined">logout</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark p-8">
+<header class="flex justify-between items-end mb-8">
+<div>
+<h2 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">إعدادات النظام</h2>
+<p class="text-slate-500 mt-1">إدارة المستخدمين، تهيئة البيانات، والاتصال بالسحابة</p>
+</div>
+<div class="flex gap-3">
+<button class="px-6 h-11 rounded-lg border border-slate-300 dark:border-slate-700 font-bold text-sm bg-white dark:bg-slate-800">
+                        إلغاء
+                    </button>
+<button class="px-6 h-11 rounded-lg bg-accent text-white font-bold text-sm shadow-sm hover:opacity-90 transition-opacity">
+                        حفظ جميع التغييرات
+                    </button>
+</div>
+</header>
+<div class="grid grid-cols-12 gap-6">
+<!-- 1. User Management -->
+<section class="col-span-12 bg-white dark:bg-slate-900 rounded-xl border border-primary/10 shadow-sm overflow-hidden">
+<div class="px-6 py-4 border-b border-primary/5 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">manage_accounts</span>
+<h3 class="font-bold text-lg">إدارة المستخدمين والصلاحيات</h3>
+</div>
+<button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold">
+<span class="material-symbols-outlined text-sm">person_add</span>
+                            إضافة مستخدم جديد
+                        </button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-right border-collapse">
+<thead>
+<tr class="bg-slate-50 dark:bg-slate-800 text-slate-500 text-xs font-bold uppercase tracking-wider">
+<th class="px-6 py-4 border-b border-primary/5">اسم المستخدم</th>
+<th class="px-6 py-4 border-b border-primary/5">البريد الإلكتروني</th>
+<th class="px-6 py-4 border-b border-primary/5">الدور الوظيفي</th>
+<th class="px-6 py-4 border-b border-primary/5 text-center">الحالة</th>
+<th class="px-6 py-4 border-b border-primary/5 text-center">الإجراءات</th>
+</tr>
+</thead>
+<tbody class="text-sm divide-y divide-primary/5">
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
+<td class="px-6 py-4 font-bold">ياسين المنشاوي</td>
+<td class="px-6 py-4 text-slate-500">yassin@factory.com</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-black uppercase">مدير نظام</span>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 text-xs font-medium">
+<span class="size-1.5 rounded-full bg-emerald-500"></span> نشط
+                                        </span>
+</td>
+<td class="px-6 py-4 text-center">
+<button class="p-1.5 text-slate-400 hover:text-primary"><span class="material-symbols-outlined">edit</span></button>
+<button class="p-1.5 text-slate-400 hover:text-red-500"><span class="material-symbols-outlined">delete</span></button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
+<td class="px-6 py-4 font-bold">سارة علي</td>
+<td class="px-6 py-4 text-slate-500">sara.ali@factory.com</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[11px] font-black uppercase">محاسب</span>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 text-xs font-medium">
+<span class="size-1.5 rounded-full bg-emerald-500"></span> نشط
+                                        </span>
+</td>
+<td class="px-6 py-4 text-center">
+<button class="p-1.5 text-slate-400 hover:text-primary"><span class="material-symbols-outlined">edit</span></button>
+<button class="p-1.5 text-slate-400 hover:text-red-500"><span class="material-symbols-outlined">delete</span></button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
+<td class="px-6 py-4 font-bold">محمود صابر</td>
+<td class="px-6 py-4 text-slate-500">m.saber@factory.com</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[11px] font-black uppercase">عامل إنتاج</span>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 text-xs font-medium">
+<span class="size-1.5 rounded-full bg-slate-400"></span> غير نشط
+                                        </span>
+</td>
+<td class="px-6 py-4 text-center">
+<button class="p-1.5 text-slate-400 hover:text-primary"><span class="material-symbols-outlined">edit</span></button>
+<button class="p-1.5 text-slate-400 hover:text-red-500"><span class="material-symbols-outlined">delete</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- 2. System Configurations -->
+<section class="col-span-12 lg:col-span-7 bg-white dark:bg-slate-900 rounded-xl border border-primary/10 shadow-sm flex flex-col">
+<div class="px-6 py-4 border-b border-primary/5 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">settings_input_component</span>
+<h3 class="font-bold text-lg">تكوينات النظام والعمولات</h3>
+</div>
+<div class="p-6 space-y-6 flex-1">
+<div>
+<label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">عمولة التاجر الافتراضية (%)</label>
+<div class="relative max-w-[200px]">
+<input class="w-full h-11 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg pl-10 pr-4 font-bold focus:ring-primary focus:border-primary" type="number" value="12.5"/>
+<span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">%</span>
+</div>
+<p class="text-[11px] text-slate-400 mt-1.5">سيتم تطبيق هذه النسبة تلقائياً عند إنشاء فواتير تجار جدد.</p>
+</div>
+<div class="border-t border-primary/5 pt-6">
+<div class="flex justify-between items-center mb-4">
+<h4 class="font-bold text-slate-700 dark:text-slate-200">أنواع الصناديق المتوفرة</h4>
+<button class="text-xs font-bold text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">add_circle</span> إضافة نوع
+                                </button>
+</div>
+<div class="border border-slate-100 dark:border-slate-800 rounded-lg overflow-hidden">
+<table class="w-full text-right text-xs">
+<thead class="bg-slate-50 dark:bg-slate-800/50 font-bold">
+<tr>
+<th class="px-4 py-3">الاسم</th>
+<th class="px-4 py-3">الوزن فارغ (كجم)</th>
+<th class="px-4 py-3">اللون</th>
+<th class="px-4 py-3"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+<tr>
+<td class="px-4 py-3 font-medium">صندوق بلاستيك كبير</td>
+<td class="px-4 py-3">2.450</td>
+<td class="px-4 py-3"><div class="size-4 rounded bg-blue-600 shadow-sm border border-white"></div></td>
+<td class="px-4 py-3 text-left">
+<button class="text-slate-400 hover:text-primary"><span class="material-symbols-outlined text-sm">more_vert</span></button>
+</td>
+</tr>
+<tr>
+<td class="px-4 py-3 font-medium">صندوق بلاستيك متوسط</td>
+<td class="px-4 py-3">1.800</td>
+<td class="px-4 py-3"><div class="size-4 rounded bg-red-600 shadow-sm border border-white"></div></td>
+<td class="px-4 py-3 text-left">
+<button class="text-slate-400 hover:text-primary"><span class="material-symbols-outlined text-sm">more_vert</span></button>
+</td>
+</tr>
+<tr>
+<td class="px-4 py-3 font-medium">قفص خشبي تصدير</td>
+<td class="px-4 py-3">3.200</td>
+<td class="px-4 py-3"><div class="size-4 rounded bg-amber-800 shadow-sm border border-white"></div></td>
+<td class="px-4 py-3 text-left">
+<button class="text-slate-400 hover:text-primary"><span class="material-symbols-outlined text-sm">more_vert</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+<!-- 3. Data & Connectivity -->
+<section class="col-span-12 lg:col-span-5 space-y-6">
+<!-- Backup & Restore -->
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-primary/10 shadow-sm p-6">
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-primary">database</span>
+<h3 class="font-bold text-lg">النسخ الاحتياطي والأمان</h3>
+</div>
+<div class="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 border border-dashed border-slate-300 dark:border-slate-700 text-center">
+<p class="text-xs text-slate-500 mb-2">تاريخ آخر نسخة احتياطية</p>
+<p class="text-lg font-black text-slate-900 dark:text-white">اليوم، 04:30 مساءً</p>
+<button class="mt-4 w-full h-11 bg-primary text-white font-bold rounded-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-base">cloud_upload</span>
+                                إجراء نسخة احتياطية يدوية الآن
+                            </button>
+</div>
+</div>
+<!-- Cloud Sync & Integrations -->
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-primary/10 shadow-sm p-6">
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-primary">hub</span>
+<h3 class="font-bold text-lg">الربط السحابي والاتصال</h3>
+</div>
+<div class="space-y-4">
+<!-- Cloud Sync Toggle -->
+<div class="flex items-center justify-between p-3 rounded-lg border border-slate-100 dark:border-slate-800">
+<div class="flex gap-3">
+<span class="material-symbols-outlined text-blue-500">cloud_sync</span>
+<div>
+<p class="text-sm font-bold">مزامنة السحابة (Cloud Sync)</p>
+<p class="text-[10px] text-slate-500">مزامنة البيانات الحية مع الخادم الرئيسي</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:-translate-x-full rtl:peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<!-- Telegram Bot Toggle -->
+<div class="flex items-center justify-between p-3 rounded-lg border border-slate-100 dark:border-slate-800">
+<div class="flex gap-3">
+<span class="material-symbols-outlined text-[#229ED9]">send</span>
+<div>
+<p class="text-sm font-bold">روبوت تليجرام (Telegram Bot)</p>
+<p class="text-[10px] text-slate-500">إرسال تقارير الإنتاج اليومية تلقائياً</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:-translate-x-full rtl:peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. General Info -->
+<section class="col-span-12 bg-white dark:bg-slate-900 rounded-xl border border-primary/10 shadow-sm p-6">
+<div class="flex items-center gap-2 mb-8">
+<span class="material-symbols-outlined text-primary">info</span>
+<h3 class="font-bold text-lg">معلومات المصنع والطباعة</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div class="sm:col-span-2">
+<label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">اسم المصنع (يظهر في التقارير)</label>
+<input class="w-full h-11 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg px-4 font-medium focus:ring-primary focus:border-primary" type="text" value="مصنع الهدى للصناعات الغذائية والتغليف"/>
+</div>
+<div>
+<label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">رقم الهاتف</label>
+<input class="w-full h-11 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg px-4 font-medium focus:ring-primary focus:border-primary" type="tel" value="+20 123 456 789"/>
+</div>
+<div>
+<label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">السجل التجاري</label>
+<input class="w-full h-11 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg px-4 font-medium focus:ring-primary focus:border-primary" type="text" value="CR-987654321"/>
+</div>
+<div class="sm:col-span-2">
+<label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">العنوان بالتفصيل</label>
+<textarea class="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2 font-medium focus:ring-primary focus:border-primary" rows="2">المنطقة الصناعية الثالثة، مدينة العبور، القليوبية، مصر</textarea>
+</div>
+</div>
+<div class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50/50 dark:bg-slate-800/50">
+<div class="size-24 bg-white dark:bg-slate-700 rounded-lg shadow-sm mb-4 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-600">
+<img alt="شعار المصنع" class="w-16 opacity-50" data-alt="Factory logo placeholder icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAvZS6GHSZV9LI-NVatlszUjqECwTIuUY2Gdf-uc-iIjpUiqMR-GlWkudVdXOveoWHuSSlFwS_PC7n7IN6oyvix0gNkC5SKAX1MGvTn1VlTjDsqC5i7PCGFGIpwmCnITmcBUeGlgll0IeGR2f-EjK4j78FCWAQnPfRPSMCYaQAbZv6-EomAiZwkYoalxS3s6MD-kWGXYEeAHm2QkoCRQSzio2zP9FQBoAT2yWYiMqLWa_sGAucBMMnJK4XCEVfY5z3N9XFaQGnM"/>
+</div>
+<button class="text-xs font-bold text-primary hover:underline">رفع شعار جديد</button>
+<p class="text-[10px] text-slate-400 mt-2 text-center">يفضل استخدام صورة شفافة بصيغة PNG بدقة 512x512</p>
+</div>
+</div>
+</section>
+</div>
+<footer class="mt-12 pt-6 border-t border-primary/5 flex justify-between items-center text-[11px] text-slate-400 font-medium">
+<p>نظام إدارة المصنع v2.4.0 - جميع الحقوق محفوظة © 2024</p>
+<div class="flex gap-4">
+<a class="hover:text-primary" href="#">دليل الاستخدام</a>
+<a class="hover:text-primary" href="#">الدعم الفني</a>
+</div>
+</footer>
+</main>
+</div>
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" dir="rtl">
+<div class="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl border border-primary/10 overflow-hidden">
+<div class="p-6 border-b border-primary/5 flex items-center gap-3 bg-slate-50/50 dark:bg-slate-800/50">
+<div class="bg-primary/10 size-10 rounded-lg flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">lock_reset</span>
+</div>
+<div>
+<h3 class="text-lg font-bold text-slate-900 dark:text-white">تغيير كلمة المرور</h3>
+<p class="text-xs text-slate-500">يرجى إدخال كلمة المرور الحالية لتعيين كلمة مرور جديدة</p>
+</div>
+</div>
+<div class="p-6 space-y-4">
+<div>
+<label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">كلمة المرور الحالية</label>
+<input class="w-full h-11 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg px-4 focus:ring-primary focus:border-primary" placeholder="••••••••" type="password"/>
+</div>
+<div class="pt-2 border-t border-primary/5">
+<label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">كلمة المرور الجديدة</label>
+<input class="w-full h-11 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg px-4 focus:ring-primary focus:border-primary" placeholder="••••••••" type="password"/>
+</div>
+<div>
+<label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">تأكيد كلمة المرور الجديدة</label>
+<input class="w-full h-11 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg px-4 focus:ring-primary focus:border-primary" placeholder="••••••••" type="password"/>
+</div>
+</div>
+<div class="p-6 bg-slate-50 dark:bg-slate-800/50 flex gap-3">
+<button class="flex-1 h-11 rounded-lg bg-accent text-white font-bold text-sm shadow-sm hover:opacity-90 transition-opacity">
+                تحديث
+            </button>
+<button class="px-6 h-11 rounded-lg border border-slate-300 dark:border-slate-700 font-bold text-sm bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                إلغاء
+            </button>
+</div>
+</div>
+</div></body></html>

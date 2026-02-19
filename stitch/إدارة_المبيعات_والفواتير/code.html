@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>إدارة المبيعات والفواتير - نظام إدارة المصنع</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=Noto+Sans+Arabic:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1c5f20",
+                        "accent-orange": "#e67e22",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#131f14",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "Noto Sans Arabic", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', 'Noto Sans Arabic', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex">
+<!-- Sidebar Navigation -->
+<aside class="w-64 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 flex flex-col h-screen sticky top-0">
+<div class="p-6 flex items-center gap-3">
+<div class="size-10 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined">factory</span>
+</div>
+<div>
+<h1 class="text-primary font-bold text-lg leading-tight">إدارة المصنع</h1>
+<p class="text-slate-500 text-xs font-medium">الإنتاج الصناعي</p>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-1 overflow-y-auto custom-scrollbar">
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm font-medium">لوحة القيادة</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">local_shipping</span>
+<span class="text-sm font-medium">الموردين</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="text-sm font-medium">المالية</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 bg-primary/10 text-primary rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-primary">receipt_long</span>
+<span class="text-sm font-bold">المبيعات والفواتير</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">warehouse</span>
+<span class="text-sm font-medium">المخزن</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="text-sm font-medium">الموظفين</span>
+</a>
+<div class="pt-4 pb-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3">النظام</div>
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-sm font-medium">الإعدادات</span>
+</a>
+</nav>
+<div class="p-4 border-t border-slate-200 dark:border-slate-800">
+<div class="flex items-center gap-3 p-2 bg-slate-50 dark:bg-slate-800 rounded-xl">
+<div class="size-9 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="User profile avatar of a factory manager" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcVPvsAmNXSjuv1rtz5l8fwXyVoYNNrcL58T3_5dItFDPs1saWWTFha4NYpzlAil5ZT-6WzLVYTk89z_v8k_7qfigYAR5AeMumoa-TnsDmZmtKEK9wOb28d5D6VrGmcjvIaGZUYDaoRWBFMtBVnJZdf9LnVahXsczjjmhB-s_VbsEdOLeM7A3MWNpIC9s-ouDyKmXmPFWr_TAW4sF94fLpu_uwHdvW7jwEQapyrq6Yg7vMJaMcgdUr54ut_CkGZ8tFWOCIn7sO"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-xs font-bold truncate">أحمد المحمدي</p>
+<p class="text-[10px] text-slate-500 truncate">مدير المبيعات</p>
+</div>
+<button class="text-slate-400 hover:text-red-500">
+<span class="material-symbols-outlined text-lg">logout</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col min-h-screen max-w-[calc(100vw-16rem)] overflow-x-hidden">
+<!-- Header -->
+<header class="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-8 flex items-center justify-between sticky top-0 z-30">
+<div class="flex items-center gap-4">
+<h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">إدارة المبيعات والفواتير</h2>
+<div class="h-4 w-[1px] bg-slate-300 dark:bg-slate-700"></div>
+<nav class="flex items-center gap-2 text-sm text-slate-500">
+<span>الرئيسية</span>
+<span class="material-symbols-outlined text-xs">chevron_left</span>
+<span class="text-primary font-medium">الفواتير</span>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+<input class="w-full pr-10 pl-4 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 transition-all" placeholder="بحث عن رقم فاتورة أو عميل..." type="text"/>
+</div>
+<button class="relative p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+</button>
+</div>
+</header>
+<div class="p-8 space-y-8">
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+<div class="size-14 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-3xl">trending_up</span>
+</div>
+<div>
+<p class="text-slate-500 text-sm font-medium">إجمالي مبيعات الشهر</p>
+<p class="text-2xl font-black text-slate-800 dark:text-slate-100 mt-1">٤٥٠,٠٠٠ <span class="text-sm font-normal text-slate-400">ر.س</span></p>
+<p class="text-xs text-green-600 font-bold mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">arrow_upward</span> +١٢.٥% عن الشهر الماضي
+                        </p>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+<div class="size-14 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center text-amber-600">
+<span class="material-symbols-outlined text-3xl">pending_actions</span>
+</div>
+<div>
+<p class="text-slate-500 text-sm font-medium">فواتير معلقة</p>
+<p class="text-2xl font-black text-slate-800 dark:text-slate-100 mt-1">١٢ <span class="text-sm font-normal text-slate-400">فاتورة</span></p>
+<p class="text-xs text-amber-600 font-bold mt-1">تتطلب إجراء سريع</p>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+<div class="size-14 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center text-blue-600">
+<span class="material-symbols-outlined text-3xl">payments</span>
+</div>
+<div>
+<p class="text-slate-500 text-sm font-medium">المبالغ المحصلة</p>
+<p class="text-2xl font-black text-slate-800 dark:text-slate-100 mt-1">٣٨٥,٠٠٠ <span class="text-sm font-normal text-slate-400">ر.س</span></p>
+<p class="text-xs text-red-500 font-bold mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">arrow_downward</span> -٨.٢% عن الأسبوع الماضي
+                        </p>
+</div>
+</div>
+</div>
+<!-- Primary Action & Filters Container -->
+<div class="flex flex-col lg:flex-row gap-8 items-start">
+<!-- Filter Sidebar -->
+<aside class="w-full lg:w-72 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-6">
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-xl">filter_list</span>
+                            تصفية النتائج
+                        </h3>
+<button class="text-xs text-primary font-medium hover:underline">مسح الكل</button>
+</div>
+<div class="space-y-4">
+<div>
+<label class="block text-xs font-bold text-slate-500 mb-2">الفترة الزمنية</label>
+<select class="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-primary focus:border-primary">
+<option>آخر ٣٠ يوم</option>
+<option>الشهر الحالي</option>
+<option>الربع السنوي</option>
+<option>تخصيص تاريخ معين</option>
+</select>
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-500 mb-2">العميل / التاجر</label>
+<input class="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-primary focus:border-primary" placeholder="ابحث عن اسم العميل..." type="text"/>
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-500 mb-2">حالة الفاتورة</label>
+<div class="space-y-2">
+<label class="flex items-center gap-2 cursor-pointer">
+<input checked="" class="rounded text-primary focus:ring-primary border-slate-300" type="checkbox"/>
+<span class="text-sm">مدفوع بالكامل</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer">
+<input checked="" class="rounded text-primary focus:ring-primary border-slate-300" type="checkbox"/>
+<span class="text-sm">مدفوع جزئياً</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer">
+<input checked="" class="rounded text-primary focus:ring-primary border-slate-300" type="checkbox"/>
+<span class="text-sm">غير مدفوع</span>
+</label>
+</div>
+</div>
+<button class="w-full bg-primary/10 text-primary py-2.5 rounded-lg text-sm font-bold hover:bg-primary/20 transition-all mt-4">
+                            تطبيق الفلتر
+                        </button>
+</div>
+</aside>
+<!-- Table Content -->
+<div class="flex-1 w-full bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+<!-- Table Header Controls -->
+<div class="p-6 border-b border-slate-100 dark:border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
+<div class="flex items-center gap-4">
+<h3 class="font-bold text-lg">سجل الفواتير</h3>
+<span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 text-[10px] font-bold rounded uppercase">إجمالي ١٤٢ فاتورة</span>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-lg text-sm font-bold hover:bg-slate-200 transition-all">
+<span class="material-symbols-outlined text-lg">download</span>
+                                تصدير Excel
+                            </button>
+<button class="flex items-center gap-2 px-6 py-2.5 bg-accent-orange text-white rounded-lg text-sm font-bold shadow-lg shadow-accent-orange/20 hover:bg-accent-orange/90 transition-all transform active:scale-95">
+<span class="material-symbols-outlined text-lg">add_circle</span>
+                                إنشاء فاتورة جديدة
+                            </button>
+</div>
+</div>
+<!-- High Density Table -->
+<div class="overflow-x-auto custom-scrollbar">
+<table class="w-full text-right border-collapse">
+<thead>
+<tr class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 text-xs font-bold uppercase tracking-wider">
+<th class="px-6 py-4 border-b border-slate-100 dark:border-slate-800">رقم الفاتورة</th>
+<th class="px-6 py-4 border-b border-slate-100 dark:border-slate-800">التاجر / العميل</th>
+<th class="px-6 py-4 border-b border-slate-100 dark:border-slate-800">التاريخ</th>
+<th class="px-6 py-4 border-b border-slate-100 dark:border-slate-800">إجمالي الوزن</th>
+<th class="px-6 py-4 border-b border-slate-100 dark:border-slate-800">إجمالي المبلغ</th>
+<th class="px-6 py-4 border-b border-slate-100 dark:border-slate-800">الحالة</th>
+<th class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 text-center">الإجراءات</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+<!-- Row 1 -->
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group">
+<td class="px-6 py-4 text-sm font-bold text-primary">#INV-2024-001</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-xs text-slate-500">م ع</div>
+<span class="text-sm font-medium">مؤسسة علي عبيد للمقاولات</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500">٢٤ مايو ٢٠٢٤</td>
+<td class="px-6 py-4 text-sm font-medium">١٢.٥ طن</td>
+<td class="px-6 py-4 text-sm font-bold">٢٤,٥٠٠ ر.س</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400">
+<span class="size-1.5 rounded-full bg-green-500"></span>
+                                            مدفوع
+                                        </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center justify-center gap-2">
+<button class="p-1.5 text-slate-400 hover:text-primary transition-colors" title="عرض">
+<span class="material-symbols-outlined text-lg">visibility</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-blue-500 transition-colors" title="طباعة">
+<span class="material-symbols-outlined text-lg">print</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-amber-500 transition-colors" title="تعديل">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group">
+<td class="px-6 py-4 text-sm font-bold text-primary">#INV-2024-002</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-xs text-slate-500">ت خ</div>
+<span class="text-sm font-medium">شركة الخليج للتوريدات</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500">٢٣ مايو ٢٠٢٤</td>
+<td class="px-6 py-4 text-sm font-medium">٨.٢ طن</td>
+<td class="px-6 py-4 text-sm font-bold">١٦,٨٠٠ ر.س</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">
+<span class="size-1.5 rounded-full bg-amber-500"></span>
+                                            جزئي
+                                        </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center justify-center gap-2">
+<button class="p-1.5 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">visibility</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-blue-500 transition-colors">
+<span class="material-symbols-outlined text-lg">print</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-amber-500 transition-colors">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group">
+<td class="px-6 py-4 text-sm font-bold text-primary">#INV-2024-003</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-xs text-slate-500">م ا</div>
+<span class="text-sm font-medium">مصنع الهدى للألمنيوم</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500">٢١ مايو ٢٠٢٤</td>
+<td class="px-6 py-4 text-sm font-medium">٤٥٠ كجم</td>
+<td class="px-6 py-4 text-sm font-bold">٤,٢٠٠ ر.س</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400">
+<span class="size-1.5 rounded-full bg-red-500"></span>
+                                            غير مدفوع
+                                        </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center justify-center gap-2">
+<button class="p-1.5 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">visibility</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-blue-500 transition-colors">
+<span class="material-symbols-outlined text-lg">print</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-amber-500 transition-colors">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group">
+<td class="px-6 py-4 text-sm font-bold text-primary">#INV-2024-004</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-xs text-slate-500">ع ص</div>
+<span class="text-sm font-medium">عبدالله الصالح للتجارة</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500">١٩ مايو ٢٠٢٤</td>
+<td class="px-6 py-4 text-sm font-medium">٣.٤ طن</td>
+<td class="px-6 py-4 text-sm font-bold">٩,١٥٠ ر.س</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400">
+<span class="size-1.5 rounded-full bg-green-500"></span>
+                                            مدفوع
+                                        </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center justify-center gap-2">
+<button class="p-1.5 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">visibility</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-blue-500 transition-colors">
+<span class="material-symbols-outlined text-lg">print</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-amber-500 transition-colors">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group">
+<td class="px-6 py-4 text-sm font-bold text-primary">#INV-2024-005</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-xs text-slate-500">م ن</div>
+<span class="text-sm font-medium">مركز النور لمواد البناء</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500">١٨ مايو ٢٠٢٤</td>
+<td class="px-6 py-4 text-sm font-medium">٦.٧ طن</td>
+<td class="px-6 py-4 text-sm font-bold">١٤,٢٠٠ ر.س</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">
+<span class="size-1.5 rounded-full bg-amber-500"></span>
+                                            جزئي
+                                        </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center justify-center gap-2">
+<button class="p-1.5 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">visibility</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-blue-500 transition-colors">
+<span class="material-symbols-outlined text-lg">print</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-amber-500 transition-colors">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between border-t border-slate-100 dark:border-slate-800">
+<p class="text-xs text-slate-500 font-medium">عرض ١ إلى ١٠ من أصل ١٤٢ فاتورة</p>
+<div class="flex items-center gap-1">
+<button class="size-8 flex items-center justify-center rounded border border-slate-200 dark:border-slate-700 text-slate-400 hover:bg-white dark:hover:bg-slate-700 transition-colors">
+<span class="material-symbols-outlined text-lg">chevron_right</span>
+</button>
+<button class="size-8 flex items-center justify-center rounded bg-primary text-white font-bold text-xs">١</button>
+<button class="size-8 flex items-center justify-center rounded border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 transition-colors text-xs font-bold">٢</button>
+<button class="size-8 flex items-center justify-center rounded border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 transition-colors text-xs font-bold">٣</button>
+<span class="px-1 text-slate-400">...</span>
+<button class="size-8 flex items-center justify-center rounded border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 transition-colors text-xs font-bold">١٥</button>
+<button class="size-8 flex items-center justify-center rounded border border-slate-200 dark:border-slate-700 text-slate-400 hover:bg-white dark:hover:bg-slate-700 transition-colors">
+<span class="material-symbols-outlined text-lg">chevron_left</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>
