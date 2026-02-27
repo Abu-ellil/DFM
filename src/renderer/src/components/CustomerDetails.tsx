@@ -8,8 +8,11 @@ import { useCustomerAccountStore } from '../store/useCustomerAccountStore'
 import { Card } from './ui/Card'
 import { Table } from './ui/Table'
 import { toast } from 'react-toastify'
+import { PrintPreviewModal } from './common/PrintPreviewModal'
+import { usePrint } from '../hooks/usePrint'
 import ArrowLeft from 'lucide-react/dist/esm/icons/arrow-left'
 import Printer from 'lucide-react/dist/esm/icons/printer'
+import Eye from 'lucide-react/dist/esm/icons/eye'
 import Plus from 'lucide-react/dist/esm/icons/plus'
 import Scale from 'lucide-react/dist/esm/icons/scale'
 import Wallet from 'lucide-react/dist/esm/icons/wallet'
@@ -42,6 +45,7 @@ export default function CustomerDetails({ customerId, onBack }: CustomerDetailsP
     type: string
     data: any
   } | null>(null)
+  const print = usePrint()
 
   const [dateTypes, setDateTypes] = useState<any[]>([])
   const [crateTypes, setCrateTypes] = useState<any[]>([])
@@ -246,8 +250,8 @@ export default function CustomerDetails({ customerId, onBack }: CustomerDetailsP
   const cratesColumns = [
     { header: 'التاريخ', accessor: (t: any) => new Date(t.date).toLocaleDateString('ar-EG') },
     { header: 'النوع', accessor: 'crate_type_name' as const },
-    { header: 'خارج', accessor: 'crates_out' as const, className: 'text-red-600' },
-    { header: 'عائد', accessor: 'crates_returned' as const, className: 'text-emerald-600' },
+    { header: 'أخذت (من المصنع)', accessor: 'crates_out' as const, className: 'text-red-600' },
+    { header: 'أعادت (فارغة)', accessor: 'crates_returned' as const, className: 'text-emerald-600' },
     {
       header: 'إجراء',
       accessor: (t: any) => (
@@ -456,9 +460,11 @@ export default function CustomerDetails({ customerId, onBack }: CustomerDetailsP
               <div className="bg-slate-700/50 rounded-lg p-2 text-center">
                 <p className="text-slate-400">رصيد الصناديق</p>
                 <p
-                  className={`text-lg font-bold ${cratesBalance > 0 ? 'text-emerald-400' : 'text-red-400'}`}
+                  className={`text-lg font-bold ${
+                    cratesBalance > 0 ? 'text-emerald-400' : 'text-red-400'
+                  }`}
                 >
-                  {cratesBalance} صندوق
+                  {cratesBalance > 0 ? `+${cratesBalance}` : cratesBalance} صندوق
                 </p>
               </div>
               <div className="bg-slate-700/50 rounded-lg p-2 text-center">
@@ -1176,6 +1182,207 @@ export default function CustomerDetails({ customerId, onBack }: CustomerDetailsP
           </Card>
         </div>
       )}
+
+      {/* Print Preview Modal */}
+      <PrintPreviewModal
+        isOpen={print.isPrintPreviewOpen}
+        onClose={print.closePrintPreview}
+        title="كشف حساب"
+        content={
+          <div className="w-full">
+            {/* Header */}
+            <div className="flex justify-between items-start mb-6 border-b-4 border-emerald-600 pb-6">
+              <div className="text-right flex-1">
+                <h1 className="text-4xl font-black text-emerald-800 mb-2">{settings.company_name}</h1>
+                <div className="space-y-1 text-slate-700 text-lg font-bold">
+                  <p>{settings.company_address}</p>
+                  <p dir="ltr">{settings.company_phone}</p>
+                </div>
+              </div>
+              {settings.company_logo && (
+                <div className="bg-white p-2 rounded-xl shadow-sm border border-slate-100">
+                  <img src={settings.company_logo} alt="Logo" className="h-24 w-auto object-contain" />
+                </div>
+              )}
+            </div>
+
+            {/* Title */}
+            <div className="relative mb-6">
+              <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                <div className="w-full border-t-2 border-slate-200"></div>
+              </div>
+              <div className="relative flex justify-center">
+                <span className="bg-white px-8 py-2 rounded-full text-3xl font-black text-slate-800 border-3 border-emerald-600 shadow-lg">
+                  كشف حساب عميل
+                </span>
+              </div>
+            </div>
+
+            {/* Customer Info */}
+            <div className="bg-slate-50 rounded-xl p-4 mb-6 border-2 border-slate-200">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-lg">
+                <div className="flex justify-between border-b border-slate-200 pb-2">
+                  <span className="text-slate-500 font-bold">العميل:</span>
+                  <span className="font-black text-slate-900">{customer?.name}</span>
+                </div>
+                <div className="flex justify-between border-b border-slate-200 pb-2">
+                  <span className="text-slate-500 font-bold">النوع:</span>
+                  <span className="font-black text-slate-900">{customer?.type}</span>
+                </div>
+                <div className="flex justify-between border-b border-slate-200 pb-2">
+                  <span className="text-slate-500 font-bold">الهاتف:</span>
+                  <span className="font-black text-slate-900">{customer?.phone || '-'}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Summary Cards */}
+            <div className="grid grid-cols-3 gap-4 mb-6">
+              <div className="bg-cyan-50 p-4 rounded-xl border-2 border-cyan-300">
+                <p className="text-cyan-800 font-bold text-sm mb-2">إجمالي ما للعميل</p>
+                <p className="text-xs text-cyan-600 mb-1">(تمور + إيرادات)</p>
+                <p className="text-3xl font-black text-cyan-900">{formatCurrency(totalSupplied)}</p>
+              </div>
+              <div className="bg-red-50 p-4 rounded-xl border-2 border-red-300">
+                <p className="text-red-800 font-bold text-sm mb-2">مدفوعات للعميل</p>
+                <p className="text-xs text-red-600 mb-1">(المصنع دفع للعميل)</p>
+                <p className="text-3xl font-black text-red-900">{formatCurrency(totalAdvances)}</p>
+              </div>
+              <div className={`p-4 rounded-xl border-2 ${totalFinanceBalance >= 0 ? 'bg-emerald-50 border-emerald-300' : 'bg-red-50 border-red-300'}`}>
+                <p className={`font-bold text-sm mb-2 ${totalFinanceBalance >= 0 ? 'text-emerald-800' : 'text-red-800'}`}>
+                  الرصيد النهائي
+                </p>
+                <p className={`text-xs mb-1 ${totalFinanceBalance >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                  {totalFinanceBalance >= 0 ? 'المصنع عليه للزبون' : 'الزبون عليه للمصنع'}
+                </p>
+                <p className={`text-4xl font-black ${totalFinanceBalance >= 0 ? 'text-emerald-900' : 'text-red-900'}`}>
+                  {formatCurrency(Math.abs(totalFinanceBalance))}
+                </p>
+              </div>
+            </div>
+
+            {/* Detailed Transactions Table */}
+            <div className="mb-6">
+              <h3 className="text-xl font-black text-slate-800 mb-4 border-b-2 border-slate-200 pb-2">
+                تفصيل المعاملات
+              </h3>
+              
+              <table className="w-full border-collapse border border-slate-300 text-sm">
+                <thead>
+                  <tr className="bg-slate-100 border-b-2 border-slate-400">
+                    <th className="border-l border-slate-300 p-3 text-right font-bold">التاريخ</th>
+                    <th className="border-l border-slate-300 p-3 text-right font-bold">النوع</th>
+                    <th className="border-l border-slate-300 p-3 text-right font-bold">له (إيراد)</th>
+                    <th className="border-l border-slate-300 p-3 text-right font-bold">عليه (مدفوع)</th>
+                    <th className="border-l border-slate-300 p-3 text-right font-bold">الرصيد</th>
+                    <th className="p-3 text-right font-bold">ملاحظات</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {/* Combine and sort all transactions by date */}
+                  {[
+                    ...customerWeighbridge.map(t => ({...t, type: 'ميزان', category: 'weighbridge'})),
+                    ...customerFinance.map(t => ({...t, type: 'مالي', category: 'finance'})),
+                    ...customerCrates.map(t => ({...t, type: 'صناديق', category: 'crates'}))
+                  ]
+                  .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                  .map((transaction, index) => {
+                    const hasFor = transaction.category === 'weighbridge' ? transaction.total : 
+                                  transaction.category === 'finance' ? transaction.amount_paid : 0
+                    const hasFrom = transaction.category === 'weighbridge' ? transaction.total :
+                                   transaction.category === 'finance' ? transaction.amount_received : 0
+                    const amount = transaction.category === 'weighbridge' ? transaction.total :
+                                  transaction.category === 'finance' ? (transaction.amount_received - transaction.amount_paid) : 0
+                    const notes = transaction.category === 'weighbridge' ? `${transaction.date_type_name} - ${transaction.net_weight} كجم` :
+                                 transaction.category === 'finance' ? transaction.transaction_type :
+                                 transaction.category === 'crates' ? `${transaction.crate_type_name} - ${transaction.crates_out} خارج / ${transaction.crates_returned} عائد` : ''
+                    
+                    // Calculate running balance
+                    const previousTransactions = [
+                      ...customerWeighbridge.map(t => ({...t, type: 'ميزان', category: 'weighbridge'})),
+                      ...customerFinance.map(t => ({...t, type: 'مالي', category: 'finance'})),
+                      ...customerCrates.map(t => ({...t, type: 'صناديق', category: 'crates'}))
+                    ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                    .slice(0, index)
+                    
+                    const runningBalance = previousTransactions.reduce((acc, t) => {
+                      if (t.category === 'weighbridge') return acc + t.total
+                      if (t.category === 'finance') return acc + (t.amount_received || 0) - (t.amount_paid || 0)
+                      return acc
+                    }, 0) + amount
+                    
+                    return (
+                      <tr key={`${transaction.category}-${index}`} className="border-b border-slate-200">
+                        <td className="border-l border-slate-200 p-3 text-right">{new Date(transaction.date).toLocaleDateString('ar-EG')}</td>
+                        <td className="border-l border-slate-200 p-3 text-right font-bold">{transaction.type}</td>
+                        <td className="border-l border-slate-200 p-3 text-right text-emerald-600 font-bold">{hasFrom > 0 ? formatCurrency(hasFrom) : '-'}</td>
+                        <td className="border-l border-slate-200 p-3 text-right text-red-600 font-bold">{hasFor > 0 ? formatCurrency(hasFor) : '-'}</td>
+                        <td className="border-l border-slate-200 p-3 text-right font-black bg-slate-50">{formatCurrency(runningBalance)}</td>
+                        <td className="p-3 text-right text-slate-600 text-xs">{notes}</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+                <tfoot className="bg-slate-100 border-t-2 border-slate-400">
+                  <tr>
+                    <td colSpan={4} className="border-l border-slate-300 p-3 text-left font-bold text-xl">الإجمالي النهائي:</td>
+                    <td className={`border-l border-slate-300 p-3 text-right font-black text-2xl ${totalFinanceBalance >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
+                      {formatCurrency(totalFinanceBalance)}
+                    </td>
+                    <td className="p-3"></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            {/* Additional Information */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                <p className="text-slate-600 font-bold text-sm mb-1">إجمالي الصناديق</p>
+                <p className={`text-2xl font-black ${cratesBalance > 0 ? 'text-emerald-700' : 'text-red-700'}`}>
+                  {cratesBalance} صندوق
+                </p>
+              </div>
+              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                <p className="text-slate-600 font-bold text-sm mb-1">إجمالي الوزن الصافي</p>
+                <p className="text-2xl font-black text-emerald-700">{formatNumber(totalNetWeight)} كجم</p>
+              </div>
+              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                <p className="text-slate-600 font-bold text-sm mb-1">عدد عمليات الميزان</p>
+                <p className="text-2xl font-black text-blue-700">{weighbridgeCount}</p>
+              </div>
+              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                <p className="text-slate-600 font-bold text-sm mb-1">تاريخ التقرير</p>
+                <p className="text-2xl font-black text-slate-700">{new Date().toLocaleDateString('ar-EG')}</p>
+              </div>
+            </div>
+
+            {/* Signatures */}
+            <div className="flex justify-between gap-8 mt-12 pt-8 border-t-4 border-emerald-600">
+              <div className="text-center flex-1">
+                <p className="text-lg font-bold text-slate-600 mb-12">توقيع العميل</p>
+                <div className="w-full border-b-2 border-slate-400 pb-2"></div>
+              </div>
+              <div className="text-center flex-1">
+                <p className="text-lg font-bold text-slate-600 mb-12">توقيت المراجعة</p>
+                <div className="w-full border-b-2 border-slate-400 pb-2"></div>
+              </div>
+              <div className="text-center flex-1">
+                <p className="text-lg font-bold text-slate-600 mb-12">توقيع المحاسب / المدير</p>
+                <div className="w-full border-b-2 border-slate-400 pb-2"></div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="mt-8 pt-4 border-t-2 border-slate-200 text-center">
+              <p className="text-slate-500 font-bold text-sm italic">
+                تم استخراج كشف الحساب آلياً من نظام إدارة مصانع التمور - {new Date().toLocaleString('ar-EG')}
+              </p>
+            </div>
+          </div>
+        }
+        onPrint={print.handlePrint}
+      />
     </div>
   )
 }

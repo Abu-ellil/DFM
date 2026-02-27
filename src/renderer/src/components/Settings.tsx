@@ -152,22 +152,14 @@ export default function Settings() {
     }
   }
 
-  const handleDeleteAllData = async () => {
-    const confirmed = window.confirm(
-      'تحذير نهائي: سيتم حذف كافة البيانات (الموازين، الصناديق، الحسابات، العملاء). لا يمكن التراجع عن هذه العملية. هل تريد الاستمرار؟'
-    )
-    if (confirmed) {
-      const password = window.prompt('يرجى إدخال كلمة مرور المشرف للتأكيد:')
-      if (password) {
-        const result = await window.api.settings.deleteAllData()
-        if (result.success) {
-          toast.success(result.message)
-          fetchSettings()
-          fetchDataManagement()
-        } else {
-          toast.error(result.message)
-        }
-      }
+  const handleDeleteAllData = async (password: string) => {
+    const result = await window.api.settings.deleteAllData({ password })
+    if (result.success) {
+      toast.success(result.message)
+      fetchSettings()
+      fetchDataManagement()
+    } else {
+      toast.error(result.message)
     }
   }
 

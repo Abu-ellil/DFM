@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { app, shell, BrowserWindow, ipcMain, dialog, autoUpdater } from 'electron'
-import { join } from 'path'
-import { writeFile, readFile } from 'fs/promises'
+import { app, shell, BrowserWindow, ipcMain, dialog, autoUpdater, session } from 'electron'
+import { join, dirname } from 'path'
+import { writeFile, readFile, readdir, rm, stat } from 'fs/promises'
 import * as XLSX from 'xlsx'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.ico?asset'
@@ -53,6 +53,94 @@ function logToConsole(message: string, data?: any): void {
         console.log(data)
       }
     }
+  }
+}
+
+// Helper function to clear all application data
+async function clearAllAppData(): Promise<void> {
+  try {
+    // Clear all Electron sessions (cache, cookies, local storage, etc.)
+    const sessions = session.defaultSession ? [session.defaultSession] : []
+
+    for (const sess of sessions) {
+      await sess.clearCache()
+      await sess.clearStorageData({
+        storages: [
+          'cookies',
+          'filesystem',
+          'indexdb',
+          'localstorage',
+          'shadercache',
+          'websql',
+          'serviceworkers',
+          'cachestorage'
+        ]
+      })
+      await sess.clearHostResolverCache()
+    }
+
+    // Clear temp directory
+    const tempPath = app.getPath('temp')
+    try {
+      const tempFiles = await readdir(tempPath)
+      for (const file of tempFiles) {
+        if (file.includes('date-factory') || file.includes('dfm')) {
+          const filePath = join(tempPath, file)
+          try {
+            const fileStat = await stat(filePath)
+            if (fileStat.isDirectory()) {
+              await rm(filePath, { recursive: true, force: true })
+            } else {
+              await rm(filePath, { force: true })
+            }
+          } catch (err) {
+            // Ignore individual file errors
+            console.warn('Failed to delete temp file:', filePath, err)
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to clear temp directory:', err)
+    }
+
+    // Clear userData directory (except for essential files)
+    const userDataPath = app.getPath('userData')
+    try {
+      const userDataFiles = await readdir(userDataPath)
+      const filesToKeep = ['preferences.json', 'license.json', 'state.json']
+
+      for (const file of userDataFiles) {
+        if (!filesToKeep.includes(file) && !file.startsWith('.')) {
+          const filePath = join(userDataPath, file)
+          try {
+            const fileStat = await stat(filePath)
+            if (fileStat.isDirectory()) {
+              await rm(filePath, { recursive: true, force: true })
+            } else {
+              await rm(filePath, { force: true })
+            }
+          } catch (err) {
+            // Ignore individual file errors
+            console.warn('Failed to delete userData file:', filePath, err)
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to clear userData directory:', err)
+    }
+
+    // Clear logs directory
+    const logsPath = app.getPath('logs')
+    try {
+      await rm(logsPath, { recursive: true, force: true })
+    } catch (err) {
+      console.warn('Failed to clear logs directory:', err)
+    }
+
+    console.log('All application data cleared successfully')
+  } catch (error) {
+    console.error('Error clearing application data:', error)
+    throw error
   }
 }
 
@@ -900,8 +988,16 @@ ipcMain.handle('crates:getSummary', async () => {
         cr.customer_id,
         c.name as customer_name,
         SUM(cr.crates_out) as total_out,
-        SUM(cr.crates_returned) as total_returned,
-        (SUM(cr.crates_out) - SUM(cr.crates_returned)) as balance
+        (
+          COALESCE(SUM(cr.crates_returned), 0) +
+          COALESCE((SELECT SUM(crates_count) FROM weighbridge w WHERE w.customer_id = cr.customer_id), 0)
+        ) as total_returned,
+        (
+          SUM(cr.crates_out) - (
+            COALESCE(SUM(cr.crates_returned), 0) +
+            COALESCE((SELECT SUM(crates_count) FROM weighbridge w WHERE w.customer_id = cr.customer_id), 0)
+          )
+        ) as balance
       FROM crates cr
       JOIN customers c ON cr.customer_id = c.id
       GROUP BY cr.customer_id
@@ -1250,8 +1346,11 @@ ipcMain.handle('customerAccounts:getSummary', async (_event, customerId?) => {
           COALESCE((SELECT SUM(net_weight) FROM weighbridge WHERE customer_id = c.id), 0) as total_net_weight,
           COALESCE((SELECT SUM(amount_paid) FROM finance WHERE customer_id = c.id), 0) as total_paid,
           COALESCE((SELECT SUM(amount_received) FROM finance WHERE customer_id = c.id), 0) as total_received,
-          COALESCE((SELECT SUM(crates_out) FROM crates WHERE customer_id = c.id), 0) as total_crates_out,
-          COALESCE((SELECT SUM(crates_returned) FROM crates WHERE customer_id = c.id), 0) as total_crates_returned,
+        COALESCE((SELECT SUM(crates_out) FROM crates WHERE customer_id = c.id), 0) as total_crates_out,
+        (
+          COALESCE((SELECT SUM(crates_returned) FROM crates WHERE customer_id = c.id), 0) +
+          COALESCE((SELECT SUM(crates_count) FROM weighbridge WHERE customer_id = c.id), 0)
+        ) as total_crates_returned,
           (
             COALESCE((SELECT SUM(amount_paid) FROM finance WHERE customer_id = c.id), 0) +
             COALESCE((SELECT SUM(total) FROM weighbridge WHERE customer_id = c.id), 0) -
@@ -1259,7 +1358,10 @@ ipcMain.handle('customerAccounts:getSummary', async (_event, customerId?) => {
           ) as net_balance,
           (
             COALESCE((SELECT SUM(crates_out) FROM crates WHERE customer_id = c.id), 0) -
-            COALESCE((SELECT SUM(crates_returned) FROM crates WHERE customer_id = c.id), 0)
+            (
+              COALESCE((SELECT SUM(crates_returned) FROM crates WHERE customer_id = c.id), 0) +
+              COALESCE((SELECT SUM(crates_count) FROM weighbridge WHERE customer_id = c.id), 0)
+            )
           ) as crate_balance
         FROM customers c
         WHERE c.id = ?
@@ -1297,7 +1399,10 @@ ipcMain.handle('customerAccounts:getSummary', async (_event, customerId?) => {
         COALESCE((SELECT SUM(amount_paid) FROM finance WHERE customer_id = c.id), 0) as total_paid,
         COALESCE((SELECT SUM(amount_received) FROM finance WHERE customer_id = c.id), 0) as total_received,
         COALESCE((SELECT SUM(crates_out) FROM crates WHERE customer_id = c.id), 0) as total_crates_out,
-        COALESCE((SELECT SUM(crates_returned) FROM crates WHERE customer_id = c.id), 0) as total_crates_returned,
+        (
+          COALESCE((SELECT SUM(crates_returned) FROM crates WHERE customer_id = c.id), 0) +
+          COALESCE((SELECT SUM(crates_count) FROM weighbridge WHERE customer_id = c.id), 0)
+        ) as total_crates_returned,
         (
           COALESCE((SELECT SUM(amount_paid) FROM finance WHERE customer_id = c.id), 0) +
           COALESCE((SELECT SUM(total) FROM weighbridge WHERE customer_id = c.id), 0) -
@@ -1305,7 +1410,10 @@ ipcMain.handle('customerAccounts:getSummary', async (_event, customerId?) => {
         ) as net_balance,
         (
           COALESCE((SELECT SUM(crates_out) FROM crates WHERE customer_id = c.id), 0) -
-          COALESCE((SELECT SUM(crates_returned) FROM crates WHERE customer_id = c.id), 0)
+          (
+            COALESCE((SELECT SUM(crates_returned) FROM crates WHERE customer_id = c.id), 0) +
+            COALESCE((SELECT SUM(crates_count) FROM weighbridge WHERE customer_id = c.id), 0)
+          )
         ) as crate_balance
       FROM customers c
       ORDER BY c.name ASC
@@ -1537,9 +1645,24 @@ ipcMain.handle('auth:changePassword', async (_event, { oldPassword, newPassword 
   }
 })
 
-ipcMain.handle('settings:deleteAllData', async () => {
+ipcMain.handle('settings:deleteAllData', async (_event, { password }) => {
   try {
+    // Verify admin password first
     const db = getDb()
+    const stmt = db.prepare("SELECT * FROM users WHERE username = 'admin'")
+    if (!stmt.step()) {
+      stmt.free()
+      return { success: false, message: 'لم يتم العثور على حساب المشرف' }
+    }
+
+    const user = stmt.getAsObject() as any
+    stmt.free()
+
+    const passwordMatch = bcrypt.compareSync(password, user.password)
+    if (!passwordMatch) {
+      return { success: false, message: 'كلمة مرور المشرف غير صحيحة' }
+    }
+
     // List of tables to clear
     const tables = [
       'weighbridge',
@@ -1566,7 +1689,11 @@ ipcMain.handle('settings:deleteAllData', async () => {
     }
 
     await saveDatabase()
-    return { success: true, message: 'تم حذف كافة البيانات بنجاح' }
+
+    // Clear all application data (cache, storage, temp files, etc.)
+    await clearAllAppData()
+
+    return { success: true, message: 'تم حذف كافة البيانات والملفات المؤقتة بنجاح' }
   } catch (error: any) {
     console.error('Delete all data error:', error)
     return { success: false, message: error.message || 'حدث خطأ أثناء حذف البيانات' }

@@ -118,15 +118,18 @@ export default function Crates() {
     { header: 'إجمالي العائد', accessor: (s: any) => formatNumber(s.total_returned) },
     {
       header: 'الرصيد المتبقي',
-      accessor: (s: any) => (
-        <span
-          className={`font-bold ${
-            s.total_out - s.total_returned > 0 ? 'text-rose-600' : 'text-emerald-600'
-          }`}
-        >
-          {formatNumber(s.total_out - s.total_returned)}
-        </span>
-      )
+      accessor: (s: any) => {
+        const balance = s.total_returned - s.total_out
+        return (
+          <span
+            className={`font-bold ${
+              balance > 0 ? 'text-emerald-600' : 'text-rose-600'
+            }`}
+          >
+            {balance > 0 ? `+${formatNumber(balance)}` : formatNumber(balance)}
+          </span>
+        )
+      }
     }
   ]
 
@@ -148,12 +151,12 @@ export default function Crates() {
     },
     { header: 'النوع', accessor: 'crate_type_name' as const },
     {
-      header: 'خارج',
+      header: 'أخذت (من المصنع)',
       accessor: (t: any) => formatNumber(t.crates_out),
       className: 'text-red-500 font-bold'
     },
     {
-      header: 'عائد',
+      header: 'أعادت (فارغة)',
       accessor: (t: any) => formatNumber(t.crates_returned),
       className: 'text-emerald-500 font-bold'
     },

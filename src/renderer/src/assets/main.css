@@ -38,56 +38,250 @@ body {
     size: A4;
   }
 
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    box-shadow: none !important;
+  }
+
   body {
     background-color: white !important;
     color: black !important;
     font-size: 12pt;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-
-  /* Hide all elements by default when printing */
-  * {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+    line-height: 1.4;
+    margin: 0;
+    padding: 0;
   }
 
   /* Hide non-printable elements */
   .no-print,
-  .print\\:hidden,
+  [class*="print:hidden"],
   button:not(.print-visible),
   input:not(.print-visible),
   select:not(.print-visible),
-  textarea:not(.print-visible) {
+  textarea:not(.print-visible),
+  .fixed,
+  .sticky,
+  [role="dialog"],
+  [role="navigation"],
+  header:not([class*="print"]),
+  aside:not([class*="print"]) {
     display: none !important;
+    visibility: hidden !important;
   }
 
   /* Show printable elements */
-  .print\\:block,
-  .print\\:flex {
+  [class*="print:block"],
+  [class*="print:flex"] {
     display: block !important;
     visibility: visible !important;
   }
 
-  .print\\:flex {
+  [class*="print:flex"] {
     display: flex !important;
   }
 
-  /* Ensure colors and backgrounds are printed */
-  * {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+  /* Reset card and container styles for print */
+  .bg-white,
+  [class*="dark:bg-slate-900"],
+  [class*="bg-slate"] {
+    background-color: white !important;
+    box-shadow: none !important;
   }
 
-  /* Remove shadows and rounded corners for print */
-  * {
+  .border,
+  .border-r,
+  .border-b,
+  .border-t,
+  [class*="border-"] {
+    border-color: #ccc !important;
+  }
+
+  /* Ensure text colors are preserved */
+  .text-emerald-600,
+  .text-emerald-700,
+  .text-emerald-800 {
+    color: #047857 !important;
+  }
+
+  .text-cyan-600,
+  .text-cyan-700,
+  .text-cyan-800,
+  .text-cyan-900 {
+    color: #0891b2 !important;
+  }
+
+  .text-red-600,
+  .text-red-700,
+  .text-red-800,
+  .text-red-900 {
+    color: #dc2626 !important;
+  }
+
+  .text-blue-600,
+  .text-blue-700 {
+    color: #2563eb !important;
+  }
+
+  .text-slate-800,
+  .text-slate-900 {
+    color: #1e293b !important;
+  }
+
+  .text-slate-600,
+  .text-slate-700 {
+    color: #475569 !important;
+  }
+
+  .text-slate-500 {
+    color: #64748b !important;
+  }
+
+  /* Ensure text is readable */
+  .text-white {
+    color: #000 !important;
+  }
+
+  /* Background colors for print */
+  .bg-emerald-50,
+  .bg-emerald-100 {
+    background-color: #f0fdf4 !important;
+  }
+
+  .bg-cyan-50,
+  .bg-cyan-100 {
+    background-color: #ecfeff !important;
+  }
+
+  .bg-red-50,
+  .bg-red-100 {
+    background-color: #fef2f2 !important;
+  }
+
+  .bg-slate-50,
+  .bg-slate-100 {
+    background-color: #f8fafc !important;
+  }
+
+  .bg-slate-800,
+  .bg-slate-900 {
+    background-color: #f8fafc !important;
+  }
+
+  .bg-gradient-to-br {
+    background: none !important;
+  }
+
+  /* Remove shadows */
+  .shadow-lg,
+  .shadow-md,
+  .shadow-sm,
+  .shadow-xl,
+  .shadow-2xl,
+  .shadow {
     box-shadow: none !important;
+  }
+
+  /* Remove rounded corners for print */
+  .rounded,
+  .rounded-lg,
+  .rounded-xl,
+  .rounded-2xl,
+  .rounded-3xl,
+  .rounded-full,
+  .rounded-md {
     border-radius: 0 !important;
   }
 
-  /* Ensure text is black on white */
-  body {
-    color: #000 !important;
-    background: #fff !important;
+  /* Ensure images print correctly */
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+    page-break-inside: avoid;
+  }
+
+  /* Page break controls */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    page-break-after: avoid;
+  }
+
+  table,
+  tr,
+  td,
+  th {
+    page-break-inside: avoid;
+  }
+
+  .break-inside-avoid {
+    page-break-inside: avoid;
+  }
+
+  /* RTL support for print */
+  [dir="rtl"] {
+    direction: rtl !important;
+    text-align: right !important;
+  }
+
+  /* Ensure links are hidden in print */
+  a {
+    text-decoration: none !important;
+    color: inherit !important;
+  }
+
+  /* Hide hover states */
+  button:hover,
+  a:hover,
+  [class*="hover:"] {
+    /* Remove all hover effects in print */
+  }
+
+  /* Ensure proper spacing */
+  p,
+  div,
+  span {
+    orphans: 3;
+    widows: 3;
+  }
+
+  /* Print logo correctly */
+  img[alt="Logo"],
+  [src*="logo"] {
+    max-height: 120px !important;
+    object-fit: contain !important;
+  }
+
+  /* Fix print layout */
+  .flex,
+  .grid {
+    display: block !important;
+  }
+
+  .flex-col,
+  .flex-row,
+  .items-center,
+  .justify-between {
+    display: flex !important;
+  }
+
+  /* Ensure table borders print */
+  table {
+    border-collapse: collapse !important;
+  }
+
+  td,
+  th {
+    border: 1px solid #ccc !important;
+    padding: 4px 8px !important;
+  }
+
+  /* Fix signature section */
+  [class*="print:flex"] {
+    display: flex !important;
+    page-break-inside: avoid;
   }
 }

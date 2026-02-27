@@ -2,9 +2,13 @@ import { useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
 import { Card } from './ui/Card'
 import { Table } from './ui/Table'
+import { PrintPreviewModal } from './common/PrintPreviewModal'
+import { usePrint } from '../hooks/usePrint'
 import BarChart3 from 'lucide-react/dist/esm/icons/bar-chart-3'
 import Calendar from 'lucide-react/dist/esm/icons/calendar'
 import Download from 'lucide-react/dist/esm/icons/download'
+import Printer from 'lucide-react/dist/esm/icons/printer'
+import Eye from 'lucide-react/dist/esm/icons/eye'
 import Scale from 'lucide-react/dist/esm/icons/scale'
 import Wallet from 'lucide-react/dist/esm/icons/wallet'
 import Package from 'lucide-react/dist/esm/icons/package'
@@ -35,6 +39,7 @@ export default function Reports() {
   })
   const [selectedCustomer, setSelectedCustomer] = useState<string>('all')
   const [isExporting, setIsExporting] = useState(false)
+  const print = usePrint()
 
   useEffect(() => {
     fetchWeighbridge()
@@ -279,11 +284,75 @@ export default function Reports() {
             تصدير Excel
           </button>
           <button
-            onClick={handlePrint}
+            onClick={() => print.openPrintPreview(
+              `تقرير ${activeReport === 'weighbridge' ? 'الميزان' : activeReport === 'finance' ? 'المالية' : 'الصناديق'}`,
+              <div className="w-full">
+                <div className="flex justify-between items-start mb-6">
+                  <div className="text-right flex-1">
+                    <h1 className="text-4xl font-black text-emerald-800 mb-3">{settings.company_name || 'مصنع تمور'}</h1>
+                    <div className="space-y-1 text-slate-700 text-lg font-bold">
+                      {settings.company_address && <p>{settings.company_address}</p>}
+                      {settings.company_phone && <p dir="ltr">{settings.company_phone}</p>}
+                    </div>
+                  </div>
+                  {settings.company_logo && (
+                    <div className="bg-white p-3 rounded-xl shadow-sm border border-slate-100">
+                      <img src={settings.company_logo} alt="Logo" className="h-28 w-auto object-contain" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="relative my-6">
+                  <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                    <div className="w-full border-t-2 border-slate-200"></div>
+                  </div>
+                  <div className="relative flex justify-center">
+                    <span className="bg-white px-8 py-3 rounded-full text-3xl font-black text-slate-800 border-2 border-emerald-600">
+                      تقرير {activeReport === 'weighbridge' ? 'الميزان' : activeReport === 'finance' ? 'الحركة المالية' : 'حركة الصناديق'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center px-6 py-3 bg-slate-50 rounded-xl border-2 border-slate-200 mt-4 mb-6">
+                  <div className="flex gap-8 text-lg">
+                    <p className="font-bold">
+                      <span className="text-slate-500">الفترة:</span>{' '}
+                      {new Date(dateRange.start).toLocaleDateString('ar-EG')} -{' '}
+                      {new Date(dateRange.end).toLocaleDateString('ar-EG')}
+                    </p>
+                    {selectedCustomer !== 'all' && (
+                      <p className="font-bold text-emerald-700">
+                        <span className="text-slate-500">العميل:</span>{' '}
+                        {customers.find((c) => c.id.toString() === selectedCustomer)?.name}
+                      </p>
+                    )}
+                  </div>
+                  <p className="text-lg font-bold text-slate-500">
+                    تاريخ التقرير: {new Date().toLocaleDateString('ar-EG')}
+                  </p>
+                </div>
+
+                <div className="mb-6">
+                  {getStats()?.map((stat, i) => (
+                    <div key={i} className="flex items-center justify-between gap-4 bg-slate-50 p-3 rounded-lg mb-2">
+                      <p className="font-bold text-slate-600">{stat.label}</p>
+                      <p className="font-black text-xl text-slate-800">{stat.value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            className="flex items-center gap-2 bg-emerald-700 text-white px-4 py-2 rounded-lg hover:bg-emerald-800 transition-colors font-bold"
+          >
+            <Eye size={20} />
+            معاينة الطباعة
+          </button>
+          <button
+            onClick={print.quickPrint}
             className="flex items-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors font-bold"
           >
-            <Calendar size={20} />
-            طباعة
+            <Printer size={20} />
+            طباعة مباشرة
           </button>
         </div>
       </div>
@@ -475,6 +544,71 @@ export default function Reports() {
           </p>
         </div>
       </Card>
+
+      {/* Print Preview Modal */}
+      <PrintPreviewModal
+        isOpen={print.isPrintPreviewOpen}
+        onClose={print.closePrintPreview}
+        title={`تقرير ${activeReport === 'weighbridge' ? 'الميزان' : activeReport === 'finance' ? 'المالية' : 'الصناديق'}`}
+        content={
+          <div className="w-full">
+            <div className="flex justify-between items-start mb-6">
+              <div className="text-right flex-1">
+                <h1 className="text-4xl font-black text-emerald-800 mb-3">{settings.company_name || 'مصنع تمور'}</h1>
+                <div className="space-y-1 text-slate-700 text-lg font-bold">
+                  {settings.company_address && <p>{settings.company_address}</p>}
+                  {settings.company_phone && <p dir="ltr">{settings.company_phone}</p>}
+                </div>
+              </div>
+              {settings.company_logo && (
+                <div className="bg-white p-3 rounded-xl shadow-sm border border-slate-100">
+                  <img src={settings.company_logo} alt="Logo" className="h-28 w-auto object-contain" />
+                </div>
+              )}
+            </div>
+
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                <div className="w-full border-t-2 border-slate-200"></div>
+              </div>
+              <div className="relative flex justify-center">
+                <span className="bg-white px-8 py-3 rounded-full text-3xl font-black text-slate-800 border-2 border-emerald-600">
+                  تقرير {activeReport === 'weighbridge' ? 'الميزان' : activeReport === 'finance' ? 'الحركة المالية' : 'حركة الصناديق'}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center px-6 py-3 bg-slate-50 rounded-xl border-2 border-slate-200 mt-4 mb-6">
+              <div className="flex gap-8 text-lg">
+                <p className="font-bold">
+                  <span className="text-slate-500">الفترة:</span>{' '}
+                  {new Date(dateRange.start).toLocaleDateString('ar-EG')} -{' '}
+                  {new Date(dateRange.end).toLocaleDateString('ar-EG')}
+                </p>
+                {selectedCustomer !== 'all' && (
+                  <p className="font-bold text-emerald-700">
+                    <span className="text-slate-500">العميل:</span>{' '}
+                    {customers.find((c) => c.id.toString() === selectedCustomer)?.name}
+                  </p>
+                )}
+              </div>
+              <p className="text-lg font-bold text-slate-500">
+                تاريخ التقرير: {new Date().toLocaleDateString('ar-EG')}
+              </p>
+            </div>
+
+            <div className="mb-6">
+              {getStats()?.map((stat, i) => (
+                <div key={i} className="flex items-center justify-between gap-4 bg-slate-50 p-3 rounded-lg mb-2">
+                  <p className="font-bold text-slate-600">{stat.label}</p>
+                  <p className="font-black text-xl text-slate-800">{stat.value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        }
+        onPrint={print.handlePrint}
+      />
     </div>
   )
 }

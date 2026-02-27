@@ -62,7 +62,8 @@ const api = {
     sync: () => ipcRenderer.invoke('settings:sync'),
     importDb: () => ipcRenderer.invoke('settings:importDb'),
     importExcel: () => ipcRenderer.invoke('settings:importExcel'),
-    deleteAllData: () => ipcRenderer.invoke('settings:deleteAllData')
+    deleteAllData: (data: { password: string }) =>
+      ipcRenderer.invoke('settings:deleteAllData', data)
   },
   reports: {
     exportExcel: (data: { title: string; columns: any[]; data: any[] }) =>

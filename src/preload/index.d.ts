@@ -96,7 +96,9 @@ declare global {
         sync: () => Promise<{ success: boolean; message?: string }>
         importDb: () => Promise<{ success: boolean; message?: string }>
         importExcel: () => Promise<{ success: boolean; message?: string }>
-        deleteAllData: () => Promise<{ success: boolean; message: string }>
+        deleteAllData: (data: {
+          password: string
+        }) => Promise<{ success: boolean; message: string }>
       }
       reports: {
         exportExcel: (data: {
