@@ -8,6 +8,8 @@ import { ActivationScreen } from './components/ActivationScreen'
 import Dashboard from './components/Dashboard'
 import Customers from './components/Customers'
 import Weighbridge from './components/Weighbridge'
+import Suppliers from './components/Suppliers'
+import Seasons from './components/Seasons'
 import Crates from './components/Crates'
 import Finance from './components/Finance'
 import Reports from './components/Reports'
@@ -24,6 +26,8 @@ import {
   LayoutDashboard,
   Users,
   Scale,
+  Truck,
+  Calendar,
   Package,
   Wallet,
   BarChart3,
@@ -36,8 +40,21 @@ import {
   ShoppingCart
 } from 'lucide-react'
 
+const TAB_TITLES: Record<string, string> = {
+  dashboard: 'لوحة التحكم',
+  weighbridge: 'الميزان',
+  customers: 'العملاء',
+  suppliers: 'الموردين',
+  seasons: 'المواسم',
+  crates: 'الصناديق',
+  sales: 'المبيعات',
+  finance: 'الحسابات',
+  reports: 'التقارير',
+  duplicates: 'العمليات المكررة',
+  settings: 'الإعدادات'
+}
+
 function App(): React.ReactElement {
-  console.log('App component rendering...')
   const {
     version,
     isSidebarOpen,
@@ -50,27 +67,37 @@ function App(): React.ReactElement {
   const { user, setUser, logout } = useAuthStore()
   const [isLicensed, setIsLicensed] = useState<boolean | null>(null)
   const [windowWidth, setWindowWidth] = useState(window.innerWidth)
+  const [hasActiveSeason, setHasActiveSeason] = useState<boolean>(true)
+  const [activeSeasonName, setActiveSeasonName] = useState<string | null>(null)
 
   const checkLicense = async (): Promise<void> => {
     try {
-      console.log('Checking license, window.api:', typeof window.api)
       if (!window.api || !window.api.license) {
-        console.error('window.api.license not available, using default true')
         setIsLicensed(true)
         return
       }
       const licensed = await window.api.license.check()
-      console.log('License check result:', licensed)
       setIsLicensed(licensed)
-    } catch (error) {
-      console.error('License check failed:', error)
+    } catch (_error) {
       setIsLicensed(true)
     }
   }
 
   useEffect(() => {
-    console.log('App mounted, checking license...')
     checkLicense()
+    const checkSeason = async () => {
+      try {
+        const result = await window.api.seasons?.getActive()
+        setHasActiveSeason(!!result)
+        setActiveSeasonName(result?.name ?? null)
+      } catch {
+        setHasActiveSeason(false)
+        setActiveSeasonName(null)
+      }
+    }
+    checkSeason()
+    const interval = setInterval(checkSeason, 30000)
+    return () => clearInterval(interval)
   }, [])
 
   useEffect(() => {
@@ -87,24 +114,21 @@ function App(): React.ReactElement {
   }
 
   if (isLicensed === null) {
-    console.log('Showing loading screen')
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="text-center">
+        <div className="text-center" role="status" aria-live="polite">
           <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">جاري التحقق من الترخيص...</p>
+          <p className="text-gray-600 dark:text-gray-400">جاري التحقق من الترخيص\u2026</p>
         </div>
       </div>
     )
   }
 
   if (!isLicensed) {
-    console.log('Showing activation screen')
     return <ActivationScreen onActivationSuccess={handleActivationSuccess} />
   }
 
   if (!user) {
-    console.log('Showing login screen')
     return <Login onLoginSuccess={setUser} />
   }
 
@@ -114,6 +138,10 @@ function App(): React.ReactElement {
         return <Dashboard />
       case 'customers':
         return <Customers onViewCustomer={navigateToCustomer} />
+      case 'suppliers':
+        return <Suppliers />
+      case 'seasons':
+        return <Seasons />
       case 'customer-details':
         return selectedCustomerId ? (
           <CustomerDetails
@@ -151,19 +179,20 @@ function App(): React.ReactElement {
       <aside
         className={`${
           isSidebarOpenResponsive ? 'w-46' : 'w-16'
-        } bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 transition-all duration-300 flex flex-col z-20 shadow-xl print:hidden`}
+        } bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 transition-[width] duration-300 flex flex-col z-20 shadow-xl print:hidden`}
       >
         {/* Logo Area */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-slate-100 dark:border-slate-800">
           {isSidebarOpenResponsive && (
             <div className="flex items-center gap-2">
-              <img src={appIconUrl} alt="DFM" className="w-8 h-8 rounded" />
+              <img src={appIconUrl} alt="DFM" className="w-8 h-8 rounded" width={32} height={32} />
               <span className="font-bold text-lg tracking-tight">DFM</span>
             </div>
           )}
           <button
             onClick={toggleSidebar}
-            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+            aria-label={isSidebarOpenResponsive ? 'طي القائمة' : 'فتح القائمة'}
+            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
           >
             {isSidebarOpenResponsive ? <ChevronRight size={20} /> : <Menu size={20} />}
           </button>
@@ -191,6 +220,20 @@ function App(): React.ReactElement {
             isOpen={isSidebarOpenResponsive}
             active={activeTab === 'customers'}
             onClick={() => setActiveTab('customers')}
+          />
+          <NavItem
+            icon={<Truck size={20} />}
+            label="الموردين"
+            isOpen={isSidebarOpenResponsive}
+            active={activeTab === 'suppliers'}
+            onClick={() => setActiveTab('suppliers')}
+          />
+          <NavItem
+            icon={<Calendar size={20} />}
+            label="المواسم"
+            isOpen={isSidebarOpenResponsive}
+            active={activeTab === 'seasons'}
+            onClick={() => setActiveTab('seasons')}
           />
           <NavItem
             icon={<Package size={20} />}
@@ -278,8 +321,14 @@ function App(): React.ReactElement {
         <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 z-10 shadow-sm print:hidden">
           <div className="flex items-center gap-4">
             <h1 className="font-bold text-xl text-slate-800 dark:text-white capitalize">
-              {activeTab === 'dashboard' ? 'لوحة التحكم' : activeTab}
+              {TAB_TITLES[activeTab] || activeTab}
             </h1>
+            {activeSeasonName && activeTab !== 'seasons' && (
+              <span className="flex items-center gap-1.5 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold px-3 py-1.5 rounded-full">
+                <Calendar size={14} />
+                {activeSeasonName}
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-3">
@@ -287,9 +336,9 @@ function App(): React.ReactElement {
             <FontSizeToggle />
             <ThemeToggle />
             <div className="h-8 w-px bg-slate-200 dark:bg-slate-800 mx-2"></div>
-            <button className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors relative">
-              <Bell size={20} />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+            <button className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors relative focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none" aria-label="الإشعارات">
+              <Bell size={20} aria-hidden="true" />
+              <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900" aria-hidden="true"></span>
             </button>
             <div className="h-8 w-px bg-slate-200 dark:bg-slate-800 mx-2"></div>
             <div className="flex items-center gap-3">
@@ -308,6 +357,23 @@ function App(): React.ReactElement {
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto p-8 custom-scrollbar print:p-0 print:overflow-visible">
+          {!hasActiveSeason && activeTab !== 'seasons' && (
+            <div className="mb-4 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 rounded-xl p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Calendar size={24} className="text-amber-600 dark:text-amber-400 shrink-0" />
+                <div>
+                  <p className="font-bold text-amber-800 dark:text-amber-200">لا يوجد موسم نشط</p>
+                  <p className="text-sm text-amber-600 dark:text-amber-400">يجب تفعيل موسم أولاً لإضافة بيانات جديدة</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setActiveTab('seasons')}
+                className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors font-bold text-sm shrink-0"
+              >
+                الذهاب للمواسم
+              </button>
+            </div>
+          )}
           {renderContent()}
         </div>
       </main>

@@ -1,12 +1,5 @@
 import { useState, useCallback } from 'react'
 
-interface PrintSettings {
-  fontSize: 'small' | 'normal' | 'large'
-  showSignatures: boolean
-  showLogo: boolean
-  orientation: 'portrait' | 'landscape'
-}
-
 export const usePrint = () => {
   const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false)
   const [printContent, setPrintContent] = useState<React.ReactNode>(null)

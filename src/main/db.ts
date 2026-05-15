@@ -8,6 +8,13 @@ import { is } from '@electron-toolkit/utils'
 let db: Database | null = null
 let SQL: SqlJsStatic | null = null
 
+// Auto-save system
+let saveTimer: NodeJS.Timeout | null = null
+let saveInterval: NodeJS.Timeout | null = null
+let isDirty = false
+const SAVE_DELAY = 2000 // Save 2 seconds after last change
+const SAVE_INTERVAL = 30000 // Force save every 30 seconds
+
 export const getDbPath = (): string => {
   if (is.dev) {
     return path.join(app.getAppPath(), 'date_factory_v2.db')
@@ -37,7 +44,24 @@ const initSchema = (db: Database): void => {
     name TEXT NOT NULL UNIQUE,
     type TEXT NOT NULL,
     phone TEXT,
+    balance REAL DEFAULT 0,
+    season_id INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )`)
+
+  // Suppliers table (separated from customers)
+  db.run(`CREATE TABLE IF NOT EXISTS suppliers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    type TEXT NOT NULL,
+    phone TEXT,
+    commission_rate REAL DEFAULT 0,
+    crates_on_hand INTEGER DEFAULT 0,
+    balance REAL DEFAULT 0,
+    is_active INTEGER DEFAULT 1,
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   )`)
 
   // Date Types table
@@ -78,9 +102,8 @@ const initSchema = (db: Database): void => {
     crates_count INTEGER DEFAULT 0,
     commission REAL DEFAULT 0,
     notes TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (customer_id) REFERENCES customers(id),
-    FOREIGN KEY (date_type_id) REFERENCES date_types(id)
+    season_id INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   )`)
 
   // Crates tracking table
@@ -93,9 +116,8 @@ const initSchema = (db: Database): void => {
     crates_returned INTEGER DEFAULT 0,
     handler TEXT,
     notes TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (customer_id) REFERENCES customers(id),
-    FOREIGN KEY (crate_type_id) REFERENCES crate_types(id)
+    season_id INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   )`)
 
   // Finance table
@@ -107,8 +129,8 @@ const initSchema = (db: Database): void => {
     amount_paid REAL DEFAULT 0,
     amount_received REAL DEFAULT 0,
     notes TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (customer_id) REFERENCES customers(id)
+    season_id INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   )`)
 
   // Settings table
@@ -255,6 +277,9 @@ const initSchema = (db: Database): void => {
   )
   db.run('CREATE INDEX IF NOT EXISTS idx_finance_customer_date ON finance(customer_id, date)')
   db.run('CREATE INDEX IF NOT EXISTS idx_crates_customer_date ON crates(customer_id, date)')
+  db.run('CREATE INDEX IF NOT EXISTS idx_suppliers_type ON suppliers(type)')
+  db.run('CREATE INDEX IF NOT EXISTS idx_suppliers_active ON suppliers(is_active)')
+  // Note: seasons indexes are created in runSeasonsMigration after the table is created
   db.run('CREATE INDEX IF NOT EXISTS idx_sync_queue_created ON sync_queue(created_at)')
   db.run('CREATE INDEX IF NOT EXISTS idx_users_username ON users(username)')
   db.run('CREATE INDEX IF NOT EXISTS idx_telegram_users_telegram_id ON telegram_users(telegram_id)')
@@ -357,6 +382,15 @@ const initSchema = (db: Database): void => {
 
   // Run seasons migration
   runSeasonsMigration(db)
+
+  // Run season isolation migration
+  runSeasonIsolationMigration(db)
+
+  // Season isolation indexes (must run AFTER runSeasonIsolationMigration adds season_id columns)
+  db.run('CREATE INDEX IF NOT EXISTS idx_customers_season ON customers(season_id)')
+  db.run('CREATE INDEX IF NOT EXISTS idx_weighbridge_season ON weighbridge(season_id)')
+  db.run('CREATE INDEX IF NOT EXISTS idx_finance_season ON finance(season_id)')
+  db.run('CREATE INDEX IF NOT EXISTS idx_crates_season ON crates(season_id)')
 }
 
 /**
@@ -364,8 +398,10 @@ const initSchema = (db: Database): void => {
  */
 const runSyncMigrations = (db: Database): void => {
   // Tables that need sync columns
+  // Note: 'seasons' is excluded here - it will be created in runSeasonsMigration
   const syncTables = [
     'customers',
+    'suppliers',
     'weighbridge',
     'crates',
     'finance',
@@ -382,8 +418,7 @@ const runSyncMigrations = (db: Database): void => {
     'role_permissions',
     'sales_products',
     'sales_invoices',
-    'sales_items',
-    'seasons'
+    'sales_items'
   ]
 
   // Add sync columns to each table if they don't exist
@@ -530,6 +565,70 @@ const runSeasonsMigration = (db: Database): void => {
   db.run('CREATE INDEX IF NOT EXISTS idx_seasons_active ON seasons(is_active)')
 }
 
+/**
+ * Add season_id columns to existing tables for season isolation
+ */
+const runSeasonIsolationMigration = (db: Database): void => {
+  // First, ensure seasons table exists
+  db.run(`CREATE TABLE IF NOT EXISTS seasons (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    is_active INTEGER DEFAULT 0,
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )`)
+
+  // Add season_id to customers table
+  try {
+    db.run(`ALTER TABLE customers ADD COLUMN season_id INTEGER`)
+  } catch {
+    // Column already exists, ignore error
+  }
+
+  // Add season_id to weighbridge table
+  try {
+    db.run(`ALTER TABLE weighbridge ADD COLUMN season_id INTEGER`)
+  } catch {
+    // Column already exists, ignore error
+  }
+
+  // Add season_id to finance table
+  try {
+    db.run(`ALTER TABLE finance ADD COLUMN season_id INTEGER`)
+  } catch {
+    // Column already exists, ignore error
+  }
+
+  // Add season_id to crates table
+  try {
+    db.run(`ALTER TABLE crates ADD COLUMN season_id INTEGER`)
+  } catch {
+    // Column already exists, ignore error
+  }
+
+  // Create indexes for season_id if they don't exist
+  try {
+    db.run('CREATE INDEX IF NOT EXISTS idx_customers_season ON customers(season_id)')
+  } catch {}
+  try {
+    db.run('CREATE INDEX IF NOT EXISTS idx_weighbridge_season ON weighbridge(season_id)')
+  } catch {}
+  try {
+    db.run('CREATE INDEX IF NOT EXISTS idx_finance_season ON finance(season_id)')
+  } catch {}
+  try {
+    db.run('CREATE INDEX IF NOT EXISTS idx_crates_season ON crates(season_id)')
+  } catch {}
+  try {
+    db.run('CREATE INDEX IF NOT EXISTS idx_seasons_dates ON seasons(start_date, end_date)')
+  } catch {}
+  try {
+    db.run('CREATE INDEX IF NOT EXISTS idx_seasons_active ON seasons(is_active)')
+  } catch {}
+}
+
 export const initializeDatabase = async (force: boolean = false): Promise<Database> => {
   if (db && !force) return db
 
@@ -559,6 +658,7 @@ export const initializeDatabase = async (force: boolean = false): Promise<Databa
 
     initSchema(db)
     await saveDatabase()
+    startAutoSave() // Start auto-save system
 
     return db
   } catch (error) {
@@ -574,6 +674,77 @@ export const saveDatabase = async (): Promise<void> => {
   const data = db.export()
   const buffer = Buffer.from(data)
   await fs.promises.writeFile(dbPath, buffer)
+  isDirty = false
+}
+
+/**
+ * Request a database save. Uses debouncing to avoid frequent writes.
+ * Call this after any database modification.
+ */
+export const requestSave = (): void => {
+  isDirty = true
+
+  // Clear existing timer
+  if (saveTimer) {
+    clearTimeout(saveTimer)
+  }
+
+  // Set new timer
+  saveTimer = setTimeout(async () => {
+    if (isDirty) {
+      try {
+        await saveDatabase()
+        console.log('[DB] Auto-saved database')
+      } catch (error) {
+        console.error('[DB] Auto-save failed:', error)
+      }
+    }
+  }, SAVE_DELAY)
+}
+
+/**
+ * Initialize the auto-save interval
+ */
+export const startAutoSave = (): void => {
+  // Clear existing interval if any
+  if (saveInterval) {
+    clearInterval(saveInterval)
+  }
+
+  // Set up periodic save (every 30 seconds max)
+  saveInterval = setInterval(async () => {
+    if (isDirty) {
+      try {
+        await saveDatabase()
+        console.log('[DB] Periodic auto-saved database')
+      } catch (error) {
+        console.error('[DB] Periodic auto-save failed:', error)
+      }
+    }
+  }, SAVE_INTERVAL)
+
+  console.log('[DB] Auto-save started')
+}
+
+/**
+ * Stop auto-save and perform final save
+ */
+export const stopAutoSave = async (): Promise<void> => {
+  if (saveTimer) {
+    clearTimeout(saveTimer)
+    saveTimer = null
+  }
+
+  if (saveInterval) {
+    clearInterval(saveInterval)
+    saveInterval = null
+  }
+
+  // Final save before closing
+  if (isDirty) {
+    await saveDatabase()
+    console.log('[DB] Final save before closing')
+  }
 }
 
 export const getDb = (): Database => {

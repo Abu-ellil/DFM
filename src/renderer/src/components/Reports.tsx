@@ -5,7 +5,6 @@ import { Table } from './ui/Table'
 import { PrintPreviewModal } from './common/PrintPreviewModal'
 import { usePrint } from '../hooks/usePrint'
 import BarChart3 from 'lucide-react/dist/esm/icons/bar-chart-3'
-import Calendar from 'lucide-react/dist/esm/icons/calendar'
 import Download from 'lucide-react/dist/esm/icons/download'
 import Printer from 'lucide-react/dist/esm/icons/printer'
 import Eye from 'lucide-react/dist/esm/icons/eye'
@@ -213,10 +212,6 @@ export default function Reports() {
         ]
       }
     }
-  }
-
-  const handlePrint = () => {
-    window.print()
   }
 
   const handleExportExcel = async () => {

@@ -12,7 +12,6 @@ import { PrintPreviewModal } from './common/PrintPreviewModal'
 import { usePrint } from '../hooks/usePrint'
 import ArrowLeft from 'lucide-react/dist/esm/icons/arrow-left'
 import Printer from 'lucide-react/dist/esm/icons/printer'
-import Eye from 'lucide-react/dist/esm/icons/eye'
 import Plus from 'lucide-react/dist/esm/icons/plus'
 import Scale from 'lucide-react/dist/esm/icons/scale'
 import Wallet from 'lucide-react/dist/esm/icons/wallet'
@@ -1287,15 +1286,16 @@ export default function CustomerDetails({ customerId, onBack }: CustomerDetailsP
                   ]
                   .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
                   .map((transaction, index) => {
-                    const hasFor = transaction.category === 'weighbridge' ? transaction.total : 
-                                  transaction.category === 'finance' ? transaction.amount_paid : 0
-                    const hasFrom = transaction.category === 'weighbridge' ? transaction.total :
-                                   transaction.category === 'finance' ? transaction.amount_received : 0
-                    const amount = transaction.category === 'weighbridge' ? transaction.total :
-                                  transaction.category === 'finance' ? (transaction.amount_received - transaction.amount_paid) : 0
-                    const notes = transaction.category === 'weighbridge' ? `${transaction.date_type_name} - ${transaction.net_weight} كجم` :
-                                 transaction.category === 'finance' ? transaction.transaction_type :
-                                 transaction.category === 'crates' ? `${transaction.crate_type_name} - ${transaction.crates_out} خارج / ${transaction.crates_returned} عائد` : ''
+                    const t = transaction as any
+                    const hasFor = transaction.category === 'weighbridge' ? t.total :
+                                  transaction.category === 'finance' ? t.amount_paid : 0
+                    const hasFrom = transaction.category === 'weighbridge' ? t.total :
+                                   transaction.category === 'finance' ? t.amount_received : 0
+                    const amount = transaction.category === 'weighbridge' ? t.total :
+                                  transaction.category === 'finance' ? (t.amount_received - t.amount_paid) : 0
+                    const notes = transaction.category === 'weighbridge' ? `${t.date_type_name} - ${t.net_weight} كجم` :
+                                 transaction.category === 'finance' ? t.transaction_type :
+                                 transaction.category === 'crates' ? `${t.crate_type_name} - ${t.crates_out} خارج / ${t.crates_returned} عائد` : ''
                     
                     // Calculate running balance
                     const previousTransactions = [
@@ -1306,8 +1306,9 @@ export default function CustomerDetails({ customerId, onBack }: CustomerDetailsP
                     .slice(0, index)
                     
                     const runningBalance = previousTransactions.reduce((acc, t) => {
-                      if (t.category === 'weighbridge') return acc + t.total
-                      if (t.category === 'finance') return acc + (t.amount_received || 0) - (t.amount_paid || 0)
+                      const tr = t as any
+                      if (t.category === 'weighbridge') return acc + tr.total
+                      if (t.category === 'finance') return acc + (tr.amount_received || 0) - (tr.amount_paid || 0)
                       return acc
                     }, 0) + amount
                     

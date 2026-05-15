@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Card } from './ui/Card'
 import Users from 'lucide-react/dist/esm/icons/users'
 import Scale from 'lucide-react/dist/esm/icons/scale'
@@ -14,6 +14,8 @@ import { useCrateStore } from '../store/useCrateStore'
 import { useFinanceStore } from '../store/useFinanceStore'
 import { useAppStore } from '../store/useAppStore'
 import { formatCurrency, formatNumber } from '../utils/format'
+import { WeightChart, FinanceChart, SupplierChart } from './charts'
+import { format } from 'date-fns'
 
 const RECENT_ITEMS_LIMIT = 5
 
@@ -111,6 +113,48 @@ export default function Dashboard() {
     finance.reduce((acc, curr) => acc + (curr.amount_received - curr.amount_paid), 0) -
     weighbridge.reduce((acc, curr) => acc + curr.total, 0)
   const totalWeight = weighbridge.reduce((acc, curr) => acc + curr.net_weight, 0)
+
+  // Chart Data - Last 7 days
+  const chartData = useMemo(() => {
+    const days: string[] = []
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date()
+      date.setDate(date.getDate() - i)
+      days.push(format(date, 'yyyy-MM-dd'))
+    }
+
+    // Weight data
+    const weightData = days.map((day) => {
+      const dayWeight = weighbridge
+        .filter((t) => t.date === day)
+        .reduce((acc, curr) => acc + curr.net_weight, 0)
+      return { date: format(new Date(day), 'dd/MM'), weight: Math.round(dayWeight) }
+    })
+
+    // Finance data
+    const financeData = days.map((day) => {
+      const dayIncome = finance
+        .filter((t) => t.date === day)
+        .reduce((acc, curr) => acc + curr.amount_received, 0)
+      const dayExpenses = weighbridge
+        .filter((t) => t.date === day)
+        .reduce((acc, curr) => acc + curr.total, 0)
+      return { date: format(new Date(day), 'dd/MM'), income: dayIncome, expenses: dayExpenses }
+    })
+
+    // Supplier data (top 5)
+    const supplierMap = new Map<string, number>()
+    weighbridge.forEach((t) => {
+      const current = supplierMap.get(t.customer_name) || 0
+      supplierMap.set(t.customer_name, current + t.net_weight)
+    })
+    const supplierData = Array.from(supplierMap.entries())
+      .map(([name, value]) => ({ name, value: Math.round(value) }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 5)
+
+    return { weightData, financeData, supplierData }
+  }, [weighbridge, finance])
 
   const stats = [
     {
@@ -249,6 +293,13 @@ export default function Dashboard() {
             )}
           </Card>
         ))}
+      </div>
+
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <WeightChart data={chartData.weightData} />
+        <FinanceChart data={chartData.financeData} />
+        <SupplierChart data={chartData.supplierData} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

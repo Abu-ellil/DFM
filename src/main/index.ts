@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { app, shell, BrowserWindow, ipcMain, dialog, autoUpdater, session } from 'electron'
-import { join, dirname } from 'path'
+import { join } from 'path'
 import { writeFile, readFile, readdir, rm, stat } from 'fs/promises'
 import * as XLSX from 'xlsx'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
@@ -452,10 +452,37 @@ ipcMain.handle('auth:login', async (_event, { username, password }) => {
 })
 
 // Customers IPC
+function getActiveSeasonId(db: any): number | null {
+  try {
+    const res = db.exec('SELECT id FROM seasons WHERE is_active = 1 LIMIT 1')
+    if (res.length > 0 && res[0].values.length > 0) {
+      return res[0].values[0][0] as number
+    }
+  } catch {}
+  return null
+}
+
+function migrateOrphanData(db: any, seasonId: number): void {
+  const tables = ['customers', 'weighbridge', 'crates', 'finance']
+  tables.forEach((table) => {
+    try {
+      db.run(`UPDATE ${table} SET season_id = ? WHERE season_id IS NULL`, [seasonId])
+    } catch (err) {
+      console.error(`Failed to migrate orphan data in ${table}:`, err)
+    }
+  })
+}
+
 ipcMain.handle('customers:getAll', async () => {
   try {
     const db = getDb()
-    const res = db.exec('SELECT * FROM customers ORDER BY name ASC')
+    const activeSeasonId = getActiveSeasonId(db)
+    const res = db.exec(
+      activeSeasonId
+        ? 'SELECT * FROM customers WHERE season_id = ? ORDER BY name ASC'
+        : 'SELECT * FROM customers WHERE season_id IS NULL ORDER BY name ASC',
+      activeSeasonId ? [activeSeasonId] : []
+    )
     if (res.length === 0) return []
     const columns = res[0].columns
     return res[0].values.map((row) => {
@@ -472,8 +499,13 @@ ipcMain.handle('customers:getAll', async () => {
 ipcMain.handle('customers:create', async (_event, customer) => {
   try {
     const db = getDb()
-    const stmt = db.prepare('INSERT INTO customers (name, type, phone) VALUES (?, ?, ?)')
-    stmt.bind([customer.name, customer.type, customer.phone])
+    const activeSeasonId = getActiveSeasonId(db)
+    if (!activeSeasonId) {
+      return { success: false, message: 'لا يوجد موسم نشط. فعّل موسم أولاً' }
+    }
+
+    const stmt = db.prepare('INSERT INTO customers (name, type, phone, season_id) VALUES (?, ?, ?, ?)')
+    stmt.bind([customer.name, customer.type, customer.phone, activeSeasonId])
     stmt.run()
     stmt.free()
 
@@ -543,6 +575,120 @@ ipcMain.handle('customers:delete', async (_event, id) => {
   } catch (error) {
     console.error('Delete customer error:', error)
     return { success: false, message: 'حدث خطأ أثناء حذف العميل' }
+  }
+})
+
+// Suppliers IPC
+ipcMain.handle('suppliers:getAll', async () => {
+  try {
+    const db = getDb()
+    const res = db.exec('SELECT * FROM suppliers ORDER BY name ASC')
+    if (res.length === 0) return []
+    const columns = res[0].columns
+    return res[0].values.map((row) => {
+      const obj: any = {}
+      columns.forEach((col, i) => (obj[col] = row[i]))
+      return obj
+    })
+  } catch {
+    return []
+  }
+})
+
+ipcMain.handle('suppliers:create', async (_event, supplier) => {
+  try {
+    const db = getDb()
+    const stmt = db.prepare(
+      'INSERT INTO suppliers (name, type, phone, commission_rate, crates_on_hand, balance, is_active, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+    )
+    stmt.bind([
+      supplier.name,
+      supplier.type,
+      supplier.phone || null,
+      supplier.commission_rate || 0,
+      supplier.crates_on_hand || 0,
+      supplier.balance || 0,
+      supplier.is_active !== undefined ? (supplier.is_active ? 1 : 0) : 1,
+      supplier.notes || null
+    ])
+    stmt.run()
+    stmt.free()
+    await saveDatabase()
+
+    const lastId = db.exec('SELECT last_insert_rowid() as id')[0].values[0][0] as number
+
+    await enqueueChange({
+      operation: 'INSERT',
+      table: 'suppliers',
+      record_id: lastId,
+      data: { ...supplier, id: lastId },
+      client_timestamp: Date.now()
+    }).catch((err) => console.error('Failed to enqueue change:', err))
+
+    return { success: true }
+  } catch (error) {
+    console.error('Create supplier error:', error)
+    return { success: false, message: 'حدث خطأ أثناء إضافة المورد' }
+  }
+})
+
+ipcMain.handle('suppliers:update', async (_event, id, supplier) => {
+  try {
+    const db = getDb()
+    const stmt = db.prepare(
+      'UPDATE suppliers SET name = ?, type = ?, phone = ?, commission_rate = ?, crates_on_hand = ?, balance = ?, is_active = ?, notes = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+    )
+    stmt.bind([
+      supplier.name,
+      supplier.type,
+      supplier.phone || null,
+      supplier.commission_rate || 0,
+      supplier.crates_on_hand || 0,
+      supplier.balance || 0,
+      supplier.is_active !== undefined ? (supplier.is_active ? 1 : 0) : 1,
+      supplier.notes || null,
+      id
+    ])
+    stmt.run()
+    stmt.free()
+    await saveDatabase()
+
+    await enqueueChange({
+      operation: 'UPDATE',
+      table: 'suppliers',
+      record_id: id,
+      data: supplier,
+      client_timestamp: Date.now()
+    }).catch((err) => console.error('Failed to enqueue change:', err))
+
+    return { success: true }
+  } catch (error) {
+    console.error('Update supplier error:', error)
+    return { success: false, message: 'حدث خطأ أثناء تعديل المورد' }
+  }
+})
+
+ipcMain.handle('suppliers:delete', async (_event, id) => {
+  try {
+    const db = getDb()
+    const stmt = db.prepare('DELETE FROM suppliers WHERE id = ?')
+    stmt.bind([id])
+    stmt.run()
+    stmt.free()
+    await saveDatabase()
+
+    await enqueueChange({
+      operation: 'DELETE',
+      table: 'suppliers',
+      record_id: id,
+      data: { id },
+      client_timestamp: Date.now()
+    }).catch((err) => console.error('Failed to enqueue change:', err))
+
+    return { success: true }
+  } catch (error) {
+    console.error('Delete supplier error:', error)
+    return { success: false, message: 'حدث خطأ أثناء حذف المورد' }
   }
 })
 
@@ -684,13 +830,23 @@ ipcMain.handle('supervisors:delete', async (_event, id) => {
 ipcMain.handle('weighbridge:getAll', async () => {
   try {
     const db = getDb()
-    const res = db.exec(`
-      SELECT w.*, c.name as customer_name, dt.name as date_type_name 
+    const activeSeasonId = getActiveSeasonId(db)
+    const res = db.exec(
+      activeSeasonId
+        ? `SELECT w.*, c.name as customer_name, dt.name as date_type_name 
       FROM weighbridge w
       JOIN customers c ON w.customer_id = c.id
       LEFT JOIN date_types dt ON w.date_type_id = dt.id
-      ORDER BY w.date DESC, w.id DESC
-    `)
+      WHERE w.season_id = ?
+      ORDER BY w.date DESC, w.id DESC`
+        : `SELECT w.*, c.name as customer_name, dt.name as date_type_name 
+      FROM weighbridge w
+      JOIN customers c ON w.customer_id = c.id
+      LEFT JOIN date_types dt ON w.date_type_id = dt.id
+      WHERE w.season_id IS NULL
+      ORDER BY w.date DESC, w.id DESC`,
+      activeSeasonId ? [activeSeasonId] : []
+    )
     if (res.length === 0) return []
     const columns = res[0].columns
     return res[0].values.map((row) => {
@@ -707,9 +863,15 @@ ipcMain.handle('weighbridge:getAll', async () => {
 ipcMain.handle('weighbridge:create', async (_event, data) => {
   try {
     const db = getDb()
+
+    const activeSeasonId = getActiveSeasonId(db)
+    if (!activeSeasonId) {
+      return { success: false, message: 'لا يوجد موسم نشط. فعّل موسم أولاً' }
+    }
+
     const stmt = db.prepare(`
-      INSERT INTO weighbridge (date, customer_id, date_type_id, gross_weight, net_weight, price_per_qantar, total, crates_count, commission, notes)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO weighbridge (date, customer_id, date_type_id, gross_weight, net_weight, price_per_qantar, total, crates_count, commission, notes, season_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `)
     stmt.bind([
       data.date,
@@ -721,7 +883,8 @@ ipcMain.handle('weighbridge:create', async (_event, data) => {
       data.total,
       data.crates_count,
       data.commission,
-      data.notes
+      data.notes,
+      activeSeasonId
     ])
     stmt.run()
     stmt.free()
@@ -734,14 +897,14 @@ ipcMain.handle('weighbridge:create', async (_event, data) => {
       operation: 'INSERT',
       table: 'weighbridge',
       record_id: lastId,
-      data: { ...data, id: lastId },
+      data: { ...data, id: lastId, season_id: activeSeasonId },
       client_timestamp: Date.now()
     }).catch((err) => console.error('Failed to enqueue change:', err))
 
     // Send customer account update notification
     mainWindow?.webContents.send('customerAccounts:updated', { customerId: data.customer_id })
 
-    return { success: true }
+    return { success: true, season_id: activeSeasonId }
   } catch (error) {
     console.error('Create weighbridge error:', error)
     return { success: false, message: 'حدث خطأ أثناء إضافة عملية الميزان' }
@@ -960,13 +1123,23 @@ ipcMain.handle('weighbridge:recalculateSingle', async (_event, id: number) => {
 ipcMain.handle('crates:getAll', async () => {
   try {
     const db = getDb()
-    const res = db.exec(`
-      SELECT cr.*, c.name as customer_name, ct.name as crate_type_name
+    const activeSeasonId = getActiveSeasonId(db)
+    const res = db.exec(
+      activeSeasonId
+        ? `SELECT cr.*, c.name as customer_name, ct.name as crate_type_name
       FROM crates cr
       JOIN customers c ON cr.customer_id = c.id
       LEFT JOIN crate_types ct ON cr.crate_type_id = ct.id
-      ORDER BY cr.date DESC, cr.id DESC
-    `)
+      WHERE cr.season_id = ?
+      ORDER BY cr.date DESC, cr.id DESC`
+        : `SELECT cr.*, c.name as customer_name, ct.name as crate_type_name
+      FROM crates cr
+      JOIN customers c ON cr.customer_id = c.id
+      LEFT JOIN crate_types ct ON cr.crate_type_id = ct.id
+      WHERE cr.season_id IS NULL
+      ORDER BY cr.date DESC, cr.id DESC`,
+      activeSeasonId ? [activeSeasonId] : []
+    )
     if (res.length === 0) return []
     const columns = res[0].columns
     return res[0].values.map((row) => {
@@ -983,6 +1156,9 @@ ipcMain.handle('crates:getAll', async () => {
 ipcMain.handle('crates:getSummary', async () => {
   try {
     const db = getDb()
+    const activeSeasonId = getActiveSeasonId(db)
+    const seasonFilter = activeSeasonId ? `cr.season_id = ${activeSeasonId}` : `cr.season_id IS NULL`
+    const weighbridgeSeasonFilter = activeSeasonId ? `w.season_id = ${activeSeasonId}` : `w.season_id IS NULL`
     const res = db.exec(`
       SELECT 
         cr.customer_id,
@@ -990,16 +1166,17 @@ ipcMain.handle('crates:getSummary', async () => {
         SUM(cr.crates_out) as total_out,
         (
           COALESCE(SUM(cr.crates_returned), 0) +
-          COALESCE((SELECT SUM(crates_count) FROM weighbridge w WHERE w.customer_id = cr.customer_id), 0)
+          COALESCE((SELECT SUM(crates_count) FROM weighbridge w WHERE w.customer_id = cr.customer_id AND ${weighbridgeSeasonFilter}), 0)
         ) as total_returned,
         (
           SUM(cr.crates_out) - (
             COALESCE(SUM(cr.crates_returned), 0) +
-            COALESCE((SELECT SUM(crates_count) FROM weighbridge w WHERE w.customer_id = cr.customer_id), 0)
+            COALESCE((SELECT SUM(crates_count) FROM weighbridge w WHERE w.customer_id = cr.customer_id AND ${weighbridgeSeasonFilter}), 0)
           )
         ) as balance
       FROM crates cr
       JOIN customers c ON cr.customer_id = c.id
+      WHERE ${seasonFilter}
       GROUP BY cr.customer_id
       HAVING balance > 0
     `)
@@ -1019,9 +1196,15 @@ ipcMain.handle('crates:getSummary', async () => {
 ipcMain.handle('crates:create', async (_event, data) => {
   try {
     const db = getDb()
+
+    const activeSeasonId = getActiveSeasonId(db)
+    if (!activeSeasonId) {
+      return { success: false, message: 'لا يوجد موسم نشط. فعّل موسم أولاً' }
+    }
+
     const stmt = db.prepare(`
-      INSERT INTO crates (date, customer_id, crate_type_id, crates_out, crates_returned, handler, notes)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO crates (date, customer_id, crate_type_id, crates_out, crates_returned, handler, notes, season_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `)
     stmt.bind([
       data.date,
@@ -1030,7 +1213,8 @@ ipcMain.handle('crates:create', async (_event, data) => {
       data.crates_out,
       data.crates_returned,
       data.handler,
-      data.notes
+      data.notes,
+      activeSeasonId
     ])
     stmt.run()
     stmt.free()
@@ -1043,14 +1227,14 @@ ipcMain.handle('crates:create', async (_event, data) => {
       operation: 'INSERT',
       table: 'crates',
       record_id: lastId,
-      data: { ...data, id: lastId },
+      data: { ...data, id: lastId, season_id: activeSeasonId },
       client_timestamp: Date.now()
     }).catch((err) => console.error('Failed to enqueue change:', err))
 
     // Send customer account update notification
     mainWindow?.webContents.send('customerAccounts:updated', { customerId: data.customer_id })
 
-    return { success: true }
+    return { success: true, season_id: activeSeasonId }
   } catch (error) {
     console.error('Create crate transaction error:', error)
     return { success: false, message: 'حدث خطأ أثناء إضافة عملية الصناديق' }
@@ -1142,12 +1326,21 @@ ipcMain.handle('crates:delete', async (_event, id) => {
 ipcMain.handle('finance:getAll', async () => {
   try {
     const db = getDb()
-    const res = db.exec(`
-      SELECT f.*, c.name as customer_name
+    const activeSeasonId = getActiveSeasonId(db)
+    const res = db.exec(
+      activeSeasonId
+        ? `SELECT f.*, c.name as customer_name
       FROM finance f
       JOIN customers c ON f.customer_id = c.id
-      ORDER BY f.date DESC, f.id DESC
-    `)
+      WHERE f.season_id = ?
+      ORDER BY f.date DESC, f.id DESC`
+        : `SELECT f.*, c.name as customer_name
+      FROM finance f
+      JOIN customers c ON f.customer_id = c.id
+      WHERE f.season_id IS NULL
+      ORDER BY f.date DESC, f.id DESC`,
+      activeSeasonId ? [activeSeasonId] : []
+    )
     if (res.length === 0) return []
     const columns = res[0].columns
     return res[0].values.map((row) => {
@@ -1164,20 +1357,25 @@ ipcMain.handle('finance:getAll', async () => {
 ipcMain.handle('finance:getSummary', async () => {
   try {
     const db = getDb()
+    const activeSeasonId = getActiveSeasonId(db)
+    const seasonFilter = activeSeasonId ? `f.season_id = ${activeSeasonId}` : `f.season_id IS NULL`
+    const wSeasonFilter = activeSeasonId ? `w.season_id = ${activeSeasonId}` : `w.season_id IS NULL`
+    const cSeasonFilter = activeSeasonId ? `c.season_id = ${activeSeasonId}` : `c.season_id IS NULL`
     const res = db.exec(`
       SELECT 
         f.customer_id,
         c.name as customer_name,
         COALESCE(SUM(f.amount_paid), 0) as total_paid,
         COALESCE(SUM(f.amount_received), 0) as total_received,
-        COALESCE((SELECT SUM(total) FROM weighbridge WHERE customer_id = f.customer_id), 0) as total_weighbridge_debt,
+        COALESCE((SELECT SUM(w.total) FROM weighbridge w WHERE w.customer_id = f.customer_id AND ${wSeasonFilter}), 0) as total_weighbridge_debt,
         (
           COALESCE(SUM(f.amount_received), 0) +
-          COALESCE((SELECT SUM(total) FROM weighbridge WHERE customer_id = f.customer_id), 0) -
+          COALESCE((SELECT SUM(w.total) FROM weighbridge w WHERE w.customer_id = f.customer_id AND ${wSeasonFilter}), 0) -
           COALESCE(SUM(f.amount_paid), 0)
         ) as net_balance
       FROM finance f
-      JOIN customers c ON f.customer_id = c.id
+      JOIN customers c ON f.customer_id = c.id AND ${cSeasonFilter}
+      WHERE ${seasonFilter}
       GROUP BY f.customer_id
     `)
     if (res.length === 0) return []
@@ -1205,9 +1403,15 @@ ipcMain.handle('finance:getSummary', async () => {
 ipcMain.handle('finance:create', async (_event, data) => {
   try {
     const db = getDb()
+
+    const activeSeasonId = getActiveSeasonId(db)
+    if (!activeSeasonId) {
+      return { success: false, message: 'لا يوجد موسم نشط. فعّل موسم أولاً' }
+    }
+
     const stmt = db.prepare(`
-      INSERT INTO finance (date, customer_id, transaction_type, amount_paid, amount_received, notes, payment_method, receipt_file, receipt_reference)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO finance (date, customer_id, transaction_type, amount_paid, amount_received, notes, payment_method, receipt_file, receipt_reference, season_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `)
     stmt.bind([
       data.date,
@@ -1218,7 +1422,8 @@ ipcMain.handle('finance:create', async (_event, data) => {
       data.notes,
       data.payment_method || 'نقدا',
       data.receipt_file || null,
-      data.receipt_reference || null
+      data.receipt_reference || null,
+      activeSeasonId
     ])
     stmt.run()
     stmt.free()
@@ -1231,14 +1436,14 @@ ipcMain.handle('finance:create', async (_event, data) => {
       operation: 'INSERT',
       table: 'finance',
       record_id: lastId,
-      data: { ...data, id: lastId },
+      data: { ...data, id: lastId, season_id: activeSeasonId },
       client_timestamp: Date.now()
     }).catch((err) => console.error('Failed to enqueue change:', err))
 
     // Send customer account update notification
     mainWindow?.webContents.send('customerAccounts:updated', { customerId: data.customer_id })
 
-    return { success: true }
+    return { success: true, season_id: activeSeasonId }
   } catch (error) {
     console.error('Create finance transaction error:', error)
     return { success: false, message: 'حدث خطأ أثناء إضافة العملية المالية' }
@@ -1329,11 +1534,22 @@ ipcMain.handle('finance:delete', async (_event, id) => {
 })
 
 // Customer Accounts IPC
+function buildSeasonSubqueries(alias: string, activeSeasonId: number | null): Record<string, string> {
+  const sf = activeSeasonId !== null ? `${alias}.season_id = ${activeSeasonId}` : `${alias}.season_id IS NULL`
+  return {
+    wFilter: activeSeasonId !== null ? `w.season_id = ${activeSeasonId}` : `w.season_id IS NULL`,
+    fFilter: activeSeasonId !== null ? `f.season_id = ${activeSeasonId}` : `f.season_id IS NULL`,
+    crFilter: activeSeasonId !== null ? `cr.season_id = ${activeSeasonId}` : `cr.season_id IS NULL`,
+    cFilter: activeSeasonId !== null ? `c.season_id = ${activeSeasonId}` : `c.season_id IS NULL`
+  }
+}
+
 ipcMain.handle('customerAccounts:getSummary', async (_event, customerId?) => {
   try {
     const db = getDb()
+    const activeSeasonId = getActiveSeasonId(db)
+    const sq = buildSeasonSubqueries('c', activeSeasonId)
 
-    // For a single customer, return detailed summary
     if (customerId) {
       const stmt = db.prepare(`
         SELECT
@@ -1341,36 +1557,35 @@ ipcMain.handle('customerAccounts:getSummary', async (_event, customerId?) => {
           c.name as customer_name,
           c.type,
           c.phone,
-          COALESCE((SELECT SUM(total) FROM weighbridge WHERE customer_id = c.id), 0) as total_weighbridge_debt,
-          (SELECT COUNT(*) FROM weighbridge WHERE customer_id = c.id) as weighbridge_transaction_count,
-          COALESCE((SELECT SUM(net_weight) FROM weighbridge WHERE customer_id = c.id), 0) as total_net_weight,
-          COALESCE((SELECT SUM(amount_paid) FROM finance WHERE customer_id = c.id), 0) as total_paid,
-          COALESCE((SELECT SUM(amount_received) FROM finance WHERE customer_id = c.id), 0) as total_received,
-        COALESCE((SELECT SUM(crates_out) FROM crates WHERE customer_id = c.id), 0) as total_crates_out,
-        (
-          COALESCE((SELECT SUM(crates_returned) FROM crates WHERE customer_id = c.id), 0) +
-          COALESCE((SELECT SUM(crates_count) FROM weighbridge WHERE customer_id = c.id), 0)
-        ) as total_crates_returned,
+          COALESCE((SELECT SUM(total) FROM weighbridge w WHERE w.customer_id = c.id AND ${sq.wFilter}), 0) as total_weighbridge_debt,
+          (SELECT COUNT(*) FROM weighbridge w WHERE w.customer_id = c.id AND ${sq.wFilter}) as weighbridge_transaction_count,
+          COALESCE((SELECT SUM(net_weight) FROM weighbridge w WHERE w.customer_id = c.id AND ${sq.wFilter}), 0) as total_net_weight,
+          COALESCE((SELECT SUM(amount_paid) FROM finance f WHERE f.customer_id = c.id AND ${sq.fFilter}), 0) as total_paid,
+          COALESCE((SELECT SUM(amount_received) FROM finance f WHERE f.customer_id = c.id AND ${sq.fFilter}), 0) as total_received,
+          COALESCE((SELECT SUM(crates_out) FROM crates cr WHERE cr.customer_id = c.id AND ${sq.crFilter}), 0) as total_crates_out,
           (
-            COALESCE((SELECT SUM(amount_paid) FROM finance WHERE customer_id = c.id), 0) +
-            COALESCE((SELECT SUM(total) FROM weighbridge WHERE customer_id = c.id), 0) -
-            COALESCE((SELECT SUM(amount_received) FROM finance WHERE customer_id = c.id), 0)
+            COALESCE((SELECT SUM(crates_returned) FROM crates cr WHERE cr.customer_id = c.id AND ${sq.crFilter}), 0) +
+            COALESCE((SELECT SUM(crates_count) FROM weighbridge w WHERE w.customer_id = c.id AND ${sq.wFilter}), 0)
+          ) as total_crates_returned,
+          (
+            COALESCE((SELECT SUM(amount_paid) FROM finance f WHERE f.customer_id = c.id AND ${sq.fFilter}), 0) +
+            COALESCE((SELECT SUM(total) FROM weighbridge w WHERE w.customer_id = c.id AND ${sq.wFilter}), 0) -
+            COALESCE((SELECT SUM(amount_received) FROM finance f WHERE f.customer_id = c.id AND ${sq.fFilter}), 0)
           ) as net_balance,
           (
-            COALESCE((SELECT SUM(crates_out) FROM crates WHERE customer_id = c.id), 0) -
+            COALESCE((SELECT SUM(crates_out) FROM crates cr WHERE cr.customer_id = c.id AND ${sq.crFilter}), 0) -
             (
-              COALESCE((SELECT SUM(crates_returned) FROM crates WHERE customer_id = c.id), 0) +
-              COALESCE((SELECT SUM(crates_count) FROM weighbridge WHERE customer_id = c.id), 0)
+              COALESCE((SELECT SUM(crates_returned) FROM crates cr WHERE cr.customer_id = c.id AND ${sq.crFilter}), 0) +
+              COALESCE((SELECT SUM(crates_count) FROM weighbridge w WHERE w.customer_id = c.id AND ${sq.wFilter}), 0)
             )
           ) as crate_balance
         FROM customers c
-        WHERE c.id = ?
+        WHERE c.id = ? AND ${sq.cFilter}
       `)
       stmt.bind([customerId])
       const result = stmt.getAsObject() as any
       stmt.free()
 
-      // Convert numbers from strings to actual numbers
       if (result) {
         result.total_weighbridge_debt = Number(result.total_weighbridge_debt) || 0
         result.weighbridge_transaction_count = Number(result.weighbridge_transaction_count) || 0
@@ -1386,36 +1601,36 @@ ipcMain.handle('customerAccounts:getSummary', async (_event, customerId?) => {
       return result
     }
 
-    // For all customers
     const res = db.exec(`
       SELECT
         c.id as customer_id,
         c.name as customer_name,
         c.type,
         c.phone,
-        COALESCE((SELECT SUM(total) FROM weighbridge WHERE customer_id = c.id), 0) as total_weighbridge_debt,
-        (SELECT COUNT(*) FROM weighbridge WHERE customer_id = c.id) as weighbridge_transaction_count,
-        COALESCE((SELECT SUM(net_weight) FROM weighbridge WHERE customer_id = c.id), 0) as total_net_weight,
-        COALESCE((SELECT SUM(amount_paid) FROM finance WHERE customer_id = c.id), 0) as total_paid,
-        COALESCE((SELECT SUM(amount_received) FROM finance WHERE customer_id = c.id), 0) as total_received,
-        COALESCE((SELECT SUM(crates_out) FROM crates WHERE customer_id = c.id), 0) as total_crates_out,
+        COALESCE((SELECT SUM(total) FROM weighbridge w WHERE w.customer_id = c.id AND ${sq.wFilter}), 0) as total_weighbridge_debt,
+        (SELECT COUNT(*) FROM weighbridge w WHERE w.customer_id = c.id AND ${sq.wFilter}) as weighbridge_transaction_count,
+        COALESCE((SELECT SUM(net_weight) FROM weighbridge w WHERE w.customer_id = c.id AND ${sq.wFilter}), 0) as total_net_weight,
+        COALESCE((SELECT SUM(amount_paid) FROM finance f WHERE f.customer_id = c.id AND ${sq.fFilter}), 0) as total_paid,
+        COALESCE((SELECT SUM(amount_received) FROM finance f WHERE f.customer_id = c.id AND ${sq.fFilter}), 0) as total_received,
+        COALESCE((SELECT SUM(crates_out) FROM crates cr WHERE cr.customer_id = c.id AND ${sq.crFilter}), 0) as total_crates_out,
         (
-          COALESCE((SELECT SUM(crates_returned) FROM crates WHERE customer_id = c.id), 0) +
-          COALESCE((SELECT SUM(crates_count) FROM weighbridge WHERE customer_id = c.id), 0)
+          COALESCE((SELECT SUM(crates_returned) FROM crates cr WHERE cr.customer_id = c.id AND ${sq.crFilter}), 0) +
+          COALESCE((SELECT SUM(crates_count) FROM weighbridge w WHERE w.customer_id = c.id AND ${sq.wFilter}), 0)
         ) as total_crates_returned,
         (
-          COALESCE((SELECT SUM(amount_paid) FROM finance WHERE customer_id = c.id), 0) +
-          COALESCE((SELECT SUM(total) FROM weighbridge WHERE customer_id = c.id), 0) -
-          COALESCE((SELECT SUM(amount_received) FROM finance WHERE customer_id = c.id), 0)
+          COALESCE((SELECT SUM(amount_paid) FROM finance f WHERE f.customer_id = c.id AND ${sq.fFilter}), 0) +
+          COALESCE((SELECT SUM(total) FROM weighbridge w WHERE w.customer_id = c.id AND ${sq.wFilter}), 0) -
+          COALESCE((SELECT SUM(amount_received) FROM finance f WHERE f.customer_id = c.id AND ${sq.fFilter}), 0)
         ) as net_balance,
         (
-          COALESCE((SELECT SUM(crates_out) FROM crates WHERE customer_id = c.id), 0) -
+          COALESCE((SELECT SUM(crates_out) FROM crates cr WHERE cr.customer_id = c.id AND ${sq.crFilter}), 0) -
           (
-            COALESCE((SELECT SUM(crates_returned) FROM crates WHERE customer_id = c.id), 0) +
-            COALESCE((SELECT SUM(crates_count) FROM weighbridge WHERE customer_id = c.id), 0)
+            COALESCE((SELECT SUM(crates_returned) FROM crates cr WHERE cr.customer_id = c.id AND ${sq.crFilter}), 0) +
+            COALESCE((SELECT SUM(crates_count) FROM weighbridge w WHERE w.customer_id = c.id AND ${sq.wFilter}), 0)
           )
         ) as crate_balance
       FROM customers c
+      WHERE ${sq.cFilter}
       ORDER BY c.name ASC
     `)
 
@@ -1458,13 +1673,14 @@ ipcMain.handle(
   async (_event, customerId: number, limit: number = 20) => {
     try {
       const db = getDb()
+      const activeSeasonId = getActiveSeasonId(db)
+      const seasonFilter = activeSeasonId !== null ? `season_id = ${activeSeasonId}` : `season_id IS NULL`
       const transactions: any[] = []
 
-      // Get weighbridge transactions
       const weighbridgeStmt = db.prepare(`
       SELECT 'weighbridge' as type, id, date, customer_id, total as amount, notes, created_at
       FROM weighbridge
-      WHERE customer_id = ?
+      WHERE customer_id = ? AND ${seasonFilter}
       ORDER BY date DESC, id DESC
       LIMIT ?
     `)
@@ -1474,7 +1690,6 @@ ipcMain.handle(
       }
       weighbridgeStmt.free()
 
-      // Get finance transactions
       const financeStmt = db.prepare(`
       SELECT 'finance' as type, id, date, customer_id,
              CASE
@@ -1483,7 +1698,7 @@ ipcMain.handle(
              END as amount,
              transaction_type as notes, created_at
       FROM finance
-      WHERE customer_id = ?
+      WHERE customer_id = ? AND ${seasonFilter}
       ORDER BY date DESC, id DESC
       LIMIT ?
     `)
@@ -1493,13 +1708,12 @@ ipcMain.handle(
       }
       financeStmt.free()
 
-      // Get crates transactions
       const cratesStmt = db.prepare(`
       SELECT 'crates' as type, id, date, customer_id,
              (crates_out - crates_returned) as amount,
              handler || ' - ' || notes as notes, created_at
       FROM crates
-      WHERE customer_id = ?
+      WHERE customer_id = ? AND ${seasonFilter}
       ORDER BY date DESC, id DESC
       LIMIT ?
     `)
@@ -2491,6 +2705,8 @@ ipcMain.handle('seasons:create', async (_event, season) => {
       deactivateStmt.bind([db.exec('SELECT last_insert_rowid() as id')[0].values[0][0]])
       deactivateStmt.run()
       deactivateStmt.free()
+
+      migrateOrphanData(db, db.exec('SELECT last_insert_rowid() as id')[0].values[0][0] as number)
     }
 
     await saveDatabase()
@@ -2535,6 +2751,8 @@ ipcMain.handle('seasons:update', async (_event, id, season) => {
       deactivateStmt.bind([id])
       deactivateStmt.run()
       deactivateStmt.free()
+
+      migrateOrphanData(db, id)
     }
 
     await saveDatabase()
@@ -2594,6 +2812,8 @@ ipcMain.handle('seasons:setActive', async (_event, id) => {
     activateStmt.bind([id])
     activateStmt.run()
     activateStmt.free()
+
+    migrateOrphanData(db, id)
 
     await saveDatabase()
 

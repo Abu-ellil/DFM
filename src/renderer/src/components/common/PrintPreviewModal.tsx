@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState } from 'react'
 import { Card } from '../ui/Card'
 import X from 'lucide-react/dist/esm/icons/x'
 import Printer from 'lucide-react/dist/esm/icons/printer'
 import Eye from 'lucide-react/dist/esm/icons/eye'
 import ZoomIn from 'lucide-react/dist/esm/icons/zoom-in'
 import ZoomOut from 'lucide-react/dist/esm/icons/zoom-out'
-import RotateCw from 'lucide-react/dist/esm/icons/rotate-cw'
 
 interface PrintPreviewModalProps {
   isOpen: boolean
@@ -192,8 +191,8 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
               {/* Apply settings filters */}
               <div className={`${!settings.showLogo ? 'print-logo-hidden' : ''}`}>
                 {React.cloneElement(content as React.ReactElement, {
-                  showSignatures: settings.showSignatures
-                })}
+                  'data-show-signatures': settings.showSignatures
+                } as any)}
               </div>
             </div>
           </div>

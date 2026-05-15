@@ -1,0 +1,11 @@
+--- _conflict_log  ---
+CREATE TABLE _conflict_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    table_name TEXT NOT NULL,
+    record_id INTEGER,
+    local_data TEXT,
+    remote_data TEXT,
+    resolution TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )
+

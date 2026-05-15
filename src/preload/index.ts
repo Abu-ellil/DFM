@@ -14,6 +14,14 @@ const api = {
     update: (id, customer) => ipcRenderer.invoke('customers:update', id, customer),
     delete: (id) => ipcRenderer.invoke('customers:delete', id)
   },
+  seasons: {
+    getAll: () => ipcRenderer.invoke('seasons:getAll'),
+    getActive: () => ipcRenderer.invoke('seasons:getActive'),
+    create: (data) => ipcRenderer.invoke('seasons:create', data),
+    update: (id, data) => ipcRenderer.invoke('seasons:update', id, data),
+    delete: (id) => ipcRenderer.invoke('seasons:delete', id),
+    setActive: (id) => ipcRenderer.invoke('seasons:setActive', id)
+  },
   dateTypes: {
     getAll: () => ipcRenderer.invoke('dateTypes:getAll'),
     create: (name) => ipcRenderer.invoke('dateTypes:create', name),

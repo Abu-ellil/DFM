@@ -2,8 +2,6 @@
 
 const https = require('https')
 
-const machineId = '77E9479EB9F80639'
-
 function registerLicenseKey(params) {
   return new Promise((resolve, reject) => {
     const data = JSON.stringify(params)
@@ -11,7 +9,7 @@ function registerLicenseKey(params) {
     const options = {
       hostname: 'dates-factory-manager-cloud.vercel.app',
       port: 443,
-      path: '/api/license/generate-trial',
+      path: '/api/license/register',
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -50,45 +48,50 @@ function registerLicenseKey(params) {
 }
 
 async function main() {
-  const factoryName = 'Demo Factory'
-  const durationCode = '30D'
+  const args = process.argv.slice(2)
+  const [licenseKey, machineId, factoryName, durationCode, expiryDate] = args
 
-  console.log('Generating trial license...')
+  if (!licenseKey || !machineId) {
+    console.error('Usage: node register-license-params.cjs <licenseKey> <machineId> [factoryName] [durationCode] [expiryDate]')
+    console.error('')
+    console.error('Example:')
+    console.error('  node register-license-params.cjs ABCD-1234-EFGH-5678-30D MYMACHINEID "My Factory" "30D"')
+    process.exit(1)
+  }
+
+  console.log('Registering license key...')
+  console.log(`  License Key: ${licenseKey}`)
   console.log(`  Machine ID: ${machineId}`)
-  console.log(`  Factory Name: ${factoryName}`)
-  console.log(`  Duration: ${durationCode} (30 days)`)
+  if (factoryName) console.log(`  Factory Name: ${factoryName}`)
+  if (durationCode) console.log(`  Duration Code: ${durationCode}`)
+  if (expiryDate) console.log(`  Expiry Date: ${expiryDate}`)
   console.log('')
 
   try {
     const result = await registerLicenseKey({
+      licenseKey,
       machineId,
       factoryName,
-      durationCode
+      durationCode,
+      expiryDate
     })
 
     if (result.success) {
+      console.log('✓ License key registered successfully!')
       console.log('')
-      console.log('✓ Trial license generated successfully!')
-      console.log('')
-      console.log('License Details:')
-      console.log(`  License Key: ${result.licenseKey}`)
-      console.log(`  Machine ID: ${result.machineId}`)
-      console.log(`  Expiry Date: ${result.expiryDate}`)
-      console.log(`  Duration: ${result.durationCode}`)
-      console.log('')
-      console.log('Your license has been registered in the cloud database.')
+      console.log('Your license key is now registered in the cloud database.')
       console.log('Cloud sync should now work.')
     } else {
-      console.error('')
-      console.error('✗ Failed to generate trial license')
+      console.error('✗ Failed to register license key')
       console.error(`Error: ${result.error}`)
       process.exit(1)
     }
   } catch (error) {
-    console.error('')
-    console.error('✗ Failed to generate trial license')
+    console.error('✗ Failed to register license key')
     console.error(`Error: ${error.message}`)
-    process.exit(1)
+    console.error('')
+    console.error('The license key was generated locally. You can still use it to activate the app.')
+    console.error('However, cloud sync features may not work without registering it in the database.')
   }
 }
 
